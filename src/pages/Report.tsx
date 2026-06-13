@@ -1,0 +1,213 @@
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { CheckCircle2, XCircle, AlertTriangle, Quote, Bot } from "lucide-react";
+import { api } from "@/lib/api";
+import { confidenceLabel } from "@/lib/report";
+import { recommendationLabel } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { ReportContent } from "@/lib/types";
+
+export default function ReportPage() {
+  const { id } = useParams<{ id: string }>();
+
+  const { data: report, isLoading, error } = useQuery({
+    queryKey: ["report", id],
+    queryFn: () => api.getReport(id!),
+    enabled: !!id,
+  });
+
+  if (isLoading) return <div className="p-8 text-muted-foreground">Loading report...</div>;
+  if (error || !report?.reportJson) return <div className="p-8 text-destructive">Report not found</div>;
+
+  const content = report.reportJson as ReportContent;
+  const rec = content.executiveRecommendation;
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">Decision report</p>
+        <h1 className="font-display text-3xl md:text-4xl">{rec.action}</h1>
+        <div className="flex items-center gap-3 mt-4">
+          <Badge variant="success">Confidence: {confidenceLabel(rec.confidence)}</Badge>
+        </div>
+      </div>
+
+      <Card className="mb-8 border-primary/30 glow-amber">
+        <CardHeader>
+          <CardTitle>Executive recommendation</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-lg">{rec.reason}</p>
+          <p className="text-muted-foreground">{rec.modification}</p>
+          {rec.doNotShip.length > 0 && (
+            <div className="flex items-start gap-2 text-sm">
+              <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+              <span>Do not ship: {rec.doNotShip.join(", ")}</span>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground border-t border-border pt-4">{rec.confidenceReason}</p>
+        </CardContent>
+      </Card>
+
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold mb-4">Variant ranking</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-muted-foreground">
+                <th className="py-2 pr-4">Rank</th>
+                <th className="py-2 pr-4">Variant</th>
+                <th className="py-2 pr-4">Score</th>
+                <th className="py-2 pr-4">Recommendation</th>
+                <th className="py-2">Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {content.rankings.map((r) => (
+                <tr key={r.variantId} className="border-b border-border/50">
+                  <td className="py-3 pr-4 font-medium">{r.rank}</td>
+                  <td className="py-3 pr-4">
+                    <span className="text-primary font-medium">{r.variantLabel}</span> {r.variantName}
+                  </td>
+                  <td className="py-3 pr-4">{r.overallScore}</td>
+                  <td className="py-3 pr-4">
+                    <RecBadge rec={r.recommendation} />
+                  </td>
+                  <td className="py-3">{confidenceLabel(r.confidence)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Why the winner won
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {content.whyWinnerWon.map((w, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-primary">•</span> {w}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-400" /> Where the winner is weak
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {content.winnerWeaknesses.map((w, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-amber-400">•</span> {w}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      {content.borrowFrom.length > 0 && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-base">What to borrow</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {content.borrowFrom.map((b) => (
+              <div key={b.variantLabel} className="text-sm">
+                <span className="font-medium text-primary">Variant {b.variantLabel}:</span>{" "}
+                <span className="text-muted-foreground">{b.elements.join(", ")}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Quote className="h-5 w-5" /> Human evaluator evidence
+        </h2>
+        <div className="grid gap-4">
+          {content.humanEvidence.map((h, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <p className="text-sm italic">&ldquo;{h.quote}&rdquo;</p>
+                <p className="text-xs text-muted-foreground mt-2">— {h.role}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Bot className="h-5 w-5" /> AI agent findings
+        </h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Consensus</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2 text-muted-foreground">
+              {content.agentFindings.consensus.map((c, i) => (
+                <p key={i}>• {c}</p>
+              ))}
+            </CardContent>
+          </Card>
+          {content.agentFindings.disagreement.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Disagreement</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2 text-muted-foreground">
+                {content.agentFindings.disagreement.map((d, i) => (
+                  <p key={i}>• {d}</p>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </section>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-base">Recommended next test</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm space-y-2 text-muted-foreground">
+          <p>{content.nextTest.description}</p>
+          <p><span className="text-foreground font-medium">Modification:</span> {content.nextTest.modification}</p>
+          <p><span className="text-foreground font-medium">Primary metric:</span> {content.nextTest.primaryMetric}</p>
+          <p><span className="text-foreground font-medium">Secondary:</span> {content.nextTest.secondaryMetrics.join(", ")}</p>
+        </CardContent>
+      </Card>
+
+      <Card className="border-dashed">
+        <CardHeader>
+          <CardTitle className="text-base">Decision memory</CardTitle>
+          <CardDescription>Recorded for future learning</CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm space-y-2 text-muted-foreground">
+          <p><span className="text-foreground font-medium">Decision:</span> {content.decisionMemory.decision}</p>
+          <p><span className="text-foreground font-medium">Assumption:</span> {content.decisionMemory.assumption}</p>
+          <p><span className="text-foreground font-medium">Expected:</span> {content.decisionMemory.expectedOutcome}</p>
+          <p><span className="text-foreground font-medium">Review:</span> {content.decisionMemory.reviewDate}</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function RecBadge({ rec }: { rec: string }) {
+  const variant = rec === "ship" ? "success" : rec === "kill" ? "danger" : rec === "borrow" ? "warning" : "secondary";
+  return <Badge variant={variant as "success"}>{recommendationLabel(rec)}</Badge>;
+}

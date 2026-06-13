@@ -1,0 +1,9 @@
+name = "shiprank"
+compatibility_date = "2025-06-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shiprank-db"
+database_id = "local-shiprank-db"
+migrations_dir = "drizzle/migrations"
