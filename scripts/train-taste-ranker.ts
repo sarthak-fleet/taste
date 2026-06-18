@@ -2,15 +2,15 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  predictTasteRankerProbFromFeatures,
+  TASTE_RANKER_FEATURE_NAMES,
+  tasteRankerFeatureVector,
+  type TasteLinearRankerModel,
+} from "../src/lib/tasteRanker.ts";
+import type { TasteBaselineVariant } from "../src/lib/tasteBaseline.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const FEATURE_NAMES = [
-  "risk_delta",
-  "clipped_delta",
-  "contrast_delta",
-  "failed_images_delta",
-  "overflow_delta",
-] as const;
 
 type Preference = "a" | "b" | "tie" | "unknown";
 
@@ -18,6 +18,8 @@ interface TasteJsonlRecord {
   id: string;
   variants: Array<{
     id: string;
+    label?: string;
+    artifacts?: TasteBaselineVariant["artifacts"];
     mechanicalSummary: {
       highestRiskScore: number;
       totalClippedTextCandidates: number;
@@ -83,18 +85,22 @@ function parseArgs(argv: string[]): CliArgs {
   };
 }
 
+function toBaselineVariant(
+  variant: TasteJsonlRecord["variants"][number],
+  index: number,
+): TasteBaselineVariant {
+  return {
+    id: variant.id,
+    label: variant.label ?? `Variant ${index + 1}`,
+    artifacts: variant.artifacts ?? [],
+    mechanicalSummary: variant.mechanicalSummary,
+  };
+}
+
 function features(record: TasteJsonlRecord): number[] | null {
   const [a, b] = record.variants;
   if (!a || !b) return null;
-  const av = a.mechanicalSummary;
-  const bv = b.mechanicalSummary;
-  return [
-    (bv.highestRiskScore - av.highestRiskScore) / 100,
-    (bv.totalClippedTextCandidates - av.totalClippedTextCandidates) / 20,
-    (bv.totalLowContrastCandidates - av.totalLowContrastCandidates) / 20,
-    (bv.totalFailedImages - av.totalFailedImages) / 10,
-    (bv.maxHorizontalOverflow - av.maxHorizontalOverflow) / 500,
-  ];
+  return tasteRankerFeatureVector(toBaselineVariant(a, 0), toBaselineVariant(b, 1));
 }
 
 function target(label: Preference): number | null {
@@ -121,8 +127,14 @@ function predictPreference(probA: number): Preference {
 function accuracy(examples: TrainExample[], weights: number[], bias: number) {
   if (!examples.length) return 0;
   let correct = 0;
+  const model: TasteLinearRankerModel = {
+    modelId: "taste-linear-mechanical-ranker-v0",
+    featureNames: TASTE_RANKER_FEATURE_NAMES,
+    weights,
+    bias,
+  };
   for (const example of examples) {
-    const predicted = predictPreference(sigmoid(dot(weights, example.x) + bias));
+    const predicted = predictPreference(predictTasteRankerProbFromFeatures(model, example.x));
     if (predicted === example.label) correct++;
   }
   return correct / examples.length;
@@ -142,7 +154,7 @@ async function main() {
 
   if (!examples.length) throw new Error("No labeled examples available for training");
 
-  const weights = Array.from({ length: FEATURE_NAMES.length }, () => 0);
+  const weights = Array.from({ length: TASTE_RANKER_FEATURE_NAMES.length }, () => 0);
   let bias = 0;
 
   for (let epoch = 0; epoch < args.epochs; epoch++) {
@@ -159,7 +171,7 @@ async function main() {
   const model = {
     modelId: "taste-linear-mechanical-ranker-v0",
     trainedAt: new Date().toISOString(),
-    featureNames: FEATURE_NAMES,
+    featureNames: TASTE_RANKER_FEATURE_NAMES,
     weights,
     bias,
     training: {

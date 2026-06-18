@@ -9,12 +9,22 @@ import {
   type TasteBaselineResult,
   type TasteBaselineVariant,
 } from "../../../src/lib/tasteBaseline";
+import {
+  runTasteLinearRankerForVariants,
+  type TasteLinearRankerModel,
+  type TasteLinearRankerResult,
+} from "../../../src/lib/tasteRanker";
 import { runTasteVlmJudgeForVariants, type TasteVlmConfig, type TasteVlmResult } from "./tasteVlmJudge";
 
 type Study = typeof schema.studies.$inferSelect;
 type Variant = typeof schema.variants.$inferSelect;
 type VisualEvaluation = typeof schema.visualEvaluations.$inferSelect;
-type TasteVisualResult = TasteBaselineResult | TasteVlmResult;
+type TasteVisualResult = TasteBaselineResult | TasteVlmResult | TasteLinearRankerResult;
+
+export interface TasteEvaluatorConfig {
+  rankerModel?: TasteLinearRankerModel;
+  vlmConfig?: TasteVlmConfig;
+}
 
 export interface VisualEvidenceInput {
   variantId?: string;
@@ -130,7 +140,7 @@ export async function runTasteEvaluatorFromLatestEvidence(
   db: Db,
   study: Study,
   variants: Variant[],
-  vlmConfig?: TasteVlmConfig,
+  config: TasteEvaluatorConfig = {},
 ): Promise<TasteVisualResult | null> {
   const rows = await db
     .select()
@@ -144,19 +154,31 @@ export async function runTasteEvaluatorFromLatestEvidence(
 
   if (evaluatorVariants.length < 2) return null;
 
-  const vlmResult = await runTasteVlmJudgeForVariants({
-    config: vlmConfig ?? {},
-    studyId: study.id,
-    studyType: study.studyType,
-    primaryObjective: study.primaryObjective ?? undefined,
-    targetUserRole: study.targetUserRole ?? undefined,
-    variants: evaluatorVariants,
-  }).catch((error) => {
-    console.warn("Taste VLM judge failed; falling back to mechanical baseline", error);
-    return null;
-  });
+  const rankerResult = config.rankerModel
+    ? runTasteLinearRankerForVariants({
+        studyId: study.id,
+        studyType: study.studyType,
+        primaryObjective: study.primaryObjective ?? undefined,
+        variants: evaluatorVariants,
+        model: config.rankerModel,
+      })
+    : null;
+  const vlmResult = rankerResult
+    ? null
+    : await runTasteVlmJudgeForVariants({
+        config: config.vlmConfig ?? {},
+        studyId: study.id,
+        studyType: study.studyType,
+        primaryObjective: study.primaryObjective ?? undefined,
+        targetUserRole: study.targetUserRole ?? undefined,
+        variants: evaluatorVariants,
+      }).catch((error) => {
+        console.warn("Taste VLM judge failed; falling back to mechanical baseline", error);
+        return null;
+      });
 
   const result =
+    rankerResult ??
     vlmResult ??
     runTasteMechanicalBaselineForVariants({
       studyId: study.id,
@@ -192,11 +214,11 @@ export async function attachVisualEvidenceAndRunBaseline(params: {
   variants: Variant[];
   evidence: VisualEvidenceInput[];
   runBaseline: boolean;
-  vlmConfig?: TasteVlmConfig;
+  evaluatorConfig?: TasteEvaluatorConfig;
 }) {
   const persisted = await persistVisualEvidence(params.db, params.study, params.variants, params.evidence);
   const baseline = params.runBaseline
-    ? await runTasteEvaluatorFromLatestEvidence(params.db, params.study, params.variants, params.vlmConfig)
+    ? await runTasteEvaluatorFromLatestEvidence(params.db, params.study, params.variants, params.evaluatorConfig)
     : null;
 
   return { persisted, baseline };

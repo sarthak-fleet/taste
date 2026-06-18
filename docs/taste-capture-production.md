@@ -10,6 +10,8 @@ Chromium inside Pages Functions.
 - Pages calls the Worker through `POST /api/studies/:id/capture`.
 - Worker captures each URL variant, writes screenshots + manifest to R2, then
   posts the manifest back to Pages.
+- Pages stores manifests, then runs the local ranker, VLM, or mechanical Taste
+  evaluator in that order.
 
 ## Required Cloudflare resources
 
@@ -26,7 +28,9 @@ Chromium inside Pages Functions.
   - `TASTE_API_BASE`, for example `https://<taste-domain>/api`
   - `R2_PUBLIC_BASE_URL`, optional; required for VLM judging because image
     artifacts must be HTTP URLs rather than private `r2://` keys
-- Pages VLM env vars, optional:
+- Pages evaluator env vars, optional:
+  - `TASTE_RANKER_MODEL_JSON`, full JSON output from `pnpm train:taste-ranker`;
+    when set, this local ranker runs before VLM
   - `TASTE_VLM_API_BASE`, OpenAI-compatible base URL
   - `TASTE_VLM_API_KEY`
   - `TASTE_VLM_MODEL`
@@ -60,10 +64,15 @@ Set Pages environment variables in Cloudflare Pages:
 TASTE_CAPTURE_WORKER_URL=https://taste-capture.<account-subdomain>.workers.dev
 TASTE_CAPTURE_WORKER_TOKEN=<same value as CAPTURE_WORKER_TOKEN>
 TASTE_VISUAL_EVIDENCE_TOKEN=<same value as TASTE_API_TOKEN>
+TASTE_RANKER_MODEL_JSON=<contents of models/taste-linear-ranker.json>
 TASTE_VLM_API_BASE=https://<openai-compatible-host>/v1
 TASTE_VLM_API_KEY=<provider key>
 TASTE_VLM_MODEL=<vision-capable-model>
 ```
+
+When `TASTE_RANKER_MODEL_JSON` is set, the Pages API uses that local model for
+visual evidence before trying the VLM. If the env var is missing or invalid,
+the API falls back to VLM and then `taste-mechanical-baseline-v0`.
 
 If VLM judging should run, configure a public R2 custom domain or equivalent
 image delivery base and set `R2_PUBLIC_BASE_URL` on `taste-capture`. Without

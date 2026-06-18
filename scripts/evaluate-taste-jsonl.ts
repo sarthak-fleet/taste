@@ -2,15 +2,15 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  parseTasteLinearRankerModelJson,
+  predictTasteRankerProbFromFeatures,
+  tasteRankerFeatureVector,
+  type TasteLinearRankerModel,
+} from "../src/lib/tasteRanker.ts";
+import type { TasteBaselineVariant } from "../src/lib/tasteBaseline.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const FEATURE_NAMES = [
-  "risk_delta",
-  "clipped_delta",
-  "contrast_delta",
-  "failed_images_delta",
-  "overflow_delta",
-] as const;
 
 type Preference = "a" | "b" | "tie" | "unknown";
 
@@ -18,6 +18,8 @@ interface TasteJsonlRecord {
   id: string;
   variants: Array<{
     id: string;
+    label?: string;
+    artifacts?: TasteBaselineVariant["artifacts"];
     mechanicalSummary: {
       highestRiskScore: number;
       totalClippedTextCandidates: number;
@@ -35,13 +37,6 @@ interface CliArgs {
   inputPath: string;
   tieMargin: number;
   modelPath?: string;
-}
-
-interface RankerModel {
-  modelId: string;
-  featureNames: typeof FEATURE_NAMES;
-  weights: number[];
-  bias: number;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -71,29 +66,28 @@ function parseArgs(argv: string[]): CliArgs {
   };
 }
 
+function toBaselineVariant(
+  variant: TasteJsonlRecord["variants"][number],
+  index: number,
+): TasteBaselineVariant {
+  return {
+    id: variant.id,
+    label: variant.label ?? `Variant ${index + 1}`,
+    artifacts: variant.artifacts ?? [],
+    mechanicalSummary: variant.mechanicalSummary,
+  };
+}
+
 function featureVector(record: TasteJsonlRecord): number[] | null {
   const [a, b] = record.variants;
   if (!a || !b) return null;
-  const av = a.mechanicalSummary;
-  const bv = b.mechanicalSummary;
-  return [
-    (bv.highestRiskScore - av.highestRiskScore) / 100,
-    (bv.totalClippedTextCandidates - av.totalClippedTextCandidates) / 20,
-    (bv.totalLowContrastCandidates - av.totalLowContrastCandidates) / 20,
-    (bv.totalFailedImages - av.totalFailedImages) / 10,
-    (bv.maxHorizontalOverflow - av.maxHorizontalOverflow) / 500,
-  ];
+  return tasteRankerFeatureVector(toBaselineVariant(a, 0), toBaselineVariant(b, 1));
 }
 
-function sigmoid(value: number) {
-  return 1 / (1 + Math.exp(-value));
-}
-
-function predictWithModel(record: TasteJsonlRecord, model: RankerModel): Preference {
+function predictWithModel(record: TasteJsonlRecord, model: TasteLinearRankerModel): Preference {
   const x = featureVector(record);
   if (!x) return "unknown";
-  const logit = model.weights.reduce((sum, weight, index) => sum + weight * (x[index] ?? 0), model.bias);
-  const probA = sigmoid(logit);
+  const probA = predictTasteRankerProbFromFeatures(model, x);
   if (probA > 0.55) return "a";
   if (probA < 0.45) return "b";
   return "tie";
@@ -111,7 +105,7 @@ function predictMechanically(record: TasteJsonlRecord, tieMargin: number): Prefe
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const model = args.modelPath
-    ? (JSON.parse(await readFile(args.modelPath, "utf8")) as RankerModel)
+    ? parseTasteLinearRankerModelJson(await readFile(args.modelPath, "utf8"))
     : null;
   const lines = (await readFile(args.inputPath, "utf8")).split("\n").filter(Boolean);
   const records = lines.map((line) => JSON.parse(line) as TasteJsonlRecord);

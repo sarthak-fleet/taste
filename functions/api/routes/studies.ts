@@ -11,6 +11,7 @@ import {
   runTasteEvaluatorFromLatestEvidence,
   type VisualEvidenceInput,
 } from "../services/visualEvaluation";
+import { parseTasteLinearRankerModelJson } from "../../../src/lib/tasteRanker";
 
 export const studiesRouter = new Hono<{ Bindings: Env }>();
 
@@ -20,6 +21,16 @@ function tasteVlmConfig(env: Env) {
     apiKey: env.TASTE_VLM_API_KEY,
     model: env.TASTE_VLM_MODEL,
   };
+}
+
+function tasteRankerModel(env: Env) {
+  if (!env.TASTE_RANKER_MODEL_JSON) return undefined;
+  try {
+    return parseTasteLinearRankerModelJson(env.TASTE_RANKER_MODEL_JSON);
+  } catch (error) {
+    console.warn("TASTE_RANKER_MODEL_JSON is invalid; falling back to VLM/mechanical Taste evaluation", error);
+    return undefined;
+  }
 }
 
 studiesRouter.get("/", async (c) => {
@@ -208,7 +219,10 @@ studiesRouter.post("/:id/launch", async (c) => {
   }
 
   await runAgentPipeline(db, study, studyVariants);
-  await runTasteEvaluatorFromLatestEvidence(db, study, studyVariants, tasteVlmConfig(c.env));
+  await runTasteEvaluatorFromLatestEvidence(db, study, studyVariants, {
+    rankerModel: tasteRankerModel(c.env),
+    vlmConfig: tasteVlmConfig(c.env),
+  });
 
   await db
     .update(schema.studies)
@@ -313,7 +327,10 @@ studiesRouter.post("/:id/visual-evidence", async (c) => {
       variants: studyVariants,
       evidence: body.captures,
       runBaseline: body.runBaseline ?? true,
-      vlmConfig: tasteVlmConfig(c.env),
+      evaluatorConfig: {
+        rankerModel: tasteRankerModel(c.env),
+        vlmConfig: tasteVlmConfig(c.env),
+      },
     });
     return c.json({
       persisted: result.persisted.map((row) => ({

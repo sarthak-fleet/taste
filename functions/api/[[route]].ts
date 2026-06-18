@@ -16,6 +16,7 @@ export interface Env {
   TASTE_VLM_API_BASE?: string;
   TASTE_VLM_API_KEY?: string;
   TASTE_VLM_MODEL?: string;
+  TASTE_RANKER_MODEL_JSON?: string;
 }
 
 function createApi() {

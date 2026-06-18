@@ -29,6 +29,7 @@
   - JSONL exporter for labeled Taste pair manifests used by supervised training/eval
   - offline mechanical-risk pairwise accuracy eval for exported Taste JSONL
   - first local supervised linear pairwise ranker over exported mechanical features
+  - optional runtime local ranker path via `TASTE_RANKER_MODEL_JSON`, with VLM and mechanical fallback
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
   - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
   - API trigger that asks the capture Worker to snapshot a study's URL variants
@@ -67,8 +68,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Local supervised ranker integration to replace the deterministic Taste/VLM bootstrap path
-- Web-TASTE capture queue, pair labeling workflow, and held-out eval set
+- Web-TASTE capture queue, pair labeling workflow, held-out eval set, and model comparison report
 - Email notifications
 
 ## Deferred / parked

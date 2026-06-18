@@ -31,12 +31,17 @@ pnpm export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.
 pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl
 pnpm train:taste-ranker -- --in datasets/taste-pairs.jsonl --out models/taste-linear-ranker.json
 pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl --model models/taste-linear-ranker.json
+pnpm smoke:taste-ranker
 ```
 
 Capture output is local-only under `captures/`. Pair manifests are the first
 labelable Web-TASTE training artifact between screenshots and the model. The
 baseline command runs the deterministic mechanical evaluator that the real
 Taste model should beat.
+
+Set `TASTE_RANKER_MODEL_JSON` on the Pages app to route visual evidence through
+the saved local linear ranker before VLM or mechanical fallback. The value is
+the JSON produced by `pnpm train:taste-ranker`.
 
 ## Taste capture worker
 
@@ -48,6 +53,7 @@ Configure the Pages app with `TASTE_CAPTURE_WORKER_URL` and optional
 `TASTE_CAPTURE_WORKER_TOKEN` to enable `POST /api/studies/:id/capture`.
 Set `TASTE_VISUAL_EVIDENCE_TOKEN` on Pages and matching `TASTE_API_TOKEN` on
 the Worker to protect capture callbacks.
+Set `TASTE_RANKER_MODEL_JSON` on Pages to use a trained local Taste ranker.
 Set `TASTE_VLM_API_BASE`, `TASTE_VLM_API_KEY`, and `TASTE_VLM_MODEL` on Pages
 to enable the VLM judge when capture artifacts expose HTTP image URLs.
 
@@ -76,7 +82,7 @@ Cloudflare Pages Functions at `/api/*`:
 - `GET/POST /api/studies` — list/create studies
 - `POST /api/studies/:id/launch` — run agents + evaluators + generate report
 - `POST /api/studies/:id/capture` — ask the capture Worker to snapshot URL variants
-- `POST /api/studies/:id/visual-evidence` — attach capture manifests and run Taste baseline
+- `POST /api/studies/:id/visual-evidence` — attach capture manifests and run Taste ranker/VLM/baseline
 - `GET /api/studies/:id/report` — fetch report
 - `GET/POST /api/arena/battles/:slug/vote` — arena
 - `GET /api/admin/overview` — admin stats
