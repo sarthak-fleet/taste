@@ -16,6 +16,7 @@
     "capture:taste": "node scripts/capture-taste.mjs",
     "capture:taste:install": "playwright install chromium",
     "pair:taste": "node scripts/create-taste-pair.mjs",
+    "synth:taste-degrade": "tsx scripts/synthesize-taste-degradations.ts",
     "baseline:taste": "tsx scripts/evaluate-taste-pair.ts",
     "evidence:taste": "tsx scripts/upload-taste-evidence.ts",
     "capture-study:taste": "tsx scripts/request-taste-capture.ts",

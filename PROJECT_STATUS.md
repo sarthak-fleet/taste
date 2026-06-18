@@ -24,6 +24,7 @@
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
+  - synthetic degradation pair generator for bootstrapping non-tie preference data
   - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
   - JSONL exporter for labeled Taste pair manifests used by supervised training/eval
   - offline mechanical-risk pairwise accuracy eval for exported Taste JSONL
