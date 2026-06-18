@@ -4,6 +4,7 @@ dist/
 captures/
 datasets/
 models/
+reports/
 *.local
 .DS_Store
 .env

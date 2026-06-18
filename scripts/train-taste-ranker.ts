@@ -5,39 +5,17 @@ import { fileURLToPath } from "node:url";
 import {
   predictTasteRankerProbFromFeatures,
   TASTE_RANKER_FEATURE_NAMES,
-  tasteRankerFeatureVector,
   type TasteLinearRankerModel,
 } from "../src/lib/tasteRanker.ts";
-import type { TasteBaselineVariant } from "../src/lib/tasteBaseline.ts";
+import { tasteJsonlFeatureVector, type TasteJsonlPreference, type TasteJsonlRecord } from "../src/lib/tasteJsonl.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-
-type Preference = "a" | "b" | "tie" | "unknown";
-
-interface TasteJsonlRecord {
-  id: string;
-  variants: Array<{
-    id: string;
-    label?: string;
-    artifacts?: TasteBaselineVariant["artifacts"];
-    mechanicalSummary: {
-      highestRiskScore: number;
-      totalClippedTextCandidates: number;
-      totalLowContrastCandidates: number;
-      totalFailedImages: number;
-      maxHorizontalOverflow: number;
-    };
-  }>;
-  label: {
-    preferredVariantId: Preference;
-  } | null;
-}
 
 interface TrainExample {
   id: string;
   x: number[];
   y: number;
-  label: Preference;
+  label: TasteJsonlPreference;
 }
 
 interface CliArgs {
@@ -85,25 +63,11 @@ function parseArgs(argv: string[]): CliArgs {
   };
 }
 
-function toBaselineVariant(
-  variant: TasteJsonlRecord["variants"][number],
-  index: number,
-): TasteBaselineVariant {
-  return {
-    id: variant.id,
-    label: variant.label ?? `Variant ${index + 1}`,
-    artifacts: variant.artifacts ?? [],
-    mechanicalSummary: variant.mechanicalSummary,
-  };
-}
-
 function features(record: TasteJsonlRecord): number[] | null {
-  const [a, b] = record.variants;
-  if (!a || !b) return null;
-  return tasteRankerFeatureVector(toBaselineVariant(a, 0), toBaselineVariant(b, 1));
+  return tasteJsonlFeatureVector(record);
 }
 
-function target(label: Preference): number | null {
+function target(label: TasteJsonlPreference): number | null {
   if (label === "a") return 1;
   if (label === "b") return 0;
   if (label === "tie") return 0.5;
@@ -118,7 +82,7 @@ function dot(weights: number[], x: number[]) {
   return weights.reduce((sum, weight, index) => sum + weight * (x[index] ?? 0), 0);
 }
 
-function predictPreference(probA: number): Preference {
+function predictPreference(probA: number): TasteJsonlPreference {
   if (probA > 0.55) return "a";
   if (probA < 0.45) return "b";
   return "tie";

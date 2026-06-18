@@ -28,9 +28,10 @@ pnpm baseline:taste -- --pair captures/taste-pairs/example.json
 pnpm evidence:taste -- --study <study-id> --capture A=captures/taste/example-a/manifest.json --capture B=captures/taste/example-b/manifest.json
 pnpm capture-study:taste -- --study <study-id>
 pnpm export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.jsonl
+pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl
 pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl
-pnpm train:taste-ranker -- --in datasets/taste-pairs.jsonl --out models/taste-linear-ranker.json
-pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl --model models/taste-linear-ranker.json
+pnpm train:taste-ranker -- --in datasets/taste-train.jsonl --out models/taste-linear-ranker.json
+pnpm report:taste-model -- --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --model models/taste-linear-ranker.json --out reports/taste-model-report.json
 pnpm smoke:taste-ranker
 ```
 
@@ -99,3 +100,5 @@ Configure D1 binding `DB` in Cloudflare dashboard; run migrations against produc
 
 See `PROJECT_STATUS.md` for scope, shortcuts, and planned work.
 See `docs/taste-capture-production.md` for the production capture Worker runbook.
+See `docs/taste-model-data-loop.md` for the capture, split, train, and held-out
+model report workflow.
