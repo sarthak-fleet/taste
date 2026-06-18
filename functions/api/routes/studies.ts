@@ -276,6 +276,12 @@ studiesRouter.post("/:id/capture", async (c) => {
 studiesRouter.post("/:id/visual-evidence", async (c) => {
   const db = c.get("db");
   const id = c.req.param("id");
+  const visualEvidenceToken = c.env.TASTE_VISUAL_EVIDENCE_TOKEN;
+  if (visualEvidenceToken) {
+    const token = c.req.header("authorization")?.replace(/^Bearer\s+/i, "");
+    if (token !== visualEvidenceToken) return c.json({ error: "Unauthorized" }, 401);
+  }
+
   const body = await c.req.json<{
     captures?: VisualEvidenceInput[];
     runBaseline?: boolean;

@@ -40,6 +40,8 @@ posts capture manifests to `/api/studies/:id/visual-evidence`.
 
 Configure the Pages app with `TASTE_CAPTURE_WORKER_URL` and optional
 `TASTE_CAPTURE_WORKER_TOKEN` to enable `POST /api/studies/:id/capture`.
+Set `TASTE_VISUAL_EVIDENCE_TOKEN` on Pages and matching `TASTE_API_TOKEN` on
+the Worker to protect capture callbacks.
 
 ```bash
 pnpm capture-worker:check

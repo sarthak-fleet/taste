@@ -12,6 +12,7 @@ export interface Env {
   DB: D1Database;
   TASTE_CAPTURE_WORKER_URL?: string;
   TASTE_CAPTURE_WORKER_TOKEN?: string;
+  TASTE_VISUAL_EVIDENCE_TOKEN?: string;
 }
 
 function createApi() {

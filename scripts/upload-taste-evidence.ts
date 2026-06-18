@@ -11,6 +11,7 @@ interface CliArgs {
   studyId: string;
   captures: Array<{ variantId?: string; variantLabel?: string; manifestPath: string }>;
   runBaseline: boolean;
+  token?: string;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -18,6 +19,7 @@ function parseArgs(argv: string[]): CliArgs {
   let api = "http://127.0.0.1:8788/api";
   let studyId = "";
   let runBaseline = true;
+  let token: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -32,6 +34,9 @@ function parseArgs(argv: string[]): CliArgs {
     } else if (arg === "--capture" && next) {
       captures.push(parseCaptureSpec(next));
       i += 1;
+    } else if (arg === "--token" && next) {
+      token = next;
+      i += 1;
     } else if (arg === "--no-baseline") {
       runBaseline = false;
     }
@@ -39,11 +44,11 @@ function parseArgs(argv: string[]): CliArgs {
 
   if (!studyId || captures.length === 0) {
     throw new Error(
-      "Usage: pnpm evidence:taste -- --study <study-id> --capture <variant-id-or-label>=captures/.../manifest.json [--api http://127.0.0.1:8788/api]",
+      "Usage: pnpm evidence:taste -- --study <study-id> --capture <variant-id-or-label>=captures/.../manifest.json [--api http://127.0.0.1:8788/api] [--token shared-secret]",
     );
   }
 
-  return { api, studyId, captures, runBaseline };
+  return { api, studyId, captures, runBaseline, token };
 }
 
 function parseCaptureSpec(value: string): CliArgs["captures"][number] {
@@ -79,7 +84,10 @@ async function main() {
 
   const response = await fetch(`${args.api}/studies/${args.studyId}/visual-evidence`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      ...(args.token ? { authorization: `Bearer ${args.token}` } : {}),
+    },
     body: JSON.stringify({ captures, runBaseline: args.runBaseline }),
   });
 
