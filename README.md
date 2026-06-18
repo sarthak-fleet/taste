@@ -28,6 +28,7 @@ pnpm evidence:taste -- --study <study-id> --capture A=captures/taste/example-a/m
 pnpm capture-study:taste -- --study <study-id>
 pnpm export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.jsonl
 pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl
+pnpm train:taste-ranker -- --in datasets/taste-pairs.jsonl --out models/taste-linear-ranker.json
 ```
 
 Capture output is local-only under `captures/`. Pair manifests are the first

@@ -3,6 +3,7 @@ dist/
 .wrangler/
 captures/
 datasets/
+models/
 *.local
 .DS_Store
 .env
