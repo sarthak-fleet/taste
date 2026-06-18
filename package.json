@@ -21,6 +21,8 @@
     "evidence:taste": "tsx scripts/upload-taste-evidence.ts",
     "capture-study:taste": "tsx scripts/request-taste-capture.ts",
     "export:taste-jsonl": "tsx scripts/export-taste-jsonl.ts",
+    "review:taste-pairs": "tsx scripts/review-taste-pairs.ts",
+    "label:taste-pair": "tsx scripts/label-taste-pair.ts",
     "split:taste-jsonl": "tsx scripts/split-taste-jsonl.ts",
     "eval:taste-jsonl": "tsx scripts/evaluate-taste-jsonl.ts",
     "train:taste-ranker": "tsx scripts/train-taste-ranker.ts",

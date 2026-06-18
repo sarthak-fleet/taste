@@ -25,6 +25,7 @@
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data
+  - local pair review queue plus post-capture pair label applicator
   - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
   - JSONL exporter for labeled Taste pair manifests used by supervised training/eval
   - offline mechanical-risk pairwise accuracy eval for exported Taste JSONL
@@ -69,7 +70,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Web-TASTE capture queue, pair labeling workflow, and real held-out label collection
+- Web-TASTE capture queue and real held-out label collection
 - Email notifications
 
 ## Deferred / parked

@@ -19,6 +19,25 @@ Manual and product-feedback pairs should also land in `captures/taste-pairs`
 through `pnpm pair:taste`. Synthetic pairs are a bootstrap signal only; do not
 use them as the final quality claim.
 
+## Label Queue
+
+Generate a local review queue from pair manifests:
+
+```bash
+pnpm review:taste-pairs -- --in captures/taste-pairs --out reports/taste-label-queue.html
+```
+
+Open the generated HTML file, compare the above-fold screenshots, then apply a
+label back to the pair manifest:
+
+```bash
+pnpm label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8 --rationale "Clearer hierarchy and stronger first action"
+```
+
+Use `--preferred b`, `--preferred tie`, or `--preferred unknown` when
+appropriate. Add `--criteria typography:a,mobileFit:b` when a pair needs
+criterion-specific labels.
+
 ## Train And Evaluate
 
 ```bash
