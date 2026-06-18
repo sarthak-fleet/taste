@@ -23,10 +23,13 @@ Open http://localhost:8788 (full stack) or run `pnpm dev` for frontend-only on :
 pnpm capture:taste:install
 pnpm capture:taste -- --url https://example.com --label example
 pnpm pair:taste -- --a captures/taste/example-a/manifest.json --b captures/taste/example-b/manifest.json --preferred a
+pnpm baseline:taste -- --pair captures/taste-pairs/example.json
 ```
 
 Capture output is local-only under `captures/`. Pair manifests are the first
-labelable Web-TASTE training artifact between screenshots and the model.
+labelable Web-TASTE training artifact between screenshots and the model. The
+baseline command runs the deterministic mechanical evaluator that the real
+Taste model should beat.
 
 ## Routes
 
