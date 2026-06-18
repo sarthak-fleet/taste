@@ -20,6 +20,7 @@
     "evidence:taste": "tsx scripts/upload-taste-evidence.ts",
     "capture-study:taste": "tsx scripts/request-taste-capture.ts",
     "export:taste-jsonl": "tsx scripts/export-taste-jsonl.ts",
+    "eval:taste-jsonl": "tsx scripts/evaluate-taste-jsonl.ts",
     "capture-worker:check": "tsc -p workers/taste-capture/tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply shiprank-db --local",
