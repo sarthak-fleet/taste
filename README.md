@@ -30,6 +30,7 @@ pnpm evidence:taste -- --study <study-id> --capture A=captures/taste/example-a/m
 pnpm capture-study:taste -- --study <study-id>
 pnpm review:taste-pairs -- --in captures/taste-pairs --out reports/taste-label-queue.html
 pnpm label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8
+pnpm audit:taste-pairs -- --in captures/taste-pairs --strict
 pnpm export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.jsonl
 pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl
 pnpm audit:taste-jsonl -- --in datasets/taste-holdout.jsonl --strict

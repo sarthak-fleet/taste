@@ -21,6 +21,7 @@
     "baseline:taste": "tsx scripts/evaluate-taste-pair.ts",
     "evidence:taste": "tsx scripts/upload-taste-evidence.ts",
     "capture-study:taste": "tsx scripts/request-taste-capture.ts",
+    "audit:taste-pairs": "tsx scripts/audit-taste-pairs.ts",
     "export:taste-jsonl": "tsx scripts/export-taste-jsonl.ts",
     "audit:taste-jsonl": "tsx scripts/audit-taste-jsonl.ts",
     "review:taste-pairs": "tsx scripts/review-taste-pairs.ts",

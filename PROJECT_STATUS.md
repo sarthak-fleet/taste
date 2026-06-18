@@ -27,6 +27,7 @@
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data
   - local pair review queue plus post-capture pair label applicator
+  - pair-manifest collection audit for unlabeled, synthetic, and real label counts before export
   - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
   - JSONL exporter for labeled Taste pair manifests used by supervised training/eval
   - offline mechanical-risk pairwise accuracy eval for exported Taste JSONL
