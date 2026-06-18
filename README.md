@@ -51,6 +51,7 @@ Cloudflare Pages Functions at `/api/*`:
 
 - `GET/POST /api/studies` — list/create studies
 - `POST /api/studies/:id/launch` — run agents + evaluators + generate report
+- `POST /api/studies/:id/visual-evidence` — attach capture manifests and run Taste baseline
 - `GET /api/studies/:id/report` — fetch report
 - `GET/POST /api/arena/battles/:slug/vote` — arena
 - `GET /api/admin/overview` — admin stats

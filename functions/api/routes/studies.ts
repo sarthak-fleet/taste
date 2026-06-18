@@ -6,6 +6,11 @@ import { badRequest, notFound } from "../_context";
 import { generateStudyBrief } from "../../../src/lib/utils";
 import { runAgentPipeline, runScoringAndReport } from "../services/pipeline";
 import { executeSimulation, getLatestSimulation, listAgents } from "../services/simulation";
+import {
+  attachVisualEvidenceAndRunBaseline,
+  runTasteBaselineFromLatestEvidence,
+  type VisualEvidenceInput,
+} from "../services/visualEvaluation";
 
 export const studiesRouter = new Hono<{ Bindings: Env }>();
 
@@ -49,7 +54,22 @@ studiesRouter.get("/:id", async (c) => {
 
   const [outcome] = await db.select().from(schema.outcomes).where(eq(schema.outcomes.studyId, id));
 
-  return c.json({ study, variants: studyVariants, report, agentRuns, predictions: preds, outcome });
+  const visualEvaluations = await db
+    .select({
+      id: schema.visualEvaluations.id,
+      variantId: schema.visualEvaluations.variantId,
+      sourceType: schema.visualEvaluations.sourceType,
+      sourceUrl: schema.visualEvaluations.sourceUrl,
+      modelId: schema.visualEvaluations.modelId,
+      status: schema.visualEvaluations.status,
+      completedAt: schema.visualEvaluations.completedAt,
+      createdAt: schema.visualEvaluations.createdAt,
+    })
+    .from(schema.visualEvaluations)
+    .where(eq(schema.visualEvaluations.studyId, id))
+    .orderBy(desc(schema.visualEvaluations.createdAt));
+
+  return c.json({ study, variants: studyVariants, report, agentRuns, predictions: preds, outcome, visualEvaluations });
 });
 
 studiesRouter.post("/", async (c) => {
@@ -180,6 +200,7 @@ studiesRouter.post("/:id/launch", async (c) => {
   }
 
   await runAgentPipeline(db, study, studyVariants);
+  await runTasteBaselineFromLatestEvidence(db, study, studyVariants);
 
   await db
     .update(schema.studies)
@@ -197,6 +218,48 @@ studiesRouter.post("/:id/launch", async (c) => {
   const [report] = await db.select().from(schema.reports).where(eq(schema.reports.studyId, id));
 
   return c.json({ study: updated, report });
+});
+
+studiesRouter.post("/:id/visual-evidence", async (c) => {
+  const db = c.get("db");
+  const id = c.req.param("id");
+  const body = await c.req.json<{
+    captures?: VisualEvidenceInput[];
+    runBaseline?: boolean;
+  }>();
+
+  const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
+  if (!study) return notFound("Study not found");
+
+  const studyVariants = await db
+    .select()
+    .from(schema.variants)
+    .where(eq(schema.variants.studyId, id))
+    .orderBy(schema.variants.sortOrder);
+
+  if (!body.captures?.length) return badRequest("captures are required");
+
+  try {
+    const result = await attachVisualEvidenceAndRunBaseline({
+      db,
+      study,
+      variants: studyVariants,
+      evidence: body.captures,
+      runBaseline: body.runBaseline ?? true,
+    });
+    return c.json({
+      persisted: result.persisted.map((row) => ({
+        id: row.id,
+        variantId: row.variantId,
+        sourceUrl: row.sourceUrl,
+        status: row.status,
+        createdAt: row.createdAt,
+      })),
+      baseline: result.baseline,
+    });
+  } catch (error) {
+    return badRequest(error instanceof Error ? error.message : "Invalid visual evidence");
+  }
 });
 
 studiesRouter.post("/:id/simulate", async (c) => {

@@ -27,11 +27,18 @@ export interface TasteBaselineResult {
   summary: string;
 }
 
+export interface TasteBaselineVariant {
+  id: string;
+  label: string;
+  artifacts: TastePairVariant["artifacts"];
+  mechanicalSummary: TastePairVariant["mechanicalSummary"];
+}
+
 function clampScore(value: number): number {
   return Math.max(1, Math.min(5, Math.round(value * 10) / 10));
 }
 
-function extractEvidenceFeatures(variant: TastePairVariant): VariantEvidenceFeatures {
+function extractEvidenceFeatures(variant: TasteBaselineVariant): VariantEvidenceFeatures {
   let maxFirstSectionHeightRatio = 0;
   let minVisibleActionCount = Number.POSITIVE_INFINITY;
   let mobileRiskScore = 0;
@@ -99,7 +106,7 @@ function scoreTasteCriteria(scores: DimensionScores, features: VariantEvidenceFe
   };
 }
 
-function buildFindings(variant: TastePairVariant, features: VariantEvidenceFeatures): AgentOutput["findings"] {
+function buildFindings(variant: TasteBaselineVariant, features: VariantEvidenceFeatures): AgentOutput["findings"] {
   const findings: AgentOutput["findings"] = [];
 
   if (features.totalClippedTextCandidates > 0) {
@@ -145,7 +152,7 @@ function buildFindings(variant: TastePairVariant, features: VariantEvidenceFeatu
       ];
 }
 
-function buildValidityFlags(variant: TastePairVariant, features: VariantEvidenceFeatures): AgentOutput["validityFlags"] {
+function buildValidityFlags(variant: TasteBaselineVariant, features: VariantEvidenceFeatures): AgentOutput["validityFlags"] {
   const flags: AgentOutput["validityFlags"] = [];
 
   if (!variant.artifacts.length) {
@@ -175,7 +182,7 @@ function buildValidityFlags(variant: TastePairVariant, features: VariantEvidence
   return flags;
 }
 
-function buildOutput(variant: TastePairVariant): AgentOutput {
+function buildOutput(variant: TasteBaselineVariant): AgentOutput {
   const features = extractEvidenceFeatures(variant);
   const scores = scoreVariant(features);
 
@@ -202,7 +209,21 @@ function buildOutput(variant: TastePairVariant): AgentOutput {
 }
 
 export function runTasteMechanicalBaseline(pair: TastePairManifest): TasteBaselineResult {
-  const initialOutputs = pair.variants.map(buildOutput);
+  return runTasteMechanicalBaselineForVariants({
+    studyId: pair.pairId,
+    studyType: pair.context.studyType,
+    primaryObjective: pair.context.primaryObjective,
+    variants: pair.variants,
+  });
+}
+
+export function runTasteMechanicalBaselineForVariants(params: {
+  studyId: string;
+  studyType?: string;
+  primaryObjective?: string;
+  variants: TasteBaselineVariant[];
+}): TasteBaselineResult {
+  const initialOutputs = params.variants.map(buildOutput);
   const ranked = [...initialOutputs].sort(
     (a, b) => dimensionToOverallScore(b.scores as DimensionScores) - dimensionToOverallScore(a.scores as DimensionScores),
   );
@@ -220,7 +241,7 @@ export function runTasteMechanicalBaseline(pair: TastePairManifest): TasteBaseli
   const secondScore = second ? dimensionToOverallScore(second.scores as DimensionScores) : topScore;
   const gap = topScore - secondScore;
   const overallWinnerVariantId = top && gap >= 0.15 ? top.variantId : null;
-  const criteria = criteriaForStudy(pair.context.studyType ?? "landing_page", pair.context.primaryObjective);
+  const criteria = criteriaForStudy(params.studyType ?? "landing_page", params.primaryObjective);
   const pairwiseVerdicts = buildPairwiseVerdicts({
     agentSlug: TASTE_BASELINE_MODEL_ID,
     agentName: "Taste Mechanical Baseline",
@@ -229,14 +250,14 @@ export function runTasteMechanicalBaseline(pair: TastePairManifest): TasteBaseli
   });
 
   const criterionScoresByVariant = Object.fromEntries(
-    pair.variants.map((variant) => {
+    params.variants.map((variant) => {
       const features = extractEvidenceFeatures(variant);
       return [variant.id, scoreTasteCriteria(scoreVariant(features), features)];
     }),
   ) as Record<string, Partial<Record<TasteCriterion, number>>>;
 
   return {
-    studyId: pair.pairId,
+    studyId: params.studyId,
     modelId: TASTE_BASELINE_MODEL_ID,
     overallWinnerVariantId,
     overallConfidence: Math.min(0.85, Math.max(0.35, 0.45 + gap * 0.18)),

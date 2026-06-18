@@ -67,6 +67,17 @@ export interface Report {
   deliveredAt?: string;
 }
 
+export interface VisualEvaluation {
+  id: string;
+  variantId: string;
+  sourceType: string;
+  sourceUrl?: string;
+  modelId?: string;
+  status: string;
+  completedAt?: string;
+  createdAt: string;
+}
+
 export const api = {
   health: () => request<{ ok: boolean }>("/health"),
 
@@ -81,6 +92,7 @@ export const api = {
       agentRuns: unknown[];
       predictions: unknown[];
       outcome?: unknown;
+      visualEvaluations: VisualEvaluation[];
     }>(`/studies/${id}`),
 
   createStudy: (data: Record<string, unknown>) =>
@@ -91,6 +103,22 @@ export const api = {
 
   launchStudy: (id: string) =>
     request<{ study: Study; report?: Report }>(`/studies/${id}/launch`, { method: "POST" }),
+
+  attachVisualEvidence: (
+    studyId: string,
+    data: {
+      captures: Array<{
+        variantId?: string;
+        variantLabel?: string;
+        manifest: import("./visualEvidence").TasteCaptureManifest;
+      }>;
+      runBaseline?: boolean;
+    },
+  ) =>
+    request<{ persisted: VisualEvaluation[]; baseline: unknown | null }>(`/studies/${studyId}/visual-evidence`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   getReport: (studyId: string) => request<Report>(`/studies/${studyId}/report`),
 

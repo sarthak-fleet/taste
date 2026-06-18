@@ -180,6 +180,21 @@ export const studySimulations = sqliteTable("study_simulations", {
   createdAt: ts(),
 });
 
+export const visualEvaluations = sqliteTable("visual_evaluations", {
+  id: id(),
+  studyId: text("study_id").notNull(),
+  variantId: text("variant_id").notNull(),
+  sourceType: text("source_type").notNull().default("capture_manifest"),
+  sourceUrl: text("source_url"),
+  captureManifestJson: text("capture_manifest_json").notNull(),
+  modelId: text("model_id"),
+  baselineResultJson: text("baseline_result_json"),
+  status: text("status").notNull().default("completed"),
+  errorMessage: text("error_message"),
+  completedAt: text("completed_at"),
+  createdAt: ts(),
+});
+
 export const arenaVotes = sqliteTable("arena_votes", {
   id: id(),
   battleId: text("battle_id").notNull(),
