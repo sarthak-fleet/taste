@@ -32,6 +32,7 @@ pnpm review:taste-pairs -- --in captures/taste-pairs --out reports/taste-label-q
 pnpm label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8
 pnpm export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.jsonl
 pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl
+pnpm audit:taste-jsonl -- --in datasets/taste-holdout.jsonl --strict
 pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl
 pnpm train:taste-ranker -- --in datasets/taste-train.jsonl --out models/taste-linear-ranker.json
 pnpm report:taste-model -- --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --model models/taste-linear-ranker.json --out reports/taste-model-report.json

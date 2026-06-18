@@ -61,13 +61,15 @@ criterion-specific labels.
 
 ```bash
 pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl
+pnpm audit:taste-jsonl -- --in datasets/taste-holdout.jsonl --strict
 pnpm train:taste-ranker -- --in datasets/taste-train.jsonl --out models/taste-linear-ranker.json
 pnpm report:taste-model -- --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --model models/taste-linear-ranker.json --out reports/taste-model-report.json
 ```
 
 The report compares the mechanical baseline against the saved ranker on both
-train and holdout records. Treat reports with fewer than 10 held-out labels as
-pipeline smoke only.
+train and holdout records. The audit and report both require at least 10 real
+non-synthetic held-out labels by default; synthetic-only reports are pipeline
+smoke, not promotion evidence.
 
 ## Runtime
 

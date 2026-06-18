@@ -32,6 +32,7 @@
   - offline mechanical-risk pairwise accuracy eval for exported Taste JSONL
   - first local supervised linear pairwise ranker over exported mechanical features
   - deterministic train/holdout JSONL split and model-vs-baseline report workflow
+  - real-label readiness audit that blocks promotion on synthetic-only holdout data
   - optional runtime local ranker path via `TASTE_RANKER_MODEL_JSON`, with VLM and mechanical fallback
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
   - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
@@ -71,7 +72,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Real held-out label collection
+- Real held-out label collection using the queue/review/audit loop
 - Email notifications
 
 ## Deferred / parked

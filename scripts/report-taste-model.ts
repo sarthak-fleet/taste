@@ -3,9 +3,11 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  evaluateTasteJsonlReadiness,
   evaluateTasteJsonl,
   predictTasteJsonlMechanically,
   predictTasteJsonlWithModel,
+  summarizeTasteJsonlDataset,
   type TasteJsonlRecord,
 } from "../src/lib/tasteJsonl.ts";
 import { parseTasteLinearRankerModelJson } from "../src/lib/tasteRanker.ts";
@@ -18,6 +20,8 @@ interface CliArgs {
   modelPath: string;
   outPath: string;
   tieMargin: number;
+  minRealHoldout: number;
+  minTotalHoldout: number;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -26,6 +30,8 @@ function parseArgs(argv: string[]): CliArgs {
   let modelPath = "models/taste-linear-ranker.json";
   let outPath = "reports/taste-model-report.json";
   let tieMargin = 5;
+  let minRealHoldout = 10;
+  let minTotalHoldout = 10;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -45,6 +51,12 @@ function parseArgs(argv: string[]): CliArgs {
     } else if (arg === "--tie-margin" && next) {
       tieMargin = Number.parseFloat(next);
       i += 1;
+    } else if (arg === "--min-real-holdout" && next) {
+      minRealHoldout = Number.parseInt(next, 10);
+      i += 1;
+    } else if (arg === "--min-total-holdout" && next) {
+      minTotalHoldout = Number.parseInt(next, 10);
+      i += 1;
     }
   }
 
@@ -54,30 +66,14 @@ function parseArgs(argv: string[]): CliArgs {
     modelPath: path.resolve(ROOT, modelPath),
     outPath: path.resolve(ROOT, outPath),
     tieMargin: Number.isFinite(tieMargin) ? tieMargin : 5,
+    minRealHoldout: Number.isFinite(minRealHoldout) ? minRealHoldout : 10,
+    minTotalHoldout: Number.isFinite(minTotalHoldout) ? minTotalHoldout : 10,
   };
 }
 
 async function readJsonl(filePath: string): Promise<TasteJsonlRecord[]> {
   const text = await readFile(filePath, "utf8");
   return text.split("\n").filter(Boolean).map((line) => JSON.parse(line) as TasteJsonlRecord);
-}
-
-function datasetSourceCounts(records: TasteJsonlRecord[]) {
-  const counts: Record<string, number> = {};
-  for (const record of records) {
-    const key = record.source?.kind ?? "unknown";
-    counts[key] = (counts[key] ?? 0) + 1;
-  }
-  return counts;
-}
-
-function summarizeDataset(records: TasteJsonlRecord[]) {
-  const labeled = records.filter((record) => record.label && record.label.preferredVariantId !== "unknown");
-  return {
-    records: records.length,
-    labeled: labeled.length,
-    sourceCounts: datasetSourceCounts(records),
-  };
 }
 
 async function main() {
@@ -96,15 +92,21 @@ async function main() {
   const trainRanker = evaluateRanker(trainRecords);
   const holdoutMechanical = evaluateMechanical(testRecords);
   const holdoutRanker = evaluateRanker(testRecords);
+  const holdoutSummary = summarizeTasteJsonlDataset(testRecords);
+  const readiness = evaluateTasteJsonlReadiness(holdoutSummary, {
+    minRealLabeled: args.minRealHoldout,
+    minTotalLabeled: args.minTotalHoldout,
+  });
   const report = {
     generatedAt: new Date().toISOString(),
     modelId: model.modelId,
     modelPath: path.relative(ROOT, args.modelPath),
     tieMargin: args.tieMargin,
     datasets: {
-      train: summarizeDataset(trainRecords),
-      holdout: summarizeDataset(testRecords),
+      train: summarizeTasteJsonlDataset(trainRecords),
+      holdout: holdoutSummary,
     },
+    readiness,
     metrics: {
       train: {
         mechanical: trainMechanical,
@@ -118,8 +120,8 @@ async function main() {
       },
     },
     recommendation:
-      holdoutRanker.labeled < 10
-        ? "Holdout set is too small for a durable claim; use this as a pipeline smoke report only."
+      !readiness.ok
+        ? `Holdout is not promotion-ready: ${readiness.reasons.join(" ")}`
         : holdoutRanker.accuracy >= holdoutMechanical.accuracy
           ? "Ranker is safe to compare in product behind TASTE_RANKER_MODEL_JSON."
           : "Do not promote this ranker; collect more labels or adjust features.",
@@ -133,6 +135,7 @@ async function main() {
     trainAccuracy: report.metrics.train.ranker.accuracy,
     holdoutAccuracy: report.metrics.holdout.ranker.accuracy,
     holdoutBaselineAccuracy: report.metrics.holdout.mechanical.accuracy,
+    readiness: report.readiness.ok,
     recommendation: report.recommendation,
   }, null, 2));
 }

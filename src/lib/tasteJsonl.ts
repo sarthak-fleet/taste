@@ -38,6 +38,35 @@ export interface TasteJsonlEvaluation {
   misses: TasteJsonlEvaluationRow[];
 }
 
+export interface TasteJsonlDatasetSummary {
+  records: number;
+  labeled: number;
+  realLabeled: number;
+  syntheticLabeled: number;
+  unknownSourceLabeled: number;
+  sourceCounts: Record<string, number>;
+  labelCounts: Record<TasteJsonlPreference, number>;
+}
+
+export interface TasteJsonlReadinessGate {
+  ok: boolean;
+  minRealLabeled: number;
+  minTotalLabeled: number;
+  reasons: string[];
+}
+
+export function tasteJsonlSourceKind(record: TasteJsonlRecord) {
+  return record.source?.kind ?? "unknown";
+}
+
+export function isTasteJsonlLabeled(record: TasteJsonlRecord) {
+  return Boolean(record.label && record.label.preferredVariantId !== "unknown");
+}
+
+export function isTasteJsonlRealLabel(record: TasteJsonlRecord) {
+  return isTasteJsonlLabeled(record) && tasteJsonlSourceKind(record) !== "synthetic_degradation";
+}
+
 export function tasteJsonlToBaselineVariant(
   variant: TasteJsonlRecord["variants"][number],
   index: number,
@@ -95,5 +124,69 @@ export function evaluateTasteJsonl(
     correct,
     accuracy: scored.length ? correct / scored.length : 0,
     misses: scored.filter((row) => row.predicted !== row.actual),
+  };
+}
+
+export function summarizeTasteJsonlDataset(records: TasteJsonlRecord[]): TasteJsonlDatasetSummary {
+  const sourceCounts: Record<string, number> = {};
+  const labelCounts = {
+    a: 0,
+    b: 0,
+    tie: 0,
+    unknown: 0,
+  } satisfies Record<TasteJsonlPreference, number>;
+  let labeled = 0;
+  let realLabeled = 0;
+  let syntheticLabeled = 0;
+  let unknownSourceLabeled = 0;
+
+  for (const record of records) {
+    const sourceKind = tasteJsonlSourceKind(record);
+    sourceCounts[sourceKind] = (sourceCounts[sourceKind] ?? 0) + 1;
+    const preference = record.label?.preferredVariantId ?? "unknown";
+    labelCounts[preference] += 1;
+    if (!isTasteJsonlLabeled(record)) continue;
+
+    labeled += 1;
+    if (sourceKind === "synthetic_degradation") {
+      syntheticLabeled += 1;
+    } else if (sourceKind === "unknown") {
+      unknownSourceLabeled += 1;
+    } else {
+      realLabeled += 1;
+    }
+  }
+
+  return {
+    records: records.length,
+    labeled,
+    realLabeled,
+    syntheticLabeled,
+    unknownSourceLabeled,
+    sourceCounts,
+    labelCounts,
+  };
+}
+
+export function evaluateTasteJsonlReadiness(
+  summary: TasteJsonlDatasetSummary,
+  params: { minRealLabeled: number; minTotalLabeled: number },
+): TasteJsonlReadinessGate {
+  const reasons: string[] = [];
+  if (summary.labeled < params.minTotalLabeled) {
+    reasons.push(`Need at least ${params.minTotalLabeled} total labeled records; found ${summary.labeled}.`);
+  }
+  if (summary.realLabeled < params.minRealLabeled) {
+    reasons.push(`Need at least ${params.minRealLabeled} real non-synthetic labels; found ${summary.realLabeled}.`);
+  }
+  if (summary.syntheticLabeled > 0 && summary.realLabeled === 0) {
+    reasons.push("Dataset has synthetic labels but no real labels.");
+  }
+
+  return {
+    ok: reasons.length === 0,
+    minRealLabeled: params.minRealLabeled,
+    minTotalLabeled: params.minTotalLabeled,
+    reasons,
   };
 }
