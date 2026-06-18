@@ -17,6 +17,7 @@
     "capture:taste:install": "playwright install chromium",
     "pair:taste": "node scripts/create-taste-pair.mjs",
     "baseline:taste": "tsx scripts/evaluate-taste-pair.ts",
+    "evidence:taste": "tsx scripts/upload-taste-evidence.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply shiprank-db --local",
     "db:seed": "node scripts/seed.mjs",
