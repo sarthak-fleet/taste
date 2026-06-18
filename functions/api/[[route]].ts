@@ -13,6 +13,9 @@ export interface Env {
   TASTE_CAPTURE_WORKER_URL?: string;
   TASTE_CAPTURE_WORKER_TOKEN?: string;
   TASTE_VISUAL_EVIDENCE_TOKEN?: string;
+  TASTE_VLM_API_BASE?: string;
+  TASTE_VLM_API_KEY?: string;
+  TASTE_VLM_MODEL?: string;
 }
 
 function createApi() {

@@ -9,10 +9,12 @@ import {
   type TasteBaselineResult,
   type TasteBaselineVariant,
 } from "../../../src/lib/tasteBaseline";
+import { runTasteVlmJudgeForVariants, type TasteVlmConfig, type TasteVlmResult } from "./tasteVlmJudge";
 
 type Study = typeof schema.studies.$inferSelect;
 type Variant = typeof schema.variants.$inferSelect;
 type VisualEvaluation = typeof schema.visualEvaluations.$inferSelect;
+type TasteVisualResult = TasteBaselineResult | TasteVlmResult;
 
 export interface VisualEvidenceInput {
   variantId?: string;
@@ -54,13 +56,16 @@ function buildBaselineVariant(variant: Variant, evaluation: VisualEvaluation): T
   };
 }
 
-async function replaceTasteBaselineRuns(db: Db, studyId: string, result: TasteBaselineResult) {
-  await db
-    .delete(schema.agentRuns)
-    .where(and(eq(schema.agentRuns.studyId, studyId), eq(schema.agentRuns.agentId, TASTE_BASELINE_MODEL_ID)));
-  await db
-    .delete(schema.predictions)
-    .where(and(eq(schema.predictions.studyId, studyId), eq(schema.predictions.evaluatorId, TASTE_BASELINE_MODEL_ID)));
+async function replaceTasteVisualRuns(db: Db, studyId: string, result: TasteVisualResult) {
+  const staleAgentIds = new Set([TASTE_BASELINE_MODEL_ID, result.modelId]);
+  for (const agentId of staleAgentIds) {
+    await db
+      .delete(schema.agentRuns)
+      .where(and(eq(schema.agentRuns.studyId, studyId), eq(schema.agentRuns.agentId, agentId)));
+    await db
+      .delete(schema.predictions)
+      .where(and(eq(schema.predictions.studyId, studyId), eq(schema.predictions.evaluatorId, agentId)));
+  }
 
   const now = new Date().toISOString();
   for (const output of result.outputs) {
@@ -121,31 +126,46 @@ export async function persistVisualEvidence(db: Db, study: Study, variants: Vari
   return persisted;
 }
 
-export async function runTasteBaselineFromLatestEvidence(
+export async function runTasteEvaluatorFromLatestEvidence(
   db: Db,
   study: Study,
   variants: Variant[],
-): Promise<TasteBaselineResult | null> {
+  vlmConfig?: TasteVlmConfig,
+): Promise<TasteVisualResult | null> {
   const rows = await db
     .select()
     .from(schema.visualEvaluations)
     .where(eq(schema.visualEvaluations.studyId, study.id))
     .orderBy(desc(schema.visualEvaluations.createdAt));
   const latest = latestEvaluationByVariant(rows);
-  const baselineVariants = variants
+  const evaluatorVariants = variants
     .filter((variant) => latest.has(variant.id))
     .map((variant) => buildBaselineVariant(variant, latest.get(variant.id)!));
 
-  if (baselineVariants.length < 2) return null;
+  if (evaluatorVariants.length < 2) return null;
 
-  const result = runTasteMechanicalBaselineForVariants({
+  const vlmResult = await runTasteVlmJudgeForVariants({
+    config: vlmConfig ?? {},
     studyId: study.id,
     studyType: study.studyType,
     primaryObjective: study.primaryObjective ?? undefined,
-    variants: baselineVariants,
+    targetUserRole: study.targetUserRole ?? undefined,
+    variants: evaluatorVariants,
+  }).catch((error) => {
+    console.warn("Taste VLM judge failed; falling back to mechanical baseline", error);
+    return null;
   });
 
-  await replaceTasteBaselineRuns(db, study.id, result);
+  const result =
+    vlmResult ??
+    runTasteMechanicalBaselineForVariants({
+      studyId: study.id,
+      studyType: study.studyType,
+      primaryObjective: study.primaryObjective ?? undefined,
+      variants: evaluatorVariants,
+    });
+
+  await replaceTasteVisualRuns(db, study.id, result);
   await db
     .update(schema.visualEvaluations)
     .set({
@@ -157,16 +177,26 @@ export async function runTasteBaselineFromLatestEvidence(
   return result;
 }
 
+export async function runTasteBaselineFromLatestEvidence(
+  db: Db,
+  study: Study,
+  variants: Variant[],
+): Promise<TasteBaselineResult | null> {
+  const result = await runTasteEvaluatorFromLatestEvidence(db, study, variants);
+  return result?.modelId === TASTE_BASELINE_MODEL_ID ? (result as TasteBaselineResult) : null;
+}
+
 export async function attachVisualEvidenceAndRunBaseline(params: {
   db: Db;
   study: Study;
   variants: Variant[];
   evidence: VisualEvidenceInput[];
   runBaseline: boolean;
+  vlmConfig?: TasteVlmConfig;
 }) {
   const persisted = await persistVisualEvidence(params.db, params.study, params.variants, params.evidence);
   const baseline = params.runBaseline
-    ? await runTasteBaselineFromLatestEvidence(params.db, params.study, params.variants)
+    ? await runTasteEvaluatorFromLatestEvidence(params.db, params.study, params.variants, params.vlmConfig)
     : null;
 
   return { persisted, baseline };

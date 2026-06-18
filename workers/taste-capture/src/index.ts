@@ -7,6 +7,7 @@ interface Env {
   TASTE_API_BASE?: string;
   CAPTURE_WORKER_TOKEN?: string;
   TASTE_API_TOKEN?: string;
+  R2_PUBLIC_BASE_URL?: string;
 }
 
 interface CaptureRequest {
@@ -295,6 +296,11 @@ async function putScreenshot(bucket: R2Bucket, key: string, bytes: Uint8Array) {
   });
 }
 
+function artifactPath(env: Env, key: string) {
+  if (!env.R2_PUBLIC_BASE_URL) return `r2://${key}`;
+  return `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`;
+}
+
 async function captureOne(env: Env, browser: Awaited<ReturnType<typeof puppeteer.launch>>, item: CaptureRequest["captures"][number]) {
   const capturedAt = new Date().toISOString();
   const label = item.label || item.variantLabel || item.variantId || slugify(item.url);
@@ -323,8 +329,8 @@ async function captureOne(env: Env, browser: Awaited<ReturnType<typeof puppeteer
 
     artifacts.push({
       viewport: viewport.name,
-      aboveFoldPath: `r2://${aboveFoldKey}`,
-      fullPagePath: `r2://${fullPageKey}`,
+      aboveFoldPath: artifactPath(env, aboveFoldKey),
+      fullPagePath: artifactPath(env, fullPageKey),
       metrics,
     });
   }

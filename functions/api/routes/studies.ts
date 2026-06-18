@@ -8,11 +8,19 @@ import { runAgentPipeline, runScoringAndReport } from "../services/pipeline";
 import { executeSimulation, getLatestSimulation, listAgents } from "../services/simulation";
 import {
   attachVisualEvidenceAndRunBaseline,
-  runTasteBaselineFromLatestEvidence,
+  runTasteEvaluatorFromLatestEvidence,
   type VisualEvidenceInput,
 } from "../services/visualEvaluation";
 
 export const studiesRouter = new Hono<{ Bindings: Env }>();
+
+function tasteVlmConfig(env: Env) {
+  return {
+    apiBase: env.TASTE_VLM_API_BASE,
+    apiKey: env.TASTE_VLM_API_KEY,
+    model: env.TASTE_VLM_MODEL,
+  };
+}
 
 studiesRouter.get("/", async (c) => {
   const db = c.get("db");
@@ -200,7 +208,7 @@ studiesRouter.post("/:id/launch", async (c) => {
   }
 
   await runAgentPipeline(db, study, studyVariants);
-  await runTasteBaselineFromLatestEvidence(db, study, studyVariants);
+  await runTasteEvaluatorFromLatestEvidence(db, study, studyVariants, tasteVlmConfig(c.env));
 
   await db
     .update(schema.studies)
@@ -305,6 +313,7 @@ studiesRouter.post("/:id/visual-evidence", async (c) => {
       variants: studyVariants,
       evidence: body.captures,
       runBaseline: body.runBaseline ?? true,
+      vlmConfig: tasteVlmConfig(c.env),
     });
     return c.json({
       persisted: result.persisted.map((row) => ({

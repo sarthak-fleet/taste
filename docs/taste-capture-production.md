@@ -24,6 +24,12 @@ Chromium inside Pages Functions.
   - `TASTE_API_TOKEN` must match `TASTE_VISUAL_EVIDENCE_TOKEN`
 - Worker var:
   - `TASTE_API_BASE`, for example `https://<taste-domain>/api`
+  - `R2_PUBLIC_BASE_URL`, optional; required for VLM judging because image
+    artifacts must be HTTP URLs rather than private `r2://` keys
+- Pages VLM env vars, optional:
+  - `TASTE_VLM_API_BASE`, OpenAI-compatible base URL
+  - `TASTE_VLM_API_KEY`
+  - `TASTE_VLM_MODEL`
 
 ## Preflight
 
@@ -54,7 +60,15 @@ Set Pages environment variables in Cloudflare Pages:
 TASTE_CAPTURE_WORKER_URL=https://taste-capture.<account-subdomain>.workers.dev
 TASTE_CAPTURE_WORKER_TOKEN=<same value as CAPTURE_WORKER_TOKEN>
 TASTE_VISUAL_EVIDENCE_TOKEN=<same value as TASTE_API_TOKEN>
+TASTE_VLM_API_BASE=https://<openai-compatible-host>/v1
+TASTE_VLM_API_KEY=<provider key>
+TASTE_VLM_MODEL=<vision-capable-model>
 ```
+
+If VLM judging should run, configure a public R2 custom domain or equivalent
+image delivery base and set `R2_PUBLIC_BASE_URL` on `taste-capture`. Without
+HTTP image artifact URLs, the app intentionally falls back to
+`taste-mechanical-baseline-v0`.
 
 ## Deploy
 
@@ -78,5 +92,6 @@ Expected result:
 - Worker returns one capture manifest per URL variant.
 - Study detail shows captured badges.
 - `/api/studies/:id` returns `visualEvaluations`.
-- Launch/report generation includes the `taste-mechanical-baseline-v0` agent
-  output when visual evidence exists.
+- Launch/report generation includes either the configured `taste-vlm-*` agent
+  output or the `taste-mechanical-baseline-v0` fallback when visual evidence
+  exists.

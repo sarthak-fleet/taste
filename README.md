@@ -43,6 +43,8 @@ Configure the Pages app with `TASTE_CAPTURE_WORKER_URL` and optional
 `TASTE_CAPTURE_WORKER_TOKEN` to enable `POST /api/studies/:id/capture`.
 Set `TASTE_VISUAL_EVIDENCE_TOKEN` on Pages and matching `TASTE_API_TOKEN` on
 the Worker to protect capture callbacks.
+Set `TASTE_VLM_API_BASE`, `TASTE_VLM_API_KEY`, and `TASTE_VLM_MODEL` on Pages
+to enable the VLM judge when capture artifacts expose HTTP image URLs.
 
 ```bash
 pnpm capture-worker:check

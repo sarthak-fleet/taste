@@ -29,6 +29,7 @@
   - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
   - API trigger that asks the capture Worker to snapshot a study's URL variants
   - production capture Worker runbook with preflight, env vars, deploy, and smoke commands
+  - VLM-ready visual judge integration that runs when configured with public screenshot URLs, otherwise falls back to the mechanical baseline
 - Human evaluator panel simulation with weighted consensus
 - Simulation API: `POST /studies/:id/simulate` (agents | humans | full), `GET /studies/:id/simulation`
 - Study detail UI: simulation panel with agent matrix and human panel
@@ -61,7 +62,8 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Stripe per-study pricing
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
-- VLM judge or local ranker integration to replace the deterministic Taste baseline
+- Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
+- Local supervised ranker integration to replace the deterministic Taste/VLM bootstrap path
 - Web-TASTE capture queue, pair labeling workflow, and held-out eval set
 - Email notifications
 
