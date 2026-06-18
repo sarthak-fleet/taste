@@ -17,6 +17,17 @@ pnpm build && pnpm dev:full
 
 Open http://localhost:8788 (full stack) or run `pnpm dev` for frontend-only on :5173.
 
+## Taste data tools
+
+```bash
+pnpm capture:taste:install
+pnpm capture:taste -- --url https://example.com --label example
+pnpm pair:taste -- --a captures/taste/example-a/manifest.json --b captures/taste/example-b/manifest.json --preferred a
+```
+
+Capture output is local-only under `captures/`. Pair manifests are the first
+labelable Web-TASTE training artifact between screenshots and the model.
+
 ## Routes
 
 | Path | Description |

@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "capture:taste": "node scripts/capture-taste.mjs",
     "capture:taste:install": "playwright install chromium",
+    "pair:taste": "node scripts/create-taste-pair.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply shiprank-db --local",
     "db:seed": "node scripts/seed.mjs",
