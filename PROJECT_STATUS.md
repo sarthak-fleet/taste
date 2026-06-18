@@ -28,6 +28,7 @@
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
   - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
   - API trigger that asks the capture Worker to snapshot a study's URL variants
+  - production capture Worker runbook with preflight, env vars, deploy, and smoke commands
 - Human evaluator panel simulation with weighted consensus
 - Simulation API: `POST /studies/:id/simulate` (agents | humans | full), `GET /studies/:id/simulation`
 - Study detail UI: simulation panel with agent matrix and human panel

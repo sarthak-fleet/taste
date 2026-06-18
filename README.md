@@ -85,3 +85,4 @@ Configure D1 binding `DB` in Cloudflare dashboard; run migrations against produc
 ## Docs
 
 See `PROJECT_STATUS.md` for scope, shortcuts, and planned work.
+See `docs/taste-capture-production.md` for the production capture Worker runbook.
