@@ -22,6 +22,7 @@
   - outcome-calibrated agent weighting across repeated studies
 - Taste model v1 planning and data scaffolding:
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
+  - Web-TASTE capture queue runner that materializes repeatable A/B capture and pair commands
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data
@@ -70,7 +71,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Web-TASTE capture queue and real held-out label collection
+- Real held-out label collection
 - Email notifications
 
 ## Deferred / parked

@@ -329,14 +329,16 @@ async function captureUrl({ url, label, notes, outDir }) {
 const args = parseArgs(process.argv.slice(2));
 const url = args.get("url");
 if (!url) {
-  console.error("Usage: pnpm capture:taste -- --url https://example.com [--label name] [--out captures/taste]");
+  console.error("Usage: pnpm capture:taste -- --url https://example.com [--label name] [--out captures/taste] [--out-dir captures/taste/example]");
   process.exit(2);
 }
 
 const label = args.get("label") || slugify(url);
 const notes = args.get("notes");
 const baseOut = path.resolve(ROOT, args.get("out") || "captures/taste");
-const outDir = path.join(baseOut, `${slugify(label)}-${timestamp()}`);
+const outDir = args.get("out-dir")
+  ? path.resolve(ROOT, args.get("out-dir"))
+  : path.join(baseOut, `${slugify(label)}-${timestamp()}`);
 await mkdir(outDir, { recursive: true });
 
 const manifest = await captureUrl({ url, label, notes, outDir });

@@ -19,6 +19,25 @@ Manual and product-feedback pairs should also land in `captures/taste-pairs`
 through `pnpm pair:taste`. Synthetic pairs are a bootstrap signal only; do not
 use them as the final quality claim.
 
+## Capture Queue
+
+Create a queue JSON shaped like
+`docs/examples/taste-capture-queue.example.json`, then generate the capture and
+pair commands:
+
+```bash
+pnpm queue:taste-captures -- --queue datasets/taste-capture-queue.json --commands reports/taste-capture-queue-commands.sh
+```
+
+When the queue is ready to run, execute it explicitly:
+
+```bash
+pnpm queue:taste-captures -- --queue datasets/taste-capture-queue.json --execute
+```
+
+The queue captures each A/B URL to `captures/taste-queue/<queue>/<job>/` and
+creates unlabeled pair manifests in `captures/taste-pairs`.
+
 ## Label Queue
 
 Generate a local review queue from pair manifests:

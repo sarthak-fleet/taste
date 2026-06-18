@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "queueId": "taste-curated-smoke",
+  "defaults": {
+    "studyType": "landing_page",
+    "targetUserRole": "startup founder",
+    "primaryObjective": "maximize_signup",
+    "sourceKind": "curated_gallery",
+    "sourceNotes": "Seed queue format example. Replace URLs before running."
+  },
+  "jobs": [
+    {
+      "id": "example-landing-a-vs-b",
+      "label": "Example landing A vs B",
+      "productName": "Example",
+      "a": {
+        "url": "https://example.com",
+        "label": "Example A"
+      },
+      "b": {
+        "url": "https://example.org",
+        "label": "Example B"
+      },
+      "contextNotes": "Use real curated URLs before executing capture."
+    }
+  ]
+}
