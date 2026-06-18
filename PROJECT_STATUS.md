@@ -23,6 +23,7 @@
 - Taste model v1 planning and data scaffolding:
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
   - Web-TASTE capture queue runner that materializes repeatable A/B capture and pair commands
+  - curated 10-pair SaaS/devtool seed queue plus queue structure/URL validator
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data

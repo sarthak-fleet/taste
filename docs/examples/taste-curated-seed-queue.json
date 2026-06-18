@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "queueId": "taste-curated-saas-devtools-v1",
+  "defaults": {
+    "studyType": "landing_page",
+    "targetUserRole": "startup founder",
+    "primaryObjective": "maximize_signup",
+    "sourceKind": "curated_gallery",
+    "sourceNotes": "Curated SaaS/devtool landing-page seed queue for real non-synthetic Web-TASTE labels."
+  },
+  "jobs": [
+    {
+      "id": "planning-linear-vs-jira",
+      "label": "Planning product landing: Linear vs Jira",
+      "productName": "Planning tools",
+      "a": { "url": "https://linear.app", "label": "Linear" },
+      "b": { "url": "https://www.atlassian.com/software/jira", "label": "Jira" }
+    },
+    {
+      "id": "backend-supabase-vs-firebase",
+      "label": "Backend platform landing: Supabase vs Firebase",
+      "productName": "Backend platforms",
+      "a": { "url": "https://supabase.com", "label": "Supabase" },
+      "b": { "url": "https://firebase.google.com", "label": "Firebase" }
+    },
+    {
+      "id": "hosting-vercel-vs-netlify",
+      "label": "Frontend hosting landing: Vercel vs Netlify",
+      "productName": "Frontend hosting",
+      "a": { "url": "https://vercel.com", "label": "Vercel" },
+      "b": { "url": "https://www.netlify.com", "label": "Netlify" }
+    },
+    {
+      "id": "auth-clerk-vs-auth0",
+      "label": "Authentication landing: Clerk vs Auth0",
+      "productName": "Authentication",
+      "a": { "url": "https://clerk.com", "label": "Clerk" },
+      "b": { "url": "https://auth0.com", "label": "Auth0" }
+    },
+    {
+      "id": "payments-stripe-vs-paddle",
+      "label": "Payments landing: Stripe vs Paddle",
+      "productName": "Payments",
+      "a": { "url": "https://stripe.com", "label": "Stripe" },
+      "b": { "url": "https://www.paddle.com", "label": "Paddle" }
+    },
+    {
+      "id": "analytics-posthog-vs-amplitude",
+      "label": "Product analytics landing: PostHog vs Amplitude",
+      "productName": "Product analytics",
+      "a": { "url": "https://posthog.com", "label": "PostHog" },
+      "b": { "url": "https://amplitude.com", "label": "Amplitude" }
+    },
+    {
+      "id": "observability-sentry-vs-datadog",
+      "label": "Observability landing: Sentry vs Datadog",
+      "productName": "Observability",
+      "a": { "url": "https://sentry.io", "label": "Sentry" },
+      "b": { "url": "https://www.datadoghq.com", "label": "Datadog" }
+    },
+    {
+      "id": "app-platform-fly-vs-render",
+      "label": "App platform landing: Fly.io vs Render",
+      "productName": "App platforms",
+      "a": { "url": "https://fly.io", "label": "Fly.io" },
+      "b": { "url": "https://render.com", "label": "Render" }
+    },
+    {
+      "id": "email-resend-vs-mailgun",
+      "label": "Developer email landing: Resend vs Mailgun",
+      "productName": "Developer email",
+      "a": { "url": "https://resend.com", "label": "Resend" },
+      "b": { "url": "https://www.mailgun.com", "label": "Mailgun" }
+    },
+    {
+      "id": "deployment-railway-vs-heroku",
+      "label": "Deployment landing: Railway vs Heroku",
+      "productName": "Deployment platforms",
+      "a": { "url": "https://railway.com", "label": "Railway" },
+      "b": { "url": "https://www.heroku.com", "label": "Heroku" }
+    }
+  ]
+}

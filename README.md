@@ -22,6 +22,7 @@ Open http://localhost:8788 (full stack) or run `pnpm dev` for frontend-only on :
 ```bash
 pnpm capture:taste:install
 pnpm capture:taste -- --url https://example.com --label example
+pnpm validate:taste-capture-queue -- --queue docs/examples/taste-curated-seed-queue.json --check-urls
 pnpm queue:taste-captures -- --queue datasets/taste-capture-queue.json --commands reports/taste-capture-queue-commands.sh
 pnpm pair:taste -- --a captures/taste/example-a/manifest.json --b captures/taste/example-b/manifest.json --preferred a
 pnpm synth:taste-degrade -- --manifest captures/taste/example/manifest.json --out captures/taste-pairs

@@ -26,8 +26,13 @@ Create a queue JSON shaped like
 pair commands:
 
 ```bash
+pnpm validate:taste-capture-queue -- --queue docs/examples/taste-curated-seed-queue.json --check-urls
 pnpm queue:taste-captures -- --queue datasets/taste-capture-queue.json --commands reports/taste-capture-queue-commands.sh
 ```
+
+Use `docs/examples/taste-curated-seed-queue.json` as the first 10-pair
+SaaS/devtool seed queue, or copy it to `datasets/taste-capture-queue.json` and
+edit before running.
 
 When the queue is ready to run, execute it explicitly:
 

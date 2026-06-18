@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "capture:taste": "node scripts/capture-taste.mjs",
     "capture:taste:install": "playwright install chromium",
+    "validate:taste-capture-queue": "tsx scripts/validate-taste-capture-queue.ts",
     "queue:taste-captures": "tsx scripts/run-taste-capture-queue.ts",
     "pair:taste": "node scripts/create-taste-pair.mjs",
     "synth:taste-degrade": "tsx scripts/synthesize-taste-degradations.ts",
