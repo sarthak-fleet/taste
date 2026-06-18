@@ -26,6 +26,7 @@
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
+  - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
 - Human evaluator panel simulation with weighted consensus
 - Simulation API: `POST /studies/:id/simulate` (agents | humans | full), `GET /studies/:id/simulation`
 - Study detail UI: simulation panel with agent matrix and human panel
@@ -56,7 +57,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Admin report editing UI
 - Outcome submission flow + reputation updates
 - Stripe per-study pricing
-- Real production capture worker/service for variant screenshot/URL snapshotting
+- Deploy/configure production capture Worker bindings and callback auth
 - VLM judge or local ranker integration to replace the deterministic Taste baseline
 - Web-TASTE capture queue, pair labeling workflow, and held-out eval set
 - Email notifications

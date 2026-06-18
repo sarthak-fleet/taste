@@ -1,0 +1,13 @@
+name = "taste-capture"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+browser = { binding = "BROWSER" }
+
+[[r2_buckets]]
+binding = "CAPTURES"
+bucket_name = "taste-captures"
+
+[vars]
+TASTE_API_BASE = "http://127.0.0.1:8788/api"

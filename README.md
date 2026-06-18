@@ -32,6 +32,16 @@ labelable Web-TASTE training artifact between screenshots and the model. The
 baseline command runs the deterministic mechanical evaluator that the real
 Taste model should beat.
 
+## Taste capture worker
+
+`workers/taste-capture` is a separate Cloudflare Worker for production URL
+capture. It uses Browser Rendering for Chromium and R2 for screenshots, then
+posts capture manifests to `/api/studies/:id/visual-evidence`.
+
+```bash
+pnpm capture-worker:check
+```
+
 ## Routes
 
 | Path | Description |
