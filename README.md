@@ -25,6 +25,7 @@ pnpm capture:taste -- --url https://example.com --label example
 pnpm pair:taste -- --a captures/taste/example-a/manifest.json --b captures/taste/example-b/manifest.json --preferred a
 pnpm baseline:taste -- --pair captures/taste-pairs/example.json
 pnpm evidence:taste -- --study <study-id> --capture A=captures/taste/example-a/manifest.json --capture B=captures/taste/example-b/manifest.json
+pnpm capture-study:taste -- --study <study-id>
 ```
 
 Capture output is local-only under `captures/`. Pair manifests are the first

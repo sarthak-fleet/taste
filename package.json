@@ -18,6 +18,7 @@
     "pair:taste": "node scripts/create-taste-pair.mjs",
     "baseline:taste": "tsx scripts/evaluate-taste-pair.ts",
     "evidence:taste": "tsx scripts/upload-taste-evidence.ts",
+    "capture-study:taste": "tsx scripts/request-taste-capture.ts",
     "capture-worker:check": "tsc -p workers/taste-capture/tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply shiprank-db --local",
