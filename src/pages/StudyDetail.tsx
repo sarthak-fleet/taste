@@ -24,14 +24,6 @@ export default function StudyDetail() {
     enabled: !!id,
   });
 
-  if (isLoading) return <div className="p-8 text-muted-foreground">Loading...</div>;
-  if (error || !data) return <div className="p-8 text-destructive">Study not found</div>;
-
-  const { study, variants, report } = data;
-  const capturedVariantIds = new Set(data.visualEvaluations.map((evaluation) => evaluation.variantId));
-  const capturedCount = variants.filter((variant) => capturedVariantIds.has(variant.id)).length;
-  const urlVariantCount = variants.filter((variant) => variant.assetUrl).length;
-
   const captureMutation = useMutation({
     mutationFn: () => api.captureStudy(id!),
     onSuccess: () => {
@@ -40,6 +32,19 @@ export default function StudyDetail() {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  if (isLoading) return <div className="p-8 text-muted-foreground">Loading...</div>;
+  if (error || !data) return <div className="p-8 text-destructive">Study not found</div>;
+
+  const { study, variants, report } = data;
+  const latestEvaluationByVariant = new Map(
+    data.visualEvaluations.map((evaluation) => [evaluation.variantId, evaluation]),
+  );
+  const capturedVariantIds = new Set(latestEvaluationByVariant.keys());
+  const capturedCount = variants.filter((variant) => capturedVariantIds.has(variant.id)).length;
+  const urlVariantCount = variants.filter((variant) => variant.assetUrl).length;
+  const latestEvaluation = data.visualEvaluations[0];
+  const latestModel = data.visualEvaluations.find((evaluation) => evaluation.modelId)?.modelId;
 
   async function runLaunch() {
     const launched = await api.launchStudy(id!);
@@ -105,11 +110,29 @@ export default function StudyDetail() {
             </Button>
           </div>
         </CardHeader>
-        {data.visualEvaluations.length > 0 && (
-          <CardContent className="text-sm text-muted-foreground">
-            Latest model: {data.visualEvaluations.find((evaluation) => evaluation.modelId)?.modelId ?? "pending baseline"}
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          {urlVariantCount < 2 && (
+            <p>Capture needs at least two variants with URLs.</p>
+          )}
+          {latestEvaluation ? (
+            <div className="grid gap-1 sm:grid-cols-2">
+              <p>Latest capture: {formatDate(latestEvaluation.createdAt)}</p>
+              <p>Latest model: {latestModel ?? "pending baseline"}</p>
+            </div>
+          ) : (
+            <p>No screenshots captured yet.</p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {variants.map((variant) => {
+              const evaluation = latestEvaluationByVariant.get(variant.id);
+              return (
+                <Badge key={variant.id} variant={evaluation ? "success" : variant.assetUrl ? "secondary" : "warning"}>
+                  {variant.label}: {evaluation ? "captured" : variant.assetUrl ? "ready" : "no URL"}
+                </Badge>
+              );
+            })}
+          </div>
           </CardContent>
-        )}
       </Card>
 
       {study.studyBrief && (
@@ -131,13 +154,15 @@ export default function StudyDetail() {
           {variants.map((v) => (
             <Card key={v.id}>
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <CardTitle className="text-base">
                     <span className="text-primary mr-2">Variant {v.label}</span>
                     {v.name}
                   </CardTitle>
-                  {v.lockedAt && <Badge variant="secondary">Locked</Badge>}
-                  {capturedVariantIds.has(v.id) && <Badge variant="success">Captured</Badge>}
+                  <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                    {v.lockedAt && <Badge variant="secondary">Locked</Badge>}
+                    {capturedVariantIds.has(v.id) && <Badge variant="success">Captured</Badge>}
+                  </div>
                 </div>
                 {v.hypothesis && <CardDescription>{v.hypothesis}</CardDescription>}
               </CardHeader>
