@@ -24,6 +24,7 @@
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
+  - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
 - Human evaluator panel simulation with weighted consensus
 - Simulation API: `POST /studies/:id/simulate` (agents | humans | full), `GET /studies/:id/simulation`
 - Study detail UI: simulation panel with agent matrix and human panel
@@ -55,6 +56,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Outcome submission flow + reputation updates
 - Stripe per-study pricing
 - Real study-integrated variant screenshot/URL snapshotting
+- VLM judge or local ranker integration to replace the deterministic Taste baseline
 - Web-TASTE capture queue, pair labeling workflow, and held-out eval set
 - Email notifications
 
