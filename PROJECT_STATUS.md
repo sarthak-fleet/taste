@@ -13,11 +13,19 @@
 - **Agent-first** evaluation: launch runs 6 AI agents only (no human cold-start)
 - Optional human validation layer — add when matched evaluators exist
 - Agent tournament matrix (agents × variants scores) with consensus and disagreement detection
+- TASTE-style multi-dimensional preference diagnostics:
+  - study-type criterion sets with objective-aware weighting
+  - order-checked pairwise agent verdicts for every variant pair
+  - criterion-level agreement, majority strength, and Condorcet-cycle detection
+  - agent validity warnings for missing/weak evidence and cannot-judge cases
+  - report calibration status against submitted outcomes when available
+  - outcome-calibrated agent weighting across repeated studies
 - Human evaluator panel simulation with weighted consensus
 - Simulation API: `POST /studies/:id/simulate` (agents | humans | full), `GET /studies/:id/simulation`
 - Study detail UI: simulation panel with agent matrix and human panel
 - Weighted variant ranking and confidence scoring
 - Decision-grade report generation (executive rec, rankings, evidence, next test, decision memory)
+- Report signal-quality section with strongest/weakest criteria, low-confidence pairs, and validity warnings
 - Product Arena: public battles, vote/predict, AI critique after vote, leaderboard
 - Evaluator application form
 - Admin overview dashboard
@@ -58,5 +66,6 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 
 - Human evaluations are simulated on launch (not real recruited panel)
 - AI agents use deterministic mock scoring (structure matches production schema)
+- Pairwise order-bias checks are simulated; real LLM/VLM integration should run both display orders and count order-inconsistent judgments as ties/low confidence
 - No auth — single demo workspace (`ws-demo-001`)
 - No payments

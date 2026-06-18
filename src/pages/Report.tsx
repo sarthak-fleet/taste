@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, XCircle, AlertTriangle, Quote, Bot } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Quote, Bot, GitCompare, ShieldAlert } from "lucide-react";
 import { api } from "@/lib/api";
 import { confidenceLabel } from "@/lib/report";
 import { recommendationLabel } from "@/lib/utils";
@@ -22,6 +22,20 @@ export default function ReportPage() {
 
   const content = report.reportJson as ReportContent;
   const rec = content.executiveRecommendation;
+  const signalQuality = content.signalQuality ?? {
+    criteria: [],
+    meanKendallTau: 0,
+    meanMajorityVoteProbability: 0,
+    criteriaWithCycles: [],
+    strongestCriteria: [],
+    weakestCriteria: [],
+    invalidityFlags: [],
+  };
+  const calibration = content.calibration ?? {
+    status: "uncalibrated" as const,
+    outcomeSamples: 0,
+    note: "This report was generated before outcome calibration metadata existed.",
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -80,6 +94,63 @@ export default function ReportPage() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <GitCompare className="h-5 w-5" /> Signal quality
+        </h2>
+        <div className="grid md:grid-cols-3 gap-4 mb-4">
+          <MetricCard
+            label="Mean agreement"
+            value={signalQuality.meanKendallTau.toFixed(2)}
+            detail="Kendall-style rank alignment"
+          />
+          <MetricCard
+            label="Majority strength"
+            value={`${Math.round(signalQuality.meanMajorityVoteProbability * 100)}%`}
+            detail="Average pairwise majority"
+          />
+          <MetricCard
+            label="Preference cycles"
+            value={String(signalQuality.criteriaWithCycles.length)}
+            detail={
+              signalQuality.criteriaWithCycles.length
+                ? signalQuality.criteriaWithCycles.join(", ")
+                : "No criterion cycles detected"
+            }
+          />
+        </div>
+        <Card>
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-muted-foreground">
+                  <th className="py-2 pl-4 pr-3">Criterion</th>
+                  <th className="py-2 pr-3">Signal</th>
+                  <th className="py-2 pr-3">Consensus</th>
+                  <th className="py-2 pr-3">Agreement</th>
+                  <th className="py-2 pr-4">Order checks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {signalQuality.criteria.map((c) => (
+                  <tr key={c.criterion} className="border-b border-border/50 last:border-0">
+                    <td className="py-3 pl-4 pr-3 font-medium">{c.criterionLabel}</td>
+                    <td className="py-3 pr-3 capitalize">{c.signalStrength}</td>
+                    <td className="py-3 pr-3">
+                      {c.consensusVariantLabel ? `Variant ${c.consensusVariantLabel}` : "—"}
+                    </td>
+                    <td className="py-3 pr-3">{c.meanKendallTau.toFixed(2)}</td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {c.orderInconsistentPairs} inconsistent · {c.lowConfidencePairs} low confidence
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
       </section>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -149,6 +220,43 @@ export default function ReportPage() {
         </div>
       </section>
 
+      {(signalQuality.invalidityFlags.length > 0 || calibration) && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5" /> Calibration and validity
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Outcome calibration</CardDescription>
+                <CardTitle className="text-base capitalize">
+                  {calibration.status.replace(/_/g, " ")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                {calibration.note}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Validity warnings</CardDescription>
+                <CardTitle className="text-base">
+                  {signalQuality.invalidityFlags.length} flags
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                {signalQuality.invalidityFlags.slice(0, 4).map((flag, i) => (
+                  <p key={i}>
+                    <span className="text-foreground capitalize">{flag.level}</span>: {flag.description}
+                  </p>
+                ))}
+                {signalQuality.invalidityFlags.length === 0 && <p>No agent validity warnings.</p>}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Bot className="h-5 w-5" /> AI agent findings
@@ -210,4 +318,16 @@ export default function ReportPage() {
 function RecBadge({ rec }: { rec: string }) {
   const variant = rec === "ship" ? "success" : rec === "kill" ? "danger" : rec === "borrow" ? "warning" : "secondary";
   return <Badge variant={variant as "success"}>{recommendationLabel(rec)}</Badge>;
+}
+
+function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardDescription>{label}</CardDescription>
+        <CardTitle className="text-2xl">{value}</CardTitle>
+      </CardHeader>
+      <CardContent className="text-xs text-muted-foreground">{detail}</CardContent>
+    </Card>
+  );
 }

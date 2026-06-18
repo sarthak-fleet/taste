@@ -2,10 +2,13 @@ import { eq } from "drizzle-orm";
 import * as schema from "../../../src/db/schema";
 import type { Db } from "../_context";
 import {
+  buildPairwiseVerdicts,
   computeVariantRankings,
+  criteriaForStudy,
   dimensionToOverallScore,
   evaluatorTypeWeight,
   getWeightsForStudyType,
+  summarizeSignalQuality,
 } from "../../../src/lib/scoring";
 import { generateReport } from "../../../src/lib/report";
 import { executeSimulation } from "./simulation";
@@ -41,10 +44,12 @@ export async function runScoringAndReport(db: Db, studyId: string) {
     .select()
     .from(schema.predictions)
     .where(eq(schema.predictions.studyId, studyId));
+  const [outcome] = await db.select().from(schema.outcomes).where(eq(schema.outcomes.studyId, studyId));
 
   const humanPreds = predictions.filter((p) => p.source === "human");
   const hasHumanValidation = humanPreds.length > 0;
   const weights = getWeightsForStudyType(study.studyType, hasHumanValidation);
+  const calibration = await computeAgentCalibration(db);
 
   const agentScoresByVariant = new Map<string, number[]>();
   const agentTaskSignal = new Map<string, number[]>();
@@ -97,11 +102,13 @@ export async function runScoringAndReport(db: Db, studyId: string) {
     const agentPreds = predictions.filter((p) => p.source === "agent");
     for (const pred of agentPreds) {
       if (!pred.predictedWinnerVariantId) continue;
+      const agentKey = pred.evaluatorId ?? pred.evaluatorType;
+      const weight = calibration.agentWeights.get(agentKey) ?? 1;
       predictionsByVariant.set(
         pred.predictedWinnerVariantId,
-        (predictionsByVariant.get(pred.predictedWinnerVariantId) ?? 0) + 1,
+        (predictionsByVariant.get(pred.predictedWinnerVariantId) ?? 0) + weight,
       );
-      totalPredictions += 1;
+      totalPredictions += weight;
     }
   }
 
@@ -171,6 +178,14 @@ export async function runScoringAndReport(db: Db, studyId: string) {
   const agentOutputs = agentRuns
     .filter((r) => r.outputJson)
     .map((r) => JSON.parse(r.outputJson!));
+  const criteria = criteriaForStudy(study.studyType, study.primaryObjective ?? undefined);
+  const agentPanelForSignal = buildAgentPanelForSignal(agentOutputs, criteria);
+  const signalQuality = summarizeSignalQuality({
+    variants: variants.map((v) => ({ id: v.id, label: v.label })),
+    agentPanel: agentPanelForSignal,
+    criteria,
+  });
+  const pairwiseVerdicts = agentPanelForSignal.flatMap((a) => a.pairwiseVerdicts);
 
   const agentCount = new Set(agentRuns.map((r) => r.agentId)).size;
 
@@ -193,12 +208,19 @@ export async function runScoringAndReport(db: Db, studyId: string) {
     })),
     rankings,
     agentOutputs,
+    signalQuality,
+    pairwiseVerdicts,
     humanQuotes,
     humanAgreement: hasHumanValidation ? humanAgreement : agentAgreement,
     agentAgreement,
     sampleSize: hasHumanValidation ? humanPreds.length : agentCount,
-    evaluatorQuality: hasHumanValidation ? 0.75 : 0.65,
+    evaluatorQuality: hasHumanValidation ? 0.75 : calibration.historicalAccuracy ?? 0.65,
     validationMode: hasHumanValidation ? "agent_plus_human" : "agent_first",
+    outcome: outcome ?? null,
+    calibrationHistory: {
+      outcomeSamples: calibration.outcomeSamples,
+      historicalAccuracy: calibration.historicalAccuracy,
+    },
   });
 
   const winner = rankings[0]!;
@@ -223,6 +245,80 @@ export async function runScoringAndReport(db: Db, studyId: string) {
       ...reportPayload,
     });
   }
+}
+
+async function computeAgentCalibration(db: Db) {
+  const outcomes = await db.select().from(schema.outcomes);
+  const outcomeWinnerByStudy = new Map(
+    outcomes
+      .filter((o) => o.winningVariantId)
+      .map((o) => [o.studyId, o.winningVariantId!]),
+  );
+  if (!outcomeWinnerByStudy.size) {
+    return {
+      agentWeights: new Map<string, number>(),
+      outcomeSamples: 0,
+      historicalAccuracy: undefined,
+    };
+  }
+
+  const allPredictions = await db.select().from(schema.predictions);
+  const byAgent = new Map<string, { correct: number; total: number }>();
+  let correct = 0;
+  let total = 0;
+
+  for (const prediction of allPredictions) {
+    if (prediction.source !== "agent" || !prediction.predictedWinnerVariantId) continue;
+    const winner = outcomeWinnerByStudy.get(prediction.studyId);
+    if (!winner) continue;
+    const agentKey = prediction.evaluatorId ?? prediction.evaluatorType;
+    const bucket = byAgent.get(agentKey) ?? { correct: 0, total: 0 };
+    const matched = prediction.predictedWinnerVariantId === winner;
+    if (matched) {
+      bucket.correct++;
+      correct++;
+    }
+    bucket.total++;
+    total++;
+    byAgent.set(agentKey, bucket);
+  }
+
+  const agentWeights = new Map<string, number>();
+  for (const [agentKey, stats] of byAgent.entries()) {
+    const accuracy = stats.correct / Math.max(stats.total, 1);
+    agentWeights.set(agentKey, 0.6 + accuracy * 0.8);
+  }
+
+  return {
+    agentWeights,
+    outcomeSamples: total,
+    historicalAccuracy: total ? correct / total : undefined,
+  };
+}
+
+function buildAgentPanelForSignal(
+  agentOutputs: Array<ReturnType<typeof JSON.parse>>,
+  criteria: ReturnType<typeof criteriaForStudy>,
+) {
+  const byAgent = new Map<string, Array<ReturnType<typeof JSON.parse>>>();
+  for (const output of agentOutputs) {
+    const agentSlug = output.agentSlug ?? output.agentId ?? "unknown";
+    const list = byAgent.get(agentSlug) ?? [];
+    list.push(output);
+    byAgent.set(agentSlug, list);
+  }
+
+  return [...byAgent.entries()].map(([agentSlug, outputs]) => ({
+    agentSlug,
+    agentName: outputs[0]?.agentName ?? agentSlug,
+    outputs,
+    pairwiseVerdicts: buildPairwiseVerdicts({
+      agentSlug,
+      agentName: outputs[0]?.agentName ?? agentSlug,
+      outputs,
+      criteria,
+    }),
+  }));
 }
 
 function computeAgentAgreement(

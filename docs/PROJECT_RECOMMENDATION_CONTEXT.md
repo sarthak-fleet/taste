@@ -18,12 +18,12 @@
 
 ## Active scope
 
-Landing/onboarding variant studies, mock AI agents, simulated human panel, decision reports, Product Arena battles.
+Landing/onboarding variant studies, mock AI agents, TASTE-style criterion pairwise diagnostics, outcome-calibrated agent weighting, simulated human panel, decision reports, Product Arena battles.
 
 ## Not yet built
 
-Auth, real LLM agents, real evaluator tasks, payments, outcome reputation loop.
+Auth, real LLM/VLM agents with true order-flipped pair judging, real evaluator tasks, payments, outcome reputation loop.
 
 ## Recommendation notes
 
-Prefer extending this repo over greenfield for ShipRank work. Do not broaden to consumer/shopping categories per PRD. Next high-value additions: better-auth workspaces, real agent API, evaluator task UI.
+Prefer extending this repo over greenfield for ShipRank work. Do not broaden to consumer/shopping categories per PRD. Next high-value additions: better-auth workspaces, real agent API using the existing pairwise verdict contract, evaluator task UI, and a calibration dashboard for reviewing agent weights.

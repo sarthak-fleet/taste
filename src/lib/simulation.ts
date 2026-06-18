@@ -1,13 +1,14 @@
 import { AGENT_DEFINITIONS, runMockAgentEvaluation } from "./agents";
 import { HUMAN_EVALUATOR_POOL, runHumanSimulation, type HumanEvalResult } from "./evaluators";
-import type { AgentOutput } from "./types";
-import { evaluatorTypeWeight } from "./scoring";
+import type { AgentOutput, CriterionDefinition, PairwiseVerdict, SignalQualitySummary } from "./types";
+import { buildPairwiseVerdicts, criteriaForStudy, evaluatorTypeWeight, summarizeSignalQuality } from "./scoring";
 
 export interface AgentSimResult {
   agentSlug: string;
   agentName: string;
   agentType: string;
   outputs: AgentOutput[];
+  pairwiseVerdicts: PairwiseVerdict[];
   predictedWinnerVariantId: string;
   predictedWinnerLabel: string;
   avgConfidence: number;
@@ -28,8 +29,10 @@ export interface SimulationResult {
   ranAt: string;
   agentPanel: AgentSimResult[];
   humanPanel: HumanEvalResult[];
+  criteria: CriterionDefinition[];
   agentConsensus: ConsensusEntry[];
   humanConsensus: ConsensusEntry[];
+  signalQuality: SignalQualitySummary;
   agentHumanAgreement: number;
   agentDisagreements: string[];
   summary: {
@@ -49,10 +52,13 @@ export function runAgentSimulation(params: {
     primaryObjective: string;
   };
   agentSlugs?: string[];
+  criteria?: CriterionDefinition[];
 }): AgentSimResult[] {
   const agents = params.agentSlugs
     ? AGENT_DEFINITIONS.filter((a) => params.agentSlugs!.includes(a.slug))
     : AGENT_DEFINITIONS;
+
+  const criteria = params.criteria ?? criteriaForStudy(params.studyContext.studyType, params.studyContext.primaryObjective);
 
   return agents.map((agent) => {
     const outputs: AgentOutput[] = params.variants.map((variant, variantIndex) =>
@@ -67,6 +73,12 @@ export function runAgentSimulation(params: {
         totalVariants: params.variants.length,
       }),
     );
+    const pairwiseVerdicts = buildPairwiseVerdicts({
+      agentSlug: agent.slug,
+      agentName: agent.name,
+      outputs,
+      criteria,
+    });
 
     const winner = outputs.reduce((best, o) =>
       o.prediction.predictedRank < best.prediction.predictedRank ? o : best,
@@ -79,6 +91,7 @@ export function runAgentSimulation(params: {
       agentName: agent.name,
       agentType: agent.agentType,
       outputs,
+      pairwiseVerdicts,
       predictedWinnerVariantId: winner.variantId,
       predictedWinnerLabel: params.variants.find((v) => v.id === winner.variantId)?.label ?? "?",
       avgConfidence,
@@ -207,6 +220,10 @@ export function runFullSimulation(params: {
     primaryObjective: string;
   };
 }): SimulationResult {
+  const criteria = criteriaForStudy(
+    params.studyContext.studyType,
+    params.studyContext.primaryObjective,
+  );
   const agentPanel =
     params.mode === "humans"
       ? []
@@ -214,6 +231,7 @@ export function runFullSimulation(params: {
           studyId: params.studyId,
           variants: params.variants,
           studyContext: params.studyContext,
+          criteria,
         });
 
   const humanPanel =
@@ -229,6 +247,11 @@ export function runFullSimulation(params: {
 
   const agentConsensus = buildAgentConsensus(agentPanel, params.variants);
   const humanConsensus = buildHumanConsensus(humanPanel, params.variants);
+  const signalQuality = summarizeSignalQuality({
+    variants: params.variants,
+    agentPanel,
+    criteria,
+  });
   const agentHumanAgreement = computeAgreement(agentConsensus, humanConsensus);
 
   const agentPick = agentConsensus[0]
@@ -255,8 +278,10 @@ export function runFullSimulation(params: {
     ranAt: new Date().toISOString(),
     agentPanel,
     humanPanel,
+    criteria,
     agentConsensus,
     humanConsensus,
+    signalQuality,
     agentHumanAgreement,
     agentDisagreements: detectAgentDisagreements(agentPanel),
     summary: { agentPick, humanPick, combinedPick },

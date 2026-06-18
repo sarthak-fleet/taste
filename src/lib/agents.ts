@@ -104,9 +104,12 @@ export function runMockAgentEvaluation(params: {
 
   const findings = generateFindings(agent, params, scores);
   const recommendation = generateRecommendation(agent, params, scores);
+  const validityFlags = generateValidityFlags(params, scores);
 
   return {
     variantId: params.variantId,
+    variantLabel: params.variantLabel,
+    variantName: params.variantName,
     agentId: agent.slug,
     agentSlug: agent.slug,
     agentName: agent.name,
@@ -117,6 +120,7 @@ export function runMockAgentEvaluation(params: {
       confidence,
     },
     findings,
+    validityFlags,
     recommendation,
   };
 }
@@ -201,4 +205,35 @@ function generateRecommendation(
     return `Needs work. Address ${weak.slice(0, 2).join(" and ")} before shipping ${params.variantLabel}.`;
   }
   return `Moderate performance. ${params.variantLabel} is viable but not a clear winner on ${agent.focusAreas.join(", ")}.`;
+}
+
+function generateValidityFlags(
+  params: { variantLabel: string; variantDescription?: string },
+  scores: Partial<DimensionScores>,
+): AgentOutput["validityFlags"] {
+  const flags: AgentOutput["validityFlags"] = [];
+
+  if (!params.variantDescription?.trim()) {
+    flags.push({
+      level: "minor",
+      type: "missing_asset",
+      description: `${params.variantLabel}: Limited variant description, so evidence is inferred from the study brief.`,
+    });
+  }
+
+  if ((scores.clarity ?? 3) < 2.4 && (scores.relevance ?? 3) < 2.8) {
+    flags.push({
+      level: "major",
+      type: "cannot_judge",
+      description: `${params.variantLabel}: Agent could not form a reliable judgment because clarity and relevance were both low.`,
+    });
+  } else if ((scores.trust ?? 3) < 2.4) {
+    flags.push({
+      level: "minor",
+      type: "quality_warning",
+      description: `${params.variantLabel}: Trust evidence is weak; verify claims before shipping.`,
+    });
+  }
+
+  return flags;
 }

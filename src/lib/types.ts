@@ -34,14 +34,32 @@ export interface DimensionScores {
   conversionIntent: number;
 }
 
+export type SignalStrength = "noise" | "weak" | "moderate" | "strong";
+export type ValidityFlagLevel = "none" | "minor" | "major";
+
+export interface CriterionDefinition {
+  key: keyof DimensionScores;
+  label: string;
+  weight: number;
+  kind: "preference" | "fidelity" | "friction" | "trust";
+}
+
 export interface AgentFinding {
   severity: "low" | "medium" | "high";
   type: string;
   description: string;
 }
 
+export interface AgentValidityFlag {
+  level: ValidityFlagLevel;
+  type: "missing_asset" | "irrelevant_rationale" | "fabricated_evidence" | "cannot_judge" | "quality_warning";
+  description: string;
+}
+
 export interface AgentOutput {
   variantId: string;
+  variantLabel: string;
+  variantName: string;
   agentId: string;
   agentSlug: string;
   agentName: string;
@@ -52,7 +70,59 @@ export interface AgentOutput {
     confidence: number;
   };
   findings: AgentFinding[];
+  validityFlags: AgentValidityFlag[];
   recommendation: string;
+}
+
+export interface PairwiseVerdict {
+  agentSlug: string;
+  agentName: string;
+  criterion: keyof DimensionScores;
+  criterionLabel: string;
+  variantAId: string;
+  variantALabel: string;
+  variantBId: string;
+  variantBLabel: string;
+  preferredVariantId: string | null;
+  preferredLabel: string | null;
+  firstOrderPreferredVariantId: string | null;
+  reverseOrderPreferredVariantId: string | null;
+  orderConsistent: boolean;
+  confidence: number;
+  rationale: string;
+}
+
+export interface CriterionSignal {
+  criterion: keyof DimensionScores;
+  criterionLabel: string;
+  weight: number;
+  signalStrength: SignalStrength;
+  meanKendallTau: number;
+  majorityVoteProbability: number;
+  cycleDetected: boolean;
+  consensusVariantId: string | null;
+  consensusVariantLabel: string | null;
+  lowConfidencePairs: number;
+  orderInconsistentPairs: number;
+}
+
+export interface SignalQualitySummary {
+  criteria: CriterionSignal[];
+  meanKendallTau: number;
+  meanMajorityVoteProbability: number;
+  criteriaWithCycles: string[];
+  strongestCriteria: string[];
+  weakestCriteria: string[];
+  invalidityFlags: AgentValidityFlag[];
+}
+
+export interface AgentCalibrationSummary {
+  status: "uncalibrated" | "outcome_matched" | "outcome_missed";
+  outcomeSamples: number;
+  historicalAccuracy?: number;
+  predictedVariantLabel?: string;
+  outcomeVariantLabel?: string;
+  note: string;
 }
 
 export interface VariantRanking {
@@ -92,6 +162,9 @@ export interface ReportContent {
     consensus: string[];
     disagreement: string[];
   };
+  signalQuality: SignalQualitySummary;
+  pairwiseVerdicts: PairwiseVerdict[];
+  calibration: AgentCalibrationSummary;
   predictionSummary: {
     predictedWinner: string;
     predictedImpact: string;

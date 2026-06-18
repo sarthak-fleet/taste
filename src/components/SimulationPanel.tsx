@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Users, Play } from "lucide-react";
+import { Bot, Users, Play, GitCompare } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { SimulationResult } from "@/lib/simulation";
@@ -148,6 +148,49 @@ export function SimulationPanel({
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <AgentMatrix result={result} labelMap={labelMap} />
+              </CardContent>
+            </Card>
+          )}
+
+          {result.signalQuality && result.signalQuality.criteria.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <GitCompare className="h-4 w-4" /> Pairwise signal
+                </CardTitle>
+                <CardDescription>
+                  Order-checked criteria, majority strength, and weak spots before the final report
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground border-b border-border">
+                      <th className="py-2 pr-4">Criterion</th>
+                      <th className="py-2 pr-4">Consensus</th>
+                      <th className="py-2 pr-4">Signal</th>
+                      <th className="py-2">Order checks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.signalQuality.criteria.map((criterion) => (
+                      <tr key={criterion.criterion} className="border-b border-border/50">
+                        <td className="py-2 pr-4 font-medium">{criterion.criterionLabel}</td>
+                        <td className="py-2 pr-4">
+                          {criterion.consensusVariantLabel
+                            ? `Variant ${criterion.consensusVariantLabel}`
+                            : "—"}
+                        </td>
+                        <td className="py-2 pr-4 capitalize">
+                          {criterion.signalStrength} · {Math.round(criterion.majorityVoteProbability * 100)}%
+                        </td>
+                        <td className="py-2 text-muted-foreground">
+                          {criterion.orderInconsistentPairs} inconsistent
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </CardContent>
             </Card>
           )}

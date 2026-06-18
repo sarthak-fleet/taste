@@ -1,4 +1,12 @@
-import type { AgentOutput, ConfidenceLevel, ReportContent, VariantRanking } from "./types";
+import type {
+  AgentCalibrationSummary,
+  AgentOutput,
+  ConfidenceLevel,
+  PairwiseVerdict,
+  ReportContent,
+  SignalQualitySummary,
+  VariantRanking,
+} from "./types";
 import { computeConfidenceLevel } from "./scoring";
 
 interface ReportInput {
@@ -18,9 +26,18 @@ interface ReportInput {
   humanQuotes: Array<{ role: string; quote: string; variantLabel?: string }>;
   humanAgreement: number;
   agentAgreement: number;
+  signalQuality: SignalQualitySummary;
+  pairwiseVerdicts: PairwiseVerdict[];
   sampleSize: number;
   evaluatorQuality: number;
   validationMode?: "agent_first" | "agent_plus_human";
+  outcome?: {
+    winningVariantId?: string | null;
+  } | null;
+  calibrationHistory?: {
+    outcomeSamples: number;
+    historicalAccuracy?: number;
+  };
 }
 
 export function generateReport(input: ReportInput): ReportContent {
@@ -48,11 +65,23 @@ export function generateReport(input: ReportInput): ReportContent {
       `${confidenceReason}; agent-first evaluation — human validation not yet run`.replace(/^; /, "");
     if (confidence === "high") confidence = "medium_high";
   }
+  if (
+    input.signalQuality.meanMajorityVoteProbability < 0.58 ||
+    input.signalQuality.criteriaWithCycles.length > 0
+  ) {
+    confidence = downgradeConfidence(confidence);
+    const caveat =
+      input.signalQuality.criteriaWithCycles.length > 0
+        ? `preference cycle detected in ${input.signalQuality.criteriaWithCycles.join(", ")}`
+        : "weak pairwise majority signal";
+    confidenceReason = `${confidenceReason}; ${caveat}`.replace(/^; /, "");
+  }
 
   const whyWinnerWon = buildWhyWinnerWon(winner, runnerUp, input);
   const winnerWeaknesses = buildWinnerWeaknesses(winner, runnerUp, input);
   const borrowFrom = buildBorrowFrom(input.rankings);
   const agentFindings = buildAgentFindings(input.agentOutputs, input.variants);
+  const calibration = buildCalibration(winner, input);
 
   const doNotShip = losers.map((l) => `Variant ${l.variantLabel}`);
 
@@ -83,6 +112,9 @@ export function generateReport(input: ReportInput): ReportContent {
         ]
       : input.humanQuotes,
     agentFindings,
+    signalQuality: input.signalQuality,
+    pairwiseVerdicts: input.pairwiseVerdicts.slice(0, 60),
+    calibration,
     predictionSummary: {
       predictedWinner: `Variant ${winner.variantLabel}`,
       predictedImpact: mapObjectiveToImpact(input.study.primaryObjective),
@@ -127,6 +159,12 @@ function buildWhyWinnerWon(
   if (winner.scores.prediction >= 4) {
     reasons.push(`Majority of evaluators predicted Variant ${winner.variantLabel} would outperform in live testing.`);
   }
+  for (const criterion of input.signalQuality.strongestCriteria.slice(0, 2)) {
+    const signal = input.signalQuality.criteria.find((c) => c.criterionLabel === criterion);
+    if (signal?.consensusVariantId === winner.variantId) {
+      reasons.push(`Strongest criterion signal: ${criterion} favored Variant ${winner.variantLabel}.`);
+    }
+  }
   if (reasons.length === 0) {
     reasons.push(`Variant ${winner.variantLabel} achieved the highest composite score (${winner.overallScore}).`);
   }
@@ -155,6 +193,17 @@ function buildWinnerWeaknesses(
     .filter((f) => f.type === "trust" && f.severity !== "low");
 
   if (trustFindings.length) weaknesses.push(trustFindings[0]!.description);
+  const weakWinnerCriteria = input.signalQuality.criteria
+    .filter((c) => c.consensusVariantId && c.consensusVariantId !== winner.variantId)
+    .slice(0, 2);
+  for (const criterion of weakWinnerCriteria) {
+    weaknesses.push(
+      `${criterion.criterionLabel} leaned toward Variant ${criterion.consensusVariantLabel}; borrow or retest that element.`,
+    );
+  }
+
+  const majorFlags = input.signalQuality.invalidityFlags.filter((f) => f.level === "major");
+  if (majorFlags.length) weaknesses.push(`Major judgment warning: ${majorFlags[0]!.description}`);
 
   if (weaknesses.length === 0) {
     weaknesses.push("No critical weaknesses identified, but live A/B testing is still recommended.");
@@ -211,12 +260,16 @@ function buildAgentFindings(
   const winnerIds = [...new Set(agentWinners.values())];
   if (winnerIds.length > 1) {
     disagreement.push(
-      "Different AI agents preferred different variants — human validation was critical.",
+      "Different AI agents preferred different variants — pairwise signal should drive confidence more than a raw vote.",
     );
+  }
+  const inconsistentPairs = outputs.flatMap((o) => o.validityFlags ?? []).filter((f) => f.level !== "none");
+  if (inconsistentPairs.length) {
+    disagreement.push(`${inconsistentPairs.length} agent validity warnings need review before treating this as outcome-grade.`);
   }
 
   if (consensus.length === 0) {
-    consensus.push("AI agents did not reach strong consensus — rely on human evaluator evidence.");
+    consensus.push("AI agents did not reach strong consensus — rely on pairwise criteria and human validation.");
   }
 
   return { consensus: consensus.slice(0, 4), disagreement: disagreement.slice(0, 2) };
@@ -241,6 +294,49 @@ function buildTradeoff(winner: VariantRanking, runnerUp: VariantRanking | undefi
     return `May improve self-serve activation but could reduce enterprise buyer confidence unless trust proof is added from Variant ${runnerUp.variantLabel}.`;
   }
   return `Variant ${winner.variantLabel} optimizes for the stated objective; monitor secondary metrics after launch.`;
+}
+
+function buildCalibration(winner: VariantRanking, input: ReportInput): AgentCalibrationSummary {
+  const outcomeVariantId = input.outcome?.winningVariantId;
+  if (!outcomeVariantId) {
+    if ((input.calibrationHistory?.outcomeSamples ?? 0) > 0) {
+      const accuracy = input.calibrationHistory?.historicalAccuracy ?? 0;
+      return {
+        status: "uncalibrated",
+        outcomeSamples: input.calibrationHistory?.outcomeSamples ?? 0,
+        historicalAccuracy: accuracy,
+        predictedVariantLabel: winner.variantLabel,
+        note: `No outcome is submitted for this study yet. Agent weights used ${input.calibrationHistory?.outcomeSamples} prior outcome-labeled predictions with ${Math.round(accuracy * 100)}% historical accuracy.`,
+      };
+    }
+    return {
+      status: "uncalibrated",
+      outcomeSamples: 0,
+      predictedVariantLabel: winner.variantLabel,
+      note:
+        "No submitted outcome yet. Treat agent confidence as pre-A/B guidance until the outcome loop records whether the shipped variant actually won.",
+    };
+  }
+
+  const outcomeLabel = input.variants.find((v) => v.id === outcomeVariantId)?.label;
+  const matched = outcomeVariantId === winner.variantId;
+  return {
+    status: matched ? "outcome_matched" : "outcome_missed",
+    outcomeSamples: Math.max(1, input.calibrationHistory?.outcomeSamples ?? 0),
+    historicalAccuracy: input.calibrationHistory?.historicalAccuracy,
+    predictedVariantLabel: winner.variantLabel,
+    outcomeVariantLabel: outcomeLabel,
+    note: matched
+      ? `Submitted outcome matched the agent recommendation for Variant ${winner.variantLabel}.`
+      : `Submitted outcome favored Variant ${outcomeLabel ?? outcomeVariantId}, so future agent weighting should discount this panel shape.`,
+  };
+}
+
+function downgradeConfidence(level: ConfidenceLevel): ConfidenceLevel {
+  if (level === "high") return "medium_high";
+  if (level === "medium_high") return "medium";
+  if (level === "medium") return "low";
+  return "low";
 }
 
 export function confidenceLabel(level: ConfidenceLevel): string {
