@@ -104,6 +104,9 @@ export const api = {
   launchStudy: (id: string) =>
     request<{ study: Study; report?: Report }>(`/studies/${id}/launch`, { method: "POST" }),
 
+  captureStudy: (id: string) =>
+    request<{ captured: unknown[]; callback?: unknown }>(`/studies/${id}/capture`, { method: "POST" }),
+
   attachVisualEvidence: (
     studyId: string,
     data: {

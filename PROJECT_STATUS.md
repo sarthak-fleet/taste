@@ -27,6 +27,7 @@
   - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
   - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
+  - API trigger that asks the capture Worker to snapshot a study's URL variants
 - Human evaluator panel simulation with weighted consensus
 - Simulation API: `POST /studies/:id/simulate` (agents | humans | full), `GET /studies/:id/simulation`
 - Study detail UI: simulation panel with agent matrix and human panel
@@ -58,6 +59,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Outcome submission flow + reputation updates
 - Stripe per-study pricing
 - Deploy/configure production capture Worker bindings and callback auth
+- UI trigger/status for study capture runs
 - VLM judge or local ranker integration to replace the deterministic Taste baseline
 - Web-TASTE capture queue, pair labeling workflow, and held-out eval set
 - Email notifications

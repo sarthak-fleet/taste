@@ -10,6 +10,8 @@ import { evaluatorsRouter } from "./routes/evaluators";
 
 export interface Env {
   DB: D1Database;
+  TASTE_CAPTURE_WORKER_URL?: string;
+  TASTE_CAPTURE_WORKER_TOKEN?: string;
 }
 
 function createApi() {

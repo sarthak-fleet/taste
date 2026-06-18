@@ -38,6 +38,9 @@ Taste model should beat.
 capture. It uses Browser Rendering for Chromium and R2 for screenshots, then
 posts capture manifests to `/api/studies/:id/visual-evidence`.
 
+Configure the Pages app with `TASTE_CAPTURE_WORKER_URL` and optional
+`TASTE_CAPTURE_WORKER_TOKEN` to enable `POST /api/studies/:id/capture`.
+
 ```bash
 pnpm capture-worker:check
 ```
@@ -62,6 +65,7 @@ Cloudflare Pages Functions at `/api/*`:
 
 - `GET/POST /api/studies` — list/create studies
 - `POST /api/studies/:id/launch` — run agents + evaluators + generate report
+- `POST /api/studies/:id/capture` — ask the capture Worker to snapshot URL variants
 - `POST /api/studies/:id/visual-evidence` — attach capture manifests and run Taste baseline
 - `GET /api/studies/:id/report` — fetch report
 - `GET/POST /api/arena/battles/:slug/vote` — arena

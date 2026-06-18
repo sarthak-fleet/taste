@@ -220,6 +220,59 @@ studiesRouter.post("/:id/launch", async (c) => {
   return c.json({ study: updated, report });
 });
 
+studiesRouter.post("/:id/capture", async (c) => {
+  const db = c.get("db");
+  const id = c.req.param("id");
+  const workerUrl = c.env.TASTE_CAPTURE_WORKER_URL;
+  if (!workerUrl) return badRequest("TASTE_CAPTURE_WORKER_URL is not configured");
+
+  const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
+  if (!study) return notFound("Study not found");
+
+  const studyVariants = await db
+    .select()
+    .from(schema.variants)
+    .where(eq(schema.variants.studyId, id))
+    .orderBy(schema.variants.sortOrder);
+
+  const captures = studyVariants
+    .filter((variant) => variant.assetUrl)
+    .map((variant) => ({
+      variantId: variant.id,
+      variantLabel: variant.label,
+      url: variant.assetUrl!,
+      label: variant.label,
+      notes: variant.name,
+    }));
+
+  if (captures.length < 2) return badRequest("At least 2 URL variants are required for capture");
+
+  const response = await fetch(workerUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(c.env.TASTE_CAPTURE_WORKER_TOKEN ? { authorization: `Bearer ${c.env.TASTE_CAPTURE_WORKER_TOKEN}` } : {}),
+    },
+    body: JSON.stringify({
+      studyId: id,
+      callbackApiBase: `${new URL(c.req.url).origin}/api`,
+      runBaseline: true,
+      captures,
+    }),
+  });
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      typeof payload === "object" && payload && "error" in payload
+        ? String((payload as { error?: unknown }).error)
+        : `Capture worker failed with ${response.status}`;
+    return badRequest(message);
+  }
+
+  return c.json(payload);
+});
+
 studiesRouter.post("/:id/visual-evidence", async (c) => {
   const db = c.get("db");
   const id = c.req.param("id");

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Rocket, FileText, ExternalLink } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Camera, FileText, ExternalLink, Rocket } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,18 @@ export default function StudyDetail() {
   if (error || !data) return <div className="p-8 text-destructive">Study not found</div>;
 
   const { study, variants, report } = data;
+  const capturedVariantIds = new Set(data.visualEvaluations.map((evaluation) => evaluation.variantId));
+  const capturedCount = variants.filter((variant) => capturedVariantIds.has(variant.id)).length;
+  const urlVariantCount = variants.filter((variant) => variant.assetUrl).length;
+
+  const captureMutation = useMutation({
+    mutationFn: () => api.captureStudy(id!),
+    onSuccess: () => {
+      toast.success("Visual evidence captured");
+      queryClient.invalidateQueries({ queryKey: ["study", id] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   async function runLaunch() {
     const launched = await api.launchStudy(id!);
@@ -72,6 +85,33 @@ export default function StudyDetail() {
         </Card>
       </div>
 
+      <Card className="mb-8">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardDescription>Visual evidence</CardDescription>
+              <CardTitle className="text-base">
+                {capturedCount}/{variants.length} variants captured
+              </CardTitle>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => captureMutation.mutate()}
+              disabled={captureMutation.isPending || urlVariantCount < 2}
+            >
+              <Camera className="h-4 w-4" />
+              {captureMutation.isPending ? "Capturing..." : "Capture visuals"}
+            </Button>
+          </div>
+        </CardHeader>
+        {data.visualEvaluations.length > 0 && (
+          <CardContent className="text-sm text-muted-foreground">
+            Latest model: {data.visualEvaluations.find((evaluation) => evaluation.modelId)?.modelId ?? "pending baseline"}
+          </CardContent>
+        )}
+      </Card>
+
       {study.studyBrief && (
         <Card className="mb-8">
           <CardHeader>
@@ -97,6 +137,7 @@ export default function StudyDetail() {
                     {v.name}
                   </CardTitle>
                   {v.lockedAt && <Badge variant="secondary">Locked</Badge>}
+                  {capturedVariantIds.has(v.id) && <Badge variant="success">Captured</Badge>}
                 </div>
                 {v.hypothesis && <CardDescription>{v.hypothesis}</CardDescription>}
               </CardHeader>
