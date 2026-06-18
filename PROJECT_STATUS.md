@@ -23,7 +23,7 @@
 - Taste model v1 planning and data scaffolding:
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
   - Web-TASTE capture queue runner that materializes repeatable A/B capture and pair commands
-  - curated 10-pair SaaS/devtool seed queue plus queue structure/URL validator
+  - curated 10-pair SaaS/devtool seed queue, validated 20-pair expansion queue, plus queue structure/URL validator
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data
@@ -74,7 +74,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Real held-out label collection using the queue/review/audit loop
+- Real held-out label collection using the queue/review/audit loop, starting with the validated 20-pair expansion queue
 - Email notifications
 
 ## Deferred / parked

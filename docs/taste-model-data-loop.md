@@ -34,6 +34,10 @@ Use `docs/examples/taste-curated-seed-queue.json` as the first 10-pair
 SaaS/devtool seed queue, or copy it to `datasets/taste-capture-queue.json` and
 edit before running.
 
+Use `docs/examples/taste-curated-expansion-queue.json` as the second validated
+20-pair SaaS/devtool expansion queue once the first seed has been captured and
+labeled.
+
 When the queue is ready to run, execute it explicitly:
 
 ```bash

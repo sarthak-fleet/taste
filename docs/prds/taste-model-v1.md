@@ -29,6 +29,8 @@ The first real-label path is wired end to end:
 - first curated seed smoke: 10 real labeled pairs, 7 train / 3 holdout,
   `taste-linear-mechanical-ranker-v0` report generated locally with holdout
   readiness passing
+- second curated expansion queue: 20 additional SaaS/devtool pairs with 40
+  live URLs validated and ready for capture/labeling
 
 This is a pipeline proof, not model-quality proof. The next real milestone is
 label volume: expand from 10 seed pairs to 100-300 category-balanced real pairs,

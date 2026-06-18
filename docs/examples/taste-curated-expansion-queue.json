@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "queueId": "taste-curated-saas-devtools-v2",
+  "defaults": {
+    "studyType": "landing_page",
+    "targetUserRole": "startup founder",
+    "primaryObjective": "maximize_signup",
+    "sourceKind": "curated_gallery",
+    "sourceNotes": "Second curated SaaS/devtool landing-page expansion queue for real non-synthetic Web-TASTE labels."
+  },
+  "jobs": [
+    {
+      "id": "serverless-db-neon-vs-planetscale",
+      "label": "Serverless database landing: Neon vs PlanetScale",
+      "productName": "Serverless databases",
+      "a": { "url": "https://neon.com", "label": "Neon" },
+      "b": { "url": "https://planetscale.com", "label": "PlanetScale" }
+    },
+    {
+      "id": "headless-cms-sanity-vs-contentful",
+      "label": "Headless CMS landing: Sanity vs Contentful",
+      "productName": "Headless CMS",
+      "a": { "url": "https://www.sanity.io", "label": "Sanity" },
+      "b": { "url": "https://www.contentful.com", "label": "Contentful" }
+    },
+    {
+      "id": "feature-flags-launchdarkly-vs-statsig",
+      "label": "Feature flags landing: LaunchDarkly vs Statsig",
+      "productName": "Feature flags",
+      "a": { "url": "https://launchdarkly.com", "label": "LaunchDarkly" },
+      "b": { "url": "https://www.statsig.com", "label": "Statsig" }
+    },
+    {
+      "id": "ci-cd-circleci-vs-buildkite",
+      "label": "CI/CD landing: CircleCI vs Buildkite",
+      "productName": "CI/CD platforms",
+      "a": { "url": "https://circleci.com", "label": "CircleCI" },
+      "b": { "url": "https://buildkite.com", "label": "Buildkite" }
+    },
+    {
+      "id": "api-platform-postman-vs-insomnia",
+      "label": "API platform landing: Postman vs Insomnia",
+      "productName": "API platforms",
+      "a": { "url": "https://www.postman.com", "label": "Postman" },
+      "b": { "url": "https://insomnia.rest", "label": "Insomnia" }
+    },
+    {
+      "id": "developer-docs-mintlify-vs-readme",
+      "label": "Developer docs landing: Mintlify vs ReadMe",
+      "productName": "Developer docs",
+      "a": { "url": "https://mintlify.com", "label": "Mintlify" },
+      "b": { "url": "https://readme.com", "label": "ReadMe" }
+    },
+    {
+      "id": "vector-db-pinecone-vs-weaviate",
+      "label": "Vector database landing: Pinecone vs Weaviate",
+      "productName": "Vector databases",
+      "a": { "url": "https://www.pinecone.io", "label": "Pinecone" },
+      "b": { "url": "https://weaviate.io", "label": "Weaviate" }
+    },
+    {
+      "id": "site-search-algolia-vs-typesense",
+      "label": "Site search landing: Algolia vs Typesense",
+      "productName": "Site search",
+      "a": { "url": "https://www.algolia.com", "label": "Algolia" },
+      "b": { "url": "https://typesense.org", "label": "Typesense" }
+    },
+    {
+      "id": "llm-observability-langsmith-vs-helicone",
+      "label": "LLM observability landing: LangSmith vs Helicone",
+      "productName": "LLM observability",
+      "a": { "url": "https://www.langchain.com/langsmith", "label": "LangSmith" },
+      "b": { "url": "https://www.helicone.ai", "label": "Helicone" }
+    },
+    {
+      "id": "customer-support-intercom-vs-zendesk",
+      "label": "Customer support landing: Intercom vs Zendesk",
+      "productName": "Customer support",
+      "a": { "url": "https://www.intercom.com", "label": "Intercom" },
+      "b": { "url": "https://www.zendesk.com", "label": "Zendesk" }
+    },
+    {
+      "id": "data-pipeline-airbyte-vs-fivetran",
+      "label": "Data pipeline landing: Airbyte vs Fivetran",
+      "productName": "Data pipelines",
+      "a": { "url": "https://airbyte.com", "label": "Airbyte" },
+      "b": { "url": "https://www.fivetran.com", "label": "Fivetran" }
+    },
+    {
+      "id": "data-platform-snowflake-vs-databricks",
+      "label": "Data platform landing: Snowflake vs Databricks",
+      "productName": "Data platforms",
+      "a": { "url": "https://www.snowflake.com/en/", "label": "Snowflake" },
+      "b": { "url": "https://www.databricks.com", "label": "Databricks" }
+    },
+    {
+      "id": "edge-compute-cloudflare-workers-vs-fastly-compute",
+      "label": "Edge compute landing: Cloudflare Workers vs Fastly Compute",
+      "productName": "Edge compute",
+      "a": { "url": "https://workers.cloudflare.com", "label": "Cloudflare Workers" },
+      "b": { "url": "https://www.fastly.com/products/compute", "label": "Fastly Compute" }
+    },
+    {
+      "id": "monitoring-newrelic-vs-grafana-cloud",
+      "label": "Monitoring landing: New Relic vs Grafana Cloud",
+      "productName": "Monitoring",
+      "a": { "url": "https://newrelic.com", "label": "New Relic" },
+      "b": { "url": "https://grafana.com/products/cloud/", "label": "Grafana Cloud" }
+    },
+    {
+      "id": "secrets-doppler-vs-onepassword",
+      "label": "Secrets management landing: Doppler vs 1Password",
+      "productName": "Secrets management",
+      "a": { "url": "https://www.doppler.com", "label": "Doppler" },
+      "b": { "url": "https://1password.com/developers/secrets-management", "label": "1Password" }
+    },
+    {
+      "id": "transactional-email-sendgrid-vs-postmark",
+      "label": "Transactional email landing: SendGrid vs Postmark",
+      "productName": "Transactional email",
+      "a": { "url": "https://sendgrid.com/en-us", "label": "SendGrid" },
+      "b": { "url": "https://postmarkapp.com", "label": "Postmark" }
+    },
+    {
+      "id": "forms-typeform-vs-tally",
+      "label": "Forms landing: Typeform vs Tally",
+      "productName": "Forms",
+      "a": { "url": "https://www.typeform.com", "label": "Typeform" },
+      "b": { "url": "https://tally.so", "label": "Tally" }
+    },
+    {
+      "id": "workflow-automation-zapier-vs-n8n",
+      "label": "Workflow automation landing: Zapier vs n8n",
+      "productName": "Workflow automation",
+      "a": { "url": "https://zapier.com", "label": "Zapier" },
+      "b": { "url": "https://n8n.io", "label": "n8n" }
+    },
+    {
+      "id": "product-management-airfocus-vs-productboard",
+      "label": "Product management landing: airfocus vs Productboard",
+      "productName": "Product management",
+      "a": { "url": "https://airfocus.com", "label": "airfocus" },
+      "b": { "url": "https://www.productboard.com", "label": "Productboard" }
+    },
+    {
+      "id": "incident-management-pagerduty-vs-incident-io",
+      "label": "Incident management landing: PagerDuty vs incident.io",
+      "productName": "Incident management",
+      "a": { "url": "https://www.pagerduty.com", "label": "PagerDuty" },
+      "b": { "url": "https://incident.io", "label": "incident.io" }
+    }
+  ]
+}
