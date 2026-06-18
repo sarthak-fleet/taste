@@ -25,6 +25,7 @@
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - deterministic mechanical Taste baseline that emits model-compatible `AgentOutput` / `PairwiseVerdict` data
+  - JSONL exporter for labeled Taste pair manifests used by supervised training/eval
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
   - separate Browser Rendering + R2 capture Worker scaffold for production URL capture
   - API trigger that asks the capture Worker to snapshot a study's URL variants

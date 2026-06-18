@@ -2,6 +2,7 @@ node_modules/
 dist/
 .wrangler/
 captures/
+datasets/
 *.local
 .DS_Store
 .env
