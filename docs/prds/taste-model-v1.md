@@ -16,6 +16,25 @@ specific job:
 This is a supervised pairwise preference model first. Reinforcement learning is
 deferred until the reward model is stable enough to guide an editing agent.
 
+## Current status - 2026-06-19
+
+The first real-label path is wired end to end:
+
+- curated SaaS/devtool seed queue exists in
+  `docs/examples/taste-curated-seed-queue.json`
+- Playwright capture can generate desktop/mobile above-fold and full-page
+  screenshots plus mechanical metrics
+- pair manifests can be reviewed, labeled, audited, exported to JSONL, split,
+  trained, and reported
+- first curated seed smoke: 10 real labeled pairs, 7 train / 3 holdout,
+  `taste-linear-mechanical-ranker-v0` report generated locally with holdout
+  readiness passing
+
+This is a pipeline proof, not model-quality proof. The next real milestone is
+label volume: expand from 10 seed pairs to 100-300 category-balanced real pairs,
+then report held-out accuracy against the mechanical baseline before promoting a
+model behind `TASTE_RANKER_MODEL_JSON`.
+
 ## Why now
 
 ShipRank already has the product shell:
