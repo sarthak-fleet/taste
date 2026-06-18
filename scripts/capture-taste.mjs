@@ -293,7 +293,13 @@ async function captureUrl({ url, label, notes, outDir }) {
       });
 
       const started = Date.now();
-      await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
+      try {
+        await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
+      } catch (error) {
+        if (error?.name !== "TimeoutError") throw error;
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20_000 });
+        await page.waitForTimeout(2_000);
+      }
       const loadMs = Date.now() - started;
 
       const aboveFoldPath = path.join(outDir, `${viewport.name}-above-fold.png`);
