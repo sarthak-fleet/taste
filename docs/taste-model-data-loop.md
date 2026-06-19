@@ -114,6 +114,21 @@ The report emits two separate gates:
   Tune with `--min-promote-real-holdout`, `--min-promote-total-holdout`,
   `--min-promote-accuracy`, and `--min-promote-delta`.
 
+## Screenshot Feature Experiment
+
+The production ranker path is still the JSON model above. To test whether
+simple screenshot pixel statistics add signal before committing to a real visual
+encoder, run the offline experiment:
+
+```bash
+pnpm experiment:taste-screenshot-ranker -- --pairs captures/taste-pairs --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --out reports/taste-screenshot-ranker-report.json
+```
+
+This uses Playwright to read captured above-fold PNGs through a canvas and trains
+a local logistic ranker over brightness, contrast, saturation, dark/light area,
+colorfulness, and edge-density deltas. It is a diagnostic, not a production
+model; promote only through the main `promotionReadiness` report.
+
 Current local status as of 2026-06-19: the first 10-pair seed, 20-pair
 expansion queue, and 40-pair promotion queue have been captured and labeled
 locally, producing 70 real curated labels. A promotion-gate split with

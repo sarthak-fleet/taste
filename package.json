@@ -31,6 +31,7 @@
     "eval:taste-jsonl": "tsx scripts/evaluate-taste-jsonl.ts",
     "train:taste-ranker": "tsx scripts/train-taste-ranker.ts",
     "report:taste-model": "tsx scripts/report-taste-model.ts",
+    "experiment:taste-screenshot-ranker": "tsx scripts/experiment-taste-screenshot-ranker.ts",
     "smoke:taste-ranker": "tsx scripts/smoke-taste-ranker-runtime.ts",
     "capture-worker:check": "tsc -p workers/taste-capture/tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate",
