@@ -30,6 +30,13 @@ pnpm validate:taste-capture-queue -- --queue docs/examples/taste-curated-seed-qu
 pnpm queue:taste-captures -- --queue datasets/taste-capture-queue.json --commands reports/taste-capture-queue-commands.sh
 ```
 
+For larger queues, keep URL validation bounded so the checker does not create
+its own false negatives:
+
+```bash
+pnpm validate:taste-capture-queue -- --queue docs/examples/taste-curated-promotion-queue.json --check-urls --url-concurrency 6 --url-timeout-ms 20000
+```
+
 Use `docs/examples/taste-curated-seed-queue.json` as the first 10-pair
 SaaS/devtool seed queue, or copy it to `datasets/taste-capture-queue.json` and
 edit before running.
@@ -37,6 +44,11 @@ edit before running.
 Use `docs/examples/taste-curated-expansion-queue.json` as the second validated
 20-pair SaaS/devtool expansion queue once the first seed has been captured and
 labeled.
+
+Use `docs/examples/taste-curated-promotion-queue.json` as the third 40-pair
+promotion queue after v1+v2. Together those queues produce 70 real curated
+labels, enough to reserve a 50-record holdout while still leaving 20 training
+records for a first promotion-gate report.
 
 When the queue is ready to run, execute it explicitly:
 
@@ -80,6 +92,12 @@ pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste
 pnpm audit:taste-jsonl -- --in datasets/taste-holdout.jsonl --strict
 pnpm train:taste-ranker -- --in datasets/taste-train.jsonl --out models/taste-linear-ranker.json
 pnpm report:taste-model -- --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --model models/taste-linear-ranker.json --out reports/taste-model-report.json
+```
+
+For a promotion-gate report, make the heldout requirement explicit:
+
+```bash
+pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --min-test-records 50
 ```
 
 The report compares the mechanical baseline against the saved ranker on both

@@ -24,6 +24,7 @@
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
   - Web-TASTE capture queue runner that materializes repeatable A/B capture and pair commands
   - curated 10-pair SaaS/devtool seed queue, validated 20-pair expansion queue, plus queue structure/URL validator
+  - 40-pair promotion queue that moves the curated local set from 30 to 70 real labels after capture/review
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data
@@ -34,6 +35,7 @@
   - offline mechanical-risk pairwise accuracy eval for exported Taste JSONL
   - first local supervised linear pairwise ranker over exported mechanical features
   - deterministic train/holdout JSONL split and model-vs-baseline report workflow
+  - explicit minimum heldout count support for promotion-gate splits
   - real-label readiness audit that blocks promotion on synthetic-only holdout data
   - optional runtime local ranker path via `TASTE_RANKER_MODEL_JSON`, with VLM and mechanical fallback
   - API storage for capture manifests plus launch-time baseline injection when visual evidence exists
@@ -74,7 +76,8 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Expand real held-out labels from the current local 30-pair curated set to 100-300 pairs
+- Capture and label `docs/examples/taste-curated-promotion-queue.json`, then split with `--min-test-records 50`
+- Expand real held-out labels beyond the 70-pair promotion queue toward 100-300 pairs
 - Keep `taste-linear-evidence-ranker-v0` comparison-only until label volume improves; latest local report is 0.50 holdout accuracy vs 0.30 mechanical baseline on 10 heldout labels
 - Email notifications
 

@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "queueId": "taste-curated-saas-devtools-v3-promotion",
+  "defaults": {
+    "studyType": "landing_page",
+    "targetUserRole": "startup founder",
+    "primaryObjective": "maximize_signup",
+    "sourceKind": "curated_gallery",
+    "sourceNotes": "Third curated SaaS/devtool landing-page expansion queue. Capture and label this after v1+v2 to move from 30 to 70 real non-synthetic Web-TASTE labels."
+  },
+  "jobs": [
+    {
+      "id": "workspace-docs-notion-vs-coda",
+      "label": "Workspace docs landing: Notion vs Coda",
+      "productName": "Workspace docs",
+      "a": { "url": "https://www.notion.com", "label": "Notion" },
+      "b": { "url": "https://coda.io", "label": "Coda" }
+    },
+    {
+      "id": "team-wiki-slab-vs-slite",
+      "label": "Team wiki landing: Slab vs Slite",
+      "productName": "Team wikis",
+      "a": { "url": "https://slab.com", "label": "Slab" },
+      "b": { "url": "https://slite.com", "label": "Slite" }
+    },
+    {
+      "id": "scheduling-calendly-vs-cal-com",
+      "label": "Scheduling landing: Calendly vs Cal.com",
+      "productName": "Scheduling",
+      "a": { "url": "https://calendly.com", "label": "Calendly" },
+      "b": { "url": "https://cal.com", "label": "Cal.com" }
+    },
+    {
+      "id": "crm-hubspot-vs-pipedrive",
+      "label": "CRM landing: HubSpot vs Pipedrive",
+      "productName": "CRM",
+      "a": { "url": "https://www.hubspot.com", "label": "HubSpot" },
+      "b": { "url": "https://www.pipedrive.com", "label": "Pipedrive" }
+    },
+    {
+      "id": "sales-intel-apollo-vs-clay",
+      "label": "Sales intelligence landing: Apollo vs Clay",
+      "productName": "Sales intelligence",
+      "a": { "url": "https://www.apollo.io", "label": "Apollo" },
+      "b": { "url": "https://www.clay.com", "label": "Clay" }
+    },
+    {
+      "id": "support-helpscout-vs-freshdesk",
+      "label": "Support desk landing: Help Scout vs Freshdesk",
+      "productName": "Support desks",
+      "a": { "url": "https://www.helpscout.com", "label": "Help Scout" },
+      "b": { "url": "https://www.freshworks.com/freshdesk", "label": "Freshdesk" }
+    },
+    {
+      "id": "live-chat-crisp-vs-tawk",
+      "label": "Live chat landing: Crisp vs tawk.to",
+      "productName": "Live chat",
+      "a": { "url": "https://crisp.chat", "label": "Crisp" },
+      "b": { "url": "https://www.tawk.to", "label": "tawk.to" }
+    },
+    {
+      "id": "cloud-ide-stackblitz-vs-replit",
+      "label": "Cloud IDE landing: StackBlitz vs Replit",
+      "productName": "Cloud IDEs",
+      "a": { "url": "https://stackblitz.com", "label": "StackBlitz" },
+      "b": { "url": "https://replit.com", "label": "Replit" }
+    },
+    {
+      "id": "error-monitoring-bugsnag-vs-rollbar",
+      "label": "Error monitoring landing: Bugsnag vs Rollbar",
+      "productName": "Error monitoring",
+      "a": { "url": "https://www.bugsnag.com", "label": "Bugsnag" },
+      "b": { "url": "https://rollbar.com", "label": "Rollbar" }
+    },
+    {
+      "id": "session-replay-fullstory-vs-logrocket",
+      "label": "Session replay landing: Fullstory vs LogRocket",
+      "productName": "Session replay",
+      "a": { "url": "https://www.fullstory.com", "label": "Fullstory" },
+      "b": { "url": "https://logrocket.com", "label": "LogRocket" }
+    },
+    {
+      "id": "design-figma-vs-framer",
+      "label": "Design platform landing: Figma vs Framer",
+      "productName": "Design platforms",
+      "a": { "url": "https://www.figma.com", "label": "Figma" },
+      "b": { "url": "https://www.framer.com", "label": "Framer" }
+    },
+    {
+      "id": "whiteboard-miro-vs-mural",
+      "label": "Whiteboard landing: Miro vs Mural",
+      "productName": "Whiteboards",
+      "a": { "url": "https://miro.com", "label": "Miro" },
+      "b": { "url": "https://www.mural.co", "label": "Mural" }
+    },
+    {
+      "id": "document-signing-docusign-vs-dropbox-sign",
+      "label": "Document signing landing: DocuSign vs Dropbox Sign",
+      "productName": "Document signing",
+      "a": { "url": "https://www.docusign.com", "label": "DocuSign" },
+      "b": { "url": "https://sign.dropbox.com", "label": "Dropbox Sign" }
+    },
+    {
+      "id": "database-mongodb-vs-turso",
+      "label": "Database landing: MongoDB vs Turso",
+      "productName": "Databases",
+      "a": { "url": "https://www.mongodb.com/products/platform/atlas-database", "label": "MongoDB Atlas" },
+      "b": { "url": "https://turso.tech", "label": "Turso" }
+    },
+    {
+      "id": "communications-twilio-vs-bird",
+      "label": "Communications API landing: Twilio vs Bird",
+      "productName": "Communications APIs",
+      "a": { "url": "https://www.twilio.com", "label": "Twilio" },
+      "b": { "url": "https://bird.com", "label": "Bird" }
+    },
+    {
+      "id": "video-api-mux-vs-agora",
+      "label": "Video API landing: Mux vs Agora",
+      "productName": "Video APIs",
+      "a": { "url": "https://www.mux.com", "label": "Mux" },
+      "b": { "url": "https://www.agora.io", "label": "Agora" }
+    },
+    {
+      "id": "image-platform-cloudinary-vs-imgix",
+      "label": "Image platform landing: Cloudinary vs imgix",
+      "productName": "Image platforms",
+      "a": { "url": "https://cloudinary.com", "label": "Cloudinary" },
+      "b": { "url": "https://www.imgix.com", "label": "imgix" }
+    },
+    {
+      "id": "search-analytics-meilisearch-vs-splunk",
+      "label": "Search analytics landing: Meilisearch vs Splunk",
+      "productName": "Search analytics",
+      "a": { "url": "https://www.meilisearch.com", "label": "Meilisearch" },
+      "b": { "url": "https://www.splunk.com", "label": "Splunk" }
+    },
+    {
+      "id": "security-scanning-snyk-vs-gitguardian",
+      "label": "Security scanning landing: Snyk vs GitGuardian",
+      "productName": "Security scanning",
+      "a": { "url": "https://snyk.io", "label": "Snyk" },
+      "b": { "url": "https://www.gitguardian.com", "label": "GitGuardian" }
+    },
+    {
+      "id": "code-hosting-github-vs-gitlab",
+      "label": "Code hosting landing: GitHub vs GitLab",
+      "productName": "Code hosting",
+      "a": { "url": "https://github.com", "label": "GitHub" },
+      "b": { "url": "https://about.gitlab.com", "label": "GitLab" }
+    },
+    {
+      "id": "status-pages-atlassian-vs-better-stack",
+      "label": "Status page landing: Statuspage vs Better Stack",
+      "productName": "Status pages",
+      "a": { "url": "https://www.atlassian.com/software/statuspage", "label": "Statuspage" },
+      "b": { "url": "https://betterstack.com", "label": "Better Stack" }
+    },
+    {
+      "id": "uptime-monitoring-uptimerobot-vs-pingdom",
+      "label": "Uptime monitoring landing: UptimeRobot vs Pingdom",
+      "productName": "Uptime monitoring",
+      "a": { "url": "https://uptimerobot.com", "label": "UptimeRobot" },
+      "b": { "url": "https://www.pingdom.com", "label": "Pingdom" }
+    },
+    {
+      "id": "cloud-warehouse-bigquery-vs-redshift",
+      "label": "Cloud warehouse landing: BigQuery vs Redshift",
+      "productName": "Cloud warehouses",
+      "a": { "url": "https://cloud.google.com/bigquery", "label": "BigQuery" },
+      "b": { "url": "https://aws.amazon.com/redshift", "label": "Amazon Redshift" }
+    },
+    {
+      "id": "customer-data-mparticle-vs-rudderstack",
+      "label": "Customer data platform landing: mParticle vs RudderStack",
+      "productName": "Customer data platforms",
+      "a": { "url": "https://www.mparticle.com", "label": "mParticle" },
+      "b": { "url": "https://www.rudderstack.com", "label": "RudderStack" }
+    },
+    {
+      "id": "form-backend-formspree-vs-fillout",
+      "label": "Form backend landing: Formspree vs Fillout",
+      "productName": "Form backends",
+      "a": { "url": "https://formspree.io", "label": "Formspree" },
+      "b": { "url": "https://www.fillout.com", "label": "Fillout" }
+    },
+    {
+      "id": "heatmaps-inspectlet-vs-clarity",
+      "label": "Heatmap analytics landing: Inspectlet vs Microsoft Clarity",
+      "productName": "Heatmap analytics",
+      "a": { "url": "https://www.inspectlet.com", "label": "Inspectlet" },
+      "b": { "url": "https://clarity.microsoft.com", "label": "Microsoft Clarity" }
+    },
+    {
+      "id": "feature-management-configcat-vs-flagsmith",
+      "label": "Feature management landing: ConfigCat vs Flagsmith",
+      "productName": "Feature management",
+      "a": { "url": "https://configcat.com", "label": "ConfigCat" },
+      "b": { "url": "https://www.flagsmith.com", "label": "Flagsmith" }
+    },
+    {
+      "id": "developer-identity-fusionauth-vs-descope",
+      "label": "Developer identity landing: FusionAuth vs Descope",
+      "productName": "Developer identity",
+      "a": { "url": "https://fusionauth.io", "label": "FusionAuth" },
+      "b": { "url": "https://www.descope.com", "label": "Descope" }
+    },
+    {
+      "id": "lifecycle-email-loops-vs-iterable",
+      "label": "Lifecycle email landing: Loops vs Iterable",
+      "productName": "Lifecycle messaging",
+      "a": { "url": "https://loops.so", "label": "Loops" },
+      "b": { "url": "https://iterable.com", "label": "Iterable" }
+    },
+    {
+      "id": "notifications-onesignal-vs-novu",
+      "label": "Notifications landing: OneSignal vs Novu",
+      "productName": "Notifications",
+      "a": { "url": "https://onesignal.com", "label": "OneSignal" },
+      "b": { "url": "https://novu.co", "label": "Novu" }
+    },
+    {
+      "id": "compliance-vanta-vs-secureframe",
+      "label": "Compliance automation landing: Vanta vs Secureframe",
+      "productName": "Compliance automation",
+      "a": { "url": "https://www.vanta.com", "label": "Vanta" },
+      "b": { "url": "https://secureframe.com", "label": "Secureframe" }
+    },
+    {
+      "id": "static-analysis-semgrep-vs-sonarqube",
+      "label": "Static analysis landing: Semgrep vs SonarQube",
+      "productName": "Static analysis",
+      "a": { "url": "https://semgrep.dev", "label": "Semgrep" },
+      "b": { "url": "https://www.sonarsource.com/products/sonarqube", "label": "SonarQube" }
+    },
+    {
+      "id": "artifact-registry-sonatype-vs-jfrog",
+      "label": "Artifact registry landing: Sonatype vs JFrog",
+      "productName": "Artifact registries",
+      "a": { "url": "https://www.sonatype.com", "label": "Sonatype" },
+      "b": { "url": "https://jfrog.com", "label": "JFrog" }
+    },
+    {
+      "id": "event-streaming-confluent-vs-redpanda",
+      "label": "Event streaming landing: Confluent vs Redpanda",
+      "productName": "Event streaming",
+      "a": { "url": "https://www.confluent.io", "label": "Confluent" },
+      "b": { "url": "https://www.redpanda.com", "label": "Redpanda" }
+    },
+    {
+      "id": "workflow-engine-inngest-vs-trigger",
+      "label": "Workflow engine landing: Inngest vs Trigger.dev",
+      "productName": "Workflow engines",
+      "a": { "url": "https://www.inngest.com", "label": "Inngest" },
+      "b": { "url": "https://trigger.dev", "label": "Trigger.dev" }
+    },
+    {
+      "id": "durable-execution-temporal-vs-hatchet",
+      "label": "Durable execution landing: Temporal vs Hatchet",
+      "productName": "Durable execution",
+      "a": { "url": "https://temporal.io", "label": "Temporal" },
+      "b": { "url": "https://hatchet.run", "label": "Hatchet" }
+    },
+    {
+      "id": "ai-code-editor-cursor-vs-zed",
+      "label": "AI code editor landing: Cursor vs Zed",
+      "productName": "AI code editors",
+      "a": { "url": "https://cursor.com", "label": "Cursor" },
+      "b": { "url": "https://zed.dev", "label": "Zed" }
+    },
+    {
+      "id": "vector-search-qdrant-vs-chroma",
+      "label": "Vector search landing: Qdrant vs Chroma",
+      "productName": "Vector search",
+      "a": { "url": "https://qdrant.tech", "label": "Qdrant" },
+      "b": { "url": "https://www.trychroma.com", "label": "Chroma" }
+    },
+    {
+      "id": "test-automation-playwright-vs-browserstack",
+      "label": "Test automation landing: Playwright vs BrowserStack",
+      "productName": "Test automation",
+      "a": { "url": "https://playwright.dev", "label": "Playwright" },
+      "b": { "url": "https://www.browserstack.com", "label": "BrowserStack" }
+    },
+    {
+      "id": "api-gateway-kong-vs-tyk",
+      "label": "API gateway landing: Kong vs Tyk",
+      "productName": "API gateways",
+      "a": { "url": "https://konghq.com", "label": "Kong" },
+      "b": { "url": "https://tyk.io", "label": "Tyk" }
+    }
+  ]
+}

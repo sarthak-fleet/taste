@@ -36,11 +36,15 @@ interface CaptureQueue {
 interface CliArgs {
   queuePath: string;
   checkUrls: boolean;
+  urlConcurrency: number;
+  urlTimeoutMs: number;
 }
 
 function parseArgs(argv: string[]): CliArgs {
   let queuePath = "datasets/taste-capture-queue.json";
   let checkUrls = false;
+  let urlConcurrency = 8;
+  let urlTimeoutMs = 10_000;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -50,12 +54,20 @@ function parseArgs(argv: string[]): CliArgs {
       i += 1;
     } else if (arg === "--check-urls") {
       checkUrls = true;
+    } else if (arg === "--url-concurrency" && next) {
+      urlConcurrency = Number.parseInt(next, 10);
+      i += 1;
+    } else if (arg === "--url-timeout-ms" && next) {
+      urlTimeoutMs = Number.parseInt(next, 10);
+      i += 1;
     }
   }
 
   return {
     queuePath: path.resolve(ROOT, queuePath),
     checkUrls,
+    urlConcurrency: Number.isFinite(urlConcurrency) ? Math.max(1, urlConcurrency) : 8,
+    urlTimeoutMs: Number.isFinite(urlTimeoutMs) ? Math.max(1_000, urlTimeoutMs) : 10_000,
   };
 }
 
@@ -108,9 +120,9 @@ function validateQueue(queue: CaptureQueue) {
   };
 }
 
-async function checkUrl(url: string) {
+async function checkUrl(url: string, timeoutMs: number) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10_000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     let response = await fetch(url, { method: "HEAD", redirect: "follow", signal: controller.signal });
     if (response.status === 405 || response.status === 403) {
@@ -133,12 +145,31 @@ async function checkUrl(url: string) {
   }
 }
 
+async function mapWithConcurrency<T, R>(items: T[], concurrency: number, mapper: (item: T) => Promise<R>) {
+  const results: R[] = [];
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await mapper(items[currentIndex]!);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const queue = JSON.parse(await readFile(args.queuePath, "utf8")) as CaptureQueue;
   const validation = validateQueue(queue);
   const urls = [...new Set((queue.jobs ?? []).flatMap((job) => [job.a?.url, job.b?.url].filter(Boolean) as string[]))];
-  const urlChecks = args.checkUrls ? await Promise.all(urls.map(checkUrl)) : undefined;
+  const urlChecks = args.checkUrls
+    ? await mapWithConcurrency(urls, args.urlConcurrency, (url) => checkUrl(url, args.urlTimeoutMs))
+    : undefined;
   const urlFailures = urlChecks?.filter((result) => !result.ok) ?? [];
   const ok = validation.ok && urlFailures.length === 0;
 
@@ -146,6 +177,10 @@ async function main() {
     queue: path.relative(ROOT, args.queuePath),
     ok,
     validation,
+    urlCheckOptions: args.checkUrls ? {
+      concurrency: args.urlConcurrency,
+      timeoutMs: args.urlTimeoutMs,
+    } : undefined,
     urlChecks,
   }, null, 2));
 
