@@ -87,6 +87,15 @@ train and holdout records. The audit and report both require at least 10 real
 non-synthetic held-out labels by default; synthetic-only reports are pipeline
 smoke, not promotion evidence.
 
+The report emits two separate gates:
+
+- `comparisonReadiness`: enough real holdout labels for a product-side comparison
+  and ranker holdout accuracy at least matches the mechanical baseline.
+- `promotionReadiness`: stricter launch gate. Defaults require 50 real heldout
+  labels, 0.70 holdout accuracy, and +0.05 accuracy over the mechanical baseline.
+  Tune with `--min-promote-real-holdout`, `--min-promote-total-holdout`,
+  `--min-promote-accuracy`, and `--min-promote-delta`.
+
 Current local status as of 2026-06-19: the first 10-pair seed plus the 20-pair
 expansion queue produce 30 real curated labels. A 20 train / 10 holdout report
 passes the real-heldout readiness gate. The expanded

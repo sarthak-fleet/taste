@@ -33,7 +33,9 @@ The first real-label path is wired end to end:
   live URLs validated, captured locally, and labeled locally
 - current local report over 30 real curated labels: 20 train / 10 holdout,
   holdout readiness passing, `taste-linear-evidence-ranker-v0` comparison-ready
-  but not promotion-ready (`0.50` holdout accuracy vs `0.30` mechanical baseline)
+  but not promotion-ready (`0.50` holdout accuracy vs `0.30` mechanical baseline;
+  promotion gate defaults require 50 real heldout labels, 0.70 accuracy, and
+  +0.05 over baseline)
 
 This is a pipeline proof, not model-quality proof. The next real milestone is
 label volume: expand from 10 seed pairs to 100-300 category-balanced real pairs,

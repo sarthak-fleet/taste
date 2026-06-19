@@ -49,7 +49,10 @@ Taste model should beat.
 
 Set `TASTE_RANKER_MODEL_JSON` on the Pages app to route visual evidence through
 the saved local linear ranker before VLM or mechanical fallback. The value is
-the JSON produced by `pnpm train:taste-ranker`.
+the JSON produced by `pnpm train:taste-ranker`. Only use it for product
+comparison when `reports/taste-model-report.json` has `comparisonReadiness.ok`.
+Do not treat it as the promoted Taste model until `promotionReadiness.ok` is
+also true.
 
 ## Taste capture worker
 

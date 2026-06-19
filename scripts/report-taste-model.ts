@@ -22,6 +22,10 @@ interface CliArgs {
   tieMargin: number;
   minRealHoldout: number;
   minTotalHoldout: number;
+  minPromoteRealHoldout: number;
+  minPromoteTotalHoldout: number;
+  minPromoteAccuracy: number;
+  minPromoteDelta: number;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -32,6 +36,10 @@ function parseArgs(argv: string[]): CliArgs {
   let tieMargin = 5;
   let minRealHoldout = 10;
   let minTotalHoldout = 10;
+  let minPromoteRealHoldout = 50;
+  let minPromoteTotalHoldout = 50;
+  let minPromoteAccuracy = 0.7;
+  let minPromoteDelta = 0.05;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -57,6 +65,18 @@ function parseArgs(argv: string[]): CliArgs {
     } else if (arg === "--min-total-holdout" && next) {
       minTotalHoldout = Number.parseInt(next, 10);
       i += 1;
+    } else if (arg === "--min-promote-real-holdout" && next) {
+      minPromoteRealHoldout = Number.parseInt(next, 10);
+      i += 1;
+    } else if (arg === "--min-promote-total-holdout" && next) {
+      minPromoteTotalHoldout = Number.parseInt(next, 10);
+      i += 1;
+    } else if (arg === "--min-promote-accuracy" && next) {
+      minPromoteAccuracy = Number.parseFloat(next);
+      i += 1;
+    } else if (arg === "--min-promote-delta" && next) {
+      minPromoteDelta = Number.parseFloat(next);
+      i += 1;
     }
   }
 
@@ -68,12 +88,20 @@ function parseArgs(argv: string[]): CliArgs {
     tieMargin: Number.isFinite(tieMargin) ? tieMargin : 5,
     minRealHoldout: Number.isFinite(minRealHoldout) ? minRealHoldout : 10,
     minTotalHoldout: Number.isFinite(minTotalHoldout) ? minTotalHoldout : 10,
+    minPromoteRealHoldout: Number.isFinite(minPromoteRealHoldout) ? minPromoteRealHoldout : 50,
+    minPromoteTotalHoldout: Number.isFinite(minPromoteTotalHoldout) ? minPromoteTotalHoldout : 50,
+    minPromoteAccuracy: Number.isFinite(minPromoteAccuracy) ? minPromoteAccuracy : 0.7,
+    minPromoteDelta: Number.isFinite(minPromoteDelta) ? minPromoteDelta : 0.05,
   };
 }
 
 async function readJsonl(filePath: string): Promise<TasteJsonlRecord[]> {
   const text = await readFile(filePath, "utf8");
   return text.split("\n").filter(Boolean).map((line) => JSON.parse(line) as TasteJsonlRecord);
+}
+
+function gate(ok: boolean, reasons: string[]) {
+  return { ok, reasons };
 }
 
 async function main() {
@@ -97,6 +125,31 @@ async function main() {
     minRealLabeled: args.minRealHoldout,
     minTotalLabeled: args.minTotalHoldout,
   });
+  const holdoutDeltaAccuracy = holdoutRanker.accuracy - holdoutMechanical.accuracy;
+  const comparisonReadiness = gate(readiness.ok && holdoutRanker.accuracy >= holdoutMechanical.accuracy, [
+    ...readiness.reasons,
+    ...(holdoutRanker.accuracy < holdoutMechanical.accuracy
+      ? [`Ranker holdout accuracy ${holdoutRanker.accuracy.toFixed(3)} is below mechanical baseline ${holdoutMechanical.accuracy.toFixed(3)}.`]
+      : []),
+  ]);
+  const promotionLabelGate = evaluateTasteJsonlReadiness(holdoutSummary, {
+    minRealLabeled: args.minPromoteRealHoldout,
+    minTotalLabeled: args.minPromoteTotalHoldout,
+  });
+  const promotionReadiness = gate(
+    promotionLabelGate.ok &&
+      holdoutRanker.accuracy >= args.minPromoteAccuracy &&
+      holdoutDeltaAccuracy >= args.minPromoteDelta,
+    [
+      ...promotionLabelGate.reasons,
+      ...(holdoutRanker.accuracy < args.minPromoteAccuracy
+        ? [`Ranker holdout accuracy ${holdoutRanker.accuracy.toFixed(3)} is below promotion threshold ${args.minPromoteAccuracy.toFixed(3)}.`]
+        : []),
+      ...(holdoutDeltaAccuracy < args.minPromoteDelta
+        ? [`Ranker holdout delta ${holdoutDeltaAccuracy.toFixed(3)} is below promotion threshold ${args.minPromoteDelta.toFixed(3)}.`]
+        : []),
+    ],
+  );
   const report = {
     generatedAt: new Date().toISOString(),
     modelId: model.modelId,
@@ -107,6 +160,14 @@ async function main() {
       holdout: holdoutSummary,
     },
     readiness,
+    comparisonReadiness,
+    promotionReadiness,
+    promotionThresholds: {
+      minRealHoldout: args.minPromoteRealHoldout,
+      minTotalHoldout: args.minPromoteTotalHoldout,
+      minAccuracy: args.minPromoteAccuracy,
+      minDeltaAccuracy: args.minPromoteDelta,
+    },
     metrics: {
       train: {
         mechanical: trainMechanical,
@@ -120,11 +181,11 @@ async function main() {
       },
     },
     recommendation:
-      !readiness.ok
-        ? `Holdout is not promotion-ready: ${readiness.reasons.join(" ")}`
-        : holdoutRanker.accuracy >= holdoutMechanical.accuracy
-          ? "Ranker is safe to compare in product behind TASTE_RANKER_MODEL_JSON."
-          : "Do not promote this ranker; collect more labels or adjust features.",
+      promotionReadiness.ok
+        ? "Ranker is promotion-ready behind TASTE_RANKER_MODEL_JSON."
+        : comparisonReadiness.ok
+          ? `Ranker is comparison-ready but not promotion-ready: ${promotionReadiness.reasons.join(" ")}`
+          : `Do not compare or promote this ranker yet: ${comparisonReadiness.reasons.join(" ")}`,
   };
 
   await mkdir(path.dirname(args.outPath), { recursive: true });
@@ -136,6 +197,8 @@ async function main() {
     holdoutAccuracy: report.metrics.holdout.ranker.accuracy,
     holdoutBaselineAccuracy: report.metrics.holdout.mechanical.accuracy,
     readiness: report.readiness.ok,
+    comparisonReady: report.comparisonReadiness.ok,
+    promotionReady: report.promotionReadiness.ok,
     recommendation: report.recommendation,
   }, null, 2));
 }
