@@ -24,7 +24,7 @@
   - screenshot capture CLI for desktop/mobile above-fold and full-page evidence
   - Web-TASTE capture queue runner that materializes repeatable A/B capture and pair commands
   - curated 10-pair SaaS/devtool seed queue, validated 20-pair expansion queue, plus queue structure/URL validator
-  - 40-pair promotion queue that moves the curated local set from 30 to 70 real labels after capture/review
+  - 40-pair promotion queue captured and labeled locally, moving the curated set from 30 to 70 real labels
   - mechanical visual evidence manifest with overflow, clipped text, contrast, and image-load signals
   - pairwise dataset manifest builder for labelable Web-TASTE training examples
   - synthetic degradation pair generator for bootstrapping non-tie preference data
@@ -76,9 +76,9 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Capture and label `docs/examples/taste-curated-promotion-queue.json`, then split with `--min-test-records 50`
 - Expand real held-out labels beyond the 70-pair promotion queue toward 100-300 pairs
-- Keep `taste-linear-evidence-ranker-v0` comparison-only until label volume improves; latest local report is 0.50 holdout accuracy vs 0.30 mechanical baseline on 10 heldout labels
+- Add screenshot-aware features/modeling; DOM/mechanical features alone reached only 0.58 holdout accuracy on the 50-record promotion holdout
+- Keep `taste-linear-evidence-ranker-v0` comparison-only; latest local report is 0.58 holdout accuracy vs 0.34 mechanical baseline on 50 heldout labels
 - Email notifications
 
 ## Deferred / parked

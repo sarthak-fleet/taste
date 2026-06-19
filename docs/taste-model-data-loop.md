@@ -114,13 +114,15 @@ The report emits two separate gates:
   Tune with `--min-promote-real-holdout`, `--min-promote-total-holdout`,
   `--min-promote-accuracy`, and `--min-promote-delta`.
 
-Current local status as of 2026-06-19: the first 10-pair seed plus the 20-pair
-expansion queue produce 30 real curated labels. A 20 train / 10 holdout report
-passes the real-heldout readiness gate. The expanded
-`taste-linear-evidence-ranker-v0` uses mechanical summary plus viewport artifact
-metrics and is comparison-ready but not promotion-ready (`0.50` holdout accuracy
-vs `0.30` mechanical baseline). Treat this as evidence to collect more labels
-and move to screenshot-aware modeling before calling it a product model.
+Current local status as of 2026-06-19: the first 10-pair seed, 20-pair
+expansion queue, and 40-pair promotion queue have been captured and labeled
+locally, producing 70 real curated labels. A promotion-gate split with
+`--min-test-records 50` produced 20 train / 50 holdout records.
+`taste-linear-evidence-ranker-v0` remains comparison-ready but not
+promotion-ready (`0.58` holdout accuracy vs `0.34` mechanical baseline; the
+promotion gate requires `0.70`). Treat this as evidence that DOM/mechanical
+features are insufficient by themselves; the next model step is either more
+real labels or screenshot-aware features/modeling before product promotion.
 
 ## Runtime
 
