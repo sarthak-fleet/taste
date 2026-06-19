@@ -13,6 +13,16 @@ export const TASTE_RANKER_FEATURE_NAMES = [
   "contrast_delta",
   "failed_images_delta",
   "overflow_delta",
+  "desktop_text_density_delta",
+  "mobile_text_density_delta",
+  "desktop_first_section_ratio_delta",
+  "mobile_first_section_ratio_delta",
+  "desktop_action_count_delta",
+  "mobile_action_count_delta",
+  "desktop_heading_count_delta",
+  "mobile_heading_count_delta",
+  "desktop_scroll_depth_delta",
+  "mobile_scroll_depth_delta",
 ] as const;
 
 export interface TasteLinearRankerModel {
@@ -73,13 +83,40 @@ export function parseTasteLinearRankerModelJson(json: string): TasteLinearRanker
 export function tasteRankerFeatureVector(a: TasteBaselineVariant, b: TasteBaselineVariant): number[] {
   const av = a.mechanicalSummary;
   const bv = b.mechanicalSummary;
+  const desktopA = artifactMetrics(a, "desktop");
+  const desktopB = artifactMetrics(b, "desktop");
+  const mobileA = artifactMetrics(a, "mobile");
+  const mobileB = artifactMetrics(b, "mobile");
   return [
     (bv.highestRiskScore - av.highestRiskScore) / 100,
     (bv.totalClippedTextCandidates - av.totalClippedTextCandidates) / 20,
     (bv.totalLowContrastCandidates - av.totalLowContrastCandidates) / 20,
     (bv.totalFailedImages - av.totalFailedImages) / 10,
     (bv.maxHorizontalOverflow - av.maxHorizontalOverflow) / 500,
+    delta(desktopB?.page.aboveFoldTextDensity, desktopA?.page.aboveFoldTextDensity, 0.02),
+    delta(mobileB?.page.aboveFoldTextDensity, mobileA?.page.aboveFoldTextDensity, 0.04),
+    delta(desktopB?.page.firstSectionHeightRatio, desktopA?.page.firstSectionHeightRatio, 5),
+    delta(mobileB?.page.firstSectionHeightRatio, mobileA?.page.firstSectionHeightRatio, 8),
+    delta(desktopB?.page.visibleActionCount, desktopA?.page.visibleActionCount, 30),
+    delta(mobileB?.page.visibleActionCount, mobileA?.page.visibleActionCount, 30),
+    delta(desktopB?.page.visibleHeadingCount, desktopA?.page.visibleHeadingCount, 12),
+    delta(mobileB?.page.visibleHeadingCount, mobileA?.page.visibleHeadingCount, 12),
+    delta(scrollDepth(desktopB), scrollDepth(desktopA), 10),
+    delta(scrollDepth(mobileB), scrollDepth(mobileA), 12),
   ];
+}
+
+function artifactMetrics(variant: TasteBaselineVariant, viewport: "desktop" | "mobile") {
+  return variant.artifacts.find((artifact) => artifact.viewport === viewport)?.metrics;
+}
+
+function delta(b: number | null | undefined, a: number | null | undefined, scale: number) {
+  return ((b ?? 0) - (a ?? 0)) / scale;
+}
+
+function scrollDepth(metrics: ReturnType<typeof artifactMetrics>) {
+  if (!metrics) return 0;
+  return metrics.page.scrollHeight / Math.max(1, metrics.page.viewportHeight);
 }
 
 export function predictTasteRankerProbFromFeatures(model: TasteLinearRankerModel, features: number[]) {
@@ -205,7 +242,7 @@ function buildRankerVerdicts(params: {
           ? `Local ranker found no clear preference on ${criterion.label.toLowerCase()}.`
           : `Local ranker preferred ${
               pair.preferredVariantId === pair.variantA.id ? pair.variantA.label : pair.variantB.label
-            } using learned mechanical taste weights.`,
+            } using learned evidence weights.`,
     })),
   );
 }

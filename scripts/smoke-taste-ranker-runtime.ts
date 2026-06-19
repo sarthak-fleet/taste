@@ -18,15 +18,25 @@ function variant(id: string, highestRiskScore: number): TasteBaselineVariant {
 }
 
 const model: TasteLinearRankerModel = {
-  modelId: "taste-linear-mechanical-ranker-smoke",
+  modelId: "taste-linear-evidence-ranker-smoke",
   featureNames: [
     "risk_delta",
     "clipped_delta",
     "contrast_delta",
     "failed_images_delta",
     "overflow_delta",
+    "desktop_text_density_delta",
+    "mobile_text_density_delta",
+    "desktop_first_section_ratio_delta",
+    "mobile_first_section_ratio_delta",
+    "desktop_action_count_delta",
+    "mobile_action_count_delta",
+    "desktop_heading_count_delta",
+    "mobile_heading_count_delta",
+    "desktop_scroll_depth_delta",
+    "mobile_scroll_depth_delta",
   ],
-  weights: [4, 0, 0, 0, 0],
+  weights: [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   bias: 0,
 };
 

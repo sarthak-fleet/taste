@@ -89,10 +89,11 @@ smoke, not promotion evidence.
 
 Current local status as of 2026-06-19: the first 10-pair seed plus the 20-pair
 expansion queue produce 30 real curated labels. A 20 train / 10 holdout report
-passes the real-heldout readiness gate, but the linear mechanical-feature ranker
-is not promotable (`0.20` holdout accuracy vs `0.30` mechanical baseline). Treat
-this as evidence that the next model needs screenshot-aware features and more
-labels, not as a product model.
+passes the real-heldout readiness gate. The expanded
+`taste-linear-evidence-ranker-v0` uses mechanical summary plus viewport artifact
+metrics and is comparison-ready but not promotion-ready (`0.50` holdout accuracy
+vs `0.30` mechanical baseline). Treat this as evidence to collect more labels
+and move to screenshot-aware modeling before calling it a product model.
 
 ## Runtime
 

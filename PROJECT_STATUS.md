@@ -75,7 +75,7 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
 - Expand real held-out labels from the current local 30-pair curated set to 100-300 pairs
-- Replace the current mechanical-feature linear ranker before promotion; latest local report is not promotable (0.20 holdout accuracy vs 0.30 mechanical baseline)
+- Keep `taste-linear-evidence-ranker-v0` comparison-only until label volume improves; latest local report is 0.50 holdout accuracy vs 0.30 mechanical baseline on 10 heldout labels
 - Email notifications
 
 ## Deferred / parked

@@ -92,7 +92,7 @@ function accuracy(examples: TrainExample[], weights: number[], bias: number) {
   if (!examples.length) return 0;
   let correct = 0;
   const model: TasteLinearRankerModel = {
-    modelId: "taste-linear-mechanical-ranker-v0",
+    modelId: "taste-linear-evidence-ranker-v0",
     featureNames: TASTE_RANKER_FEATURE_NAMES,
     weights,
     bias,
@@ -133,7 +133,7 @@ async function main() {
   }
 
   const model = {
-    modelId: "taste-linear-mechanical-ranker-v0",
+    modelId: "taste-linear-evidence-ranker-v0",
     trainedAt: new Date().toISOString(),
     featureNames: TASTE_RANKER_FEATURE_NAMES,
     weights,

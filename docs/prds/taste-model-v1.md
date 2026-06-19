@@ -32,13 +32,13 @@ The first real-label path is wired end to end:
 - second curated expansion queue: 20 additional SaaS/devtool pairs with 40
   live URLs validated, captured locally, and labeled locally
 - current local report over 30 real curated labels: 20 train / 10 holdout,
-  holdout readiness passing, linear mechanical-feature ranker **not promotable**
-  (`0.20` holdout accuracy vs `0.30` mechanical baseline)
+  holdout readiness passing, `taste-linear-evidence-ranker-v0` comparison-ready
+  but not promotion-ready (`0.50` holdout accuracy vs `0.30` mechanical baseline)
 
 This is a pipeline proof, not model-quality proof. The next real milestone is
 label volume: expand from 10 seed pairs to 100-300 category-balanced real pairs,
-then train a screenshot-aware model or richer feature extractor and report
-held-out accuracy against the mechanical baseline before promoting a model behind
+then train a screenshot-aware model and report category-balanced held-out
+accuracy against the mechanical baseline before promoting a model behind
 `TASTE_RANKER_MODEL_JSON`.
 
 ## Why now

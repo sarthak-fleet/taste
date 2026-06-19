@@ -20,6 +20,7 @@ interface JsonlRecord {
     id: string;
     label: string;
     url: string;
+    artifacts: TastePairManifest["variants"][number]["artifacts"];
     screenshots: Array<{
       viewport: string;
       aboveFoldPath: string;
@@ -84,6 +85,7 @@ function toRecord(pair: TastePairManifest): JsonlRecord {
       id: variant.id,
       label: variant.label,
       url: variant.url,
+      artifacts: variant.artifacts,
       screenshots: variant.artifacts.map((artifact) => ({
         viewport: artifact.viewport,
         aboveFoldPath: artifact.aboveFoldPath,
