@@ -87,6 +87,13 @@ train and holdout records. The audit and report both require at least 10 real
 non-synthetic held-out labels by default; synthetic-only reports are pipeline
 smoke, not promotion evidence.
 
+Current local status as of 2026-06-19: the first 10-pair seed plus the 20-pair
+expansion queue produce 30 real curated labels. A 20 train / 10 holdout report
+passes the real-heldout readiness gate, but the linear mechanical-feature ranker
+is not promotable (`0.20` holdout accuracy vs `0.30` mechanical baseline). Treat
+this as evidence that the next model needs screenshot-aware features and more
+labels, not as a product model.
+
 ## Runtime
 
 When a report is good enough for a product trial, set the Pages env var:

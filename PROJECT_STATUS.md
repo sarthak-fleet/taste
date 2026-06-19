@@ -74,7 +74,8 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Deploy/configure production capture Worker bindings and callback auth
 - UI trigger/status for study capture runs
 - Public screenshot URL configuration for VLM judging, or signed image delivery if screenshots stay private
-- Real held-out label collection using the queue/review/audit loop, starting with the validated 20-pair expansion queue
+- Expand real held-out labels from the current local 30-pair curated set to 100-300 pairs
+- Replace the current mechanical-feature linear ranker before promotion; latest local report is not promotable (0.20 holdout accuracy vs 0.30 mechanical baseline)
 - Email notifications
 
 ## Deferred / parked
