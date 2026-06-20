@@ -1,7 +1,8 @@
 # ShipRank — Project Status
 
 **Product:** Pre-A/B testing for software teams (B2B: ShipRank, public wedge: Product Arena)
-**Stack:** Vite + React SPA, Cloudflare Pages Functions, D1 (SQLite), Drizzle ORM, Tailwind v4
+**Stack:** Vite + React SPA, Cloudflare Pages Functions, D1 (SQLite), Drizzle ORM, Tailwind v4  
+**Last updated:** 2026-06-20
 
 ## Shipped (MVP v0.1)
 
@@ -53,22 +54,22 @@
 - Evaluator application form
 - Admin overview dashboard
 - D1 schema + seed data (demo workspace, agents, sample arena battle)
+- **SaaS Maker auth hub (2026-06-20):** device-flow helper for fleet Cockpit auth (`connect` / token storage); replaces demo-only workspace assumption for fleet operators.
 
 ## Run locally
 
 ```bash
-pnpm install
-pnpm db:migrate:local
-pnpm db:seed
-pnpm build
-pnpm dev:full   # API on :8788, Vite proxies /api
-# Or: pnpm dev (frontend only, API needs dev:full)
+bun install
+bun run db:migrate:local
+bun run db:seed
+bun run build
+bun run dev:full   # API on :8788, Vite proxies /api
+# Or: bun run dev (frontend only, API needs dev:full)
 ```
 
 ## Planned next
 
 - Real LLM agent integration (OpenAI-compatible via env `AI_API_KEY`)
-- Auth (workspaces, team members) via better-auth
 - Manual evaluator task UI with assignment tokens
 - Admin report editing UI
 - Outcome submission flow + reputation updates
@@ -95,5 +96,5 @@ pnpm dev:full   # API on :8788, Vite proxies /api
 - Human evaluations are simulated on launch (not real recruited panel)
 - AI agents use deterministic mock scoring (structure matches production schema)
 - Pairwise order-bias checks are simulated; real LLM/VLM integration should run both display orders and count order-inconsistent judgments as ties/low confidence
-- No auth — single demo workspace (`ws-demo-001`)
+- Fleet auth via SaaS Maker device flow for operators; product workspaces/team members still planned
 - No payments
