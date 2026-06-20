@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 import { runTasteLinearRankerForVariants, type TasteLinearRankerModel } from "../src/lib/tasteRanker.ts";
 import type { TasteBaselineVariant } from "../src/lib/tasteBaseline.ts";
 

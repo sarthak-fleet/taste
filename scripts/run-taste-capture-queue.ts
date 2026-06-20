@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -117,7 +117,8 @@ function command(args: string[]) {
 
 function captureCommand(variant: QueueVariant, outDir: string) {
   const args = [
-    "pnpm",
+    "bun",
+    "run",
     "capture:taste",
     "--",
     "--url",
@@ -134,7 +135,8 @@ function captureCommand(variant: QueueVariant, outDir: string) {
 function pairCommand(job: QueueJob, aManifest: string, bManifest: string, pairsOut: string) {
   const sourceKind = job.sourceKind ?? "curated_gallery";
   const args = [
-    "pnpm",
+    "bun",
+    "run",
     "pair:taste",
     "--",
     "--a",
