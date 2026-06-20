@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 interface CliArgs {
   api: string;
   studyId: string;
