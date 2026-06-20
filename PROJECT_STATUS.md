@@ -55,6 +55,7 @@
 - Admin overview dashboard
 - D1 schema + seed data (demo workspace, agents, sample arena battle)
 - **SaaS Maker auth hub (2026-06-20):** device-flow helper for fleet Cockpit auth (`connect` / token storage); replaces demo-only workspace assumption for fleet operators.
+- **Bun toolchain (2026-06-20):** `packageManager` + scripts standardized on Bun for install/build/dev (replaces pnpm in docs and CI where applicable).
 
 ## Run locally
 
