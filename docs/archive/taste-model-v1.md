@@ -16,7 +16,9 @@ specific job:
 This is a supervised pairwise preference model first. Reinforcement learning is
 deferred until the reward model is stable enough to guide an editing agent.
 
-## Current status - 2026-06-19
+## Current status - 2026-06-20
+
+Status: partial/blocked on label volume — pipeline proof shipped; promotion gate not met.
 
 The first real-label path is wired end to end:
 
