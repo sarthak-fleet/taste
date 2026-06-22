@@ -182,3 +182,16 @@ CREATE TABLE `arena_votes` (
   `rationale` text,
   `created_at` text NOT NULL
 );
+
+-- Foreign-key indexes for query performance
+CREATE INDEX IF NOT EXISTS `studies_workspace_id_idx` ON `studies` (`workspace_id`);
+CREATE INDEX IF NOT EXISTS `variants_study_id_idx` ON `variants` (`study_id`);
+CREATE INDEX IF NOT EXISTS `agent_runs_study_id_idx` ON `agent_runs` (`study_id`);
+CREATE INDEX IF NOT EXISTS `agent_runs_variant_id_idx` ON `agent_runs` (`variant_id`);
+CREATE INDEX IF NOT EXISTS `predictions_study_id_idx` ON `predictions` (`study_id`);
+CREATE INDEX IF NOT EXISTS `predictions_evaluator_id_idx` ON `predictions` (`evaluator_id`);
+CREATE INDEX IF NOT EXISTS `assignments_study_id_idx` ON `assignments` (`study_id`);
+CREATE INDEX IF NOT EXISTS `evaluations_assignment_id_idx` ON `evaluations` (`assignment_id`);
+CREATE INDEX IF NOT EXISTS `arena_votes_battle_id_idx` ON `arena_votes` (`battle_id`);
+CREATE INDEX IF NOT EXISTS `visual_evaluations_study_id_idx` ON `visual_evaluations` (`study_id`);
+CREATE INDEX IF NOT EXISTS `visual_evaluations_variant_id_idx` ON `visual_evaluations` (`variant_id`);

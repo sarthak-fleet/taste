@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import * as schema from "../../../src/db/schema";
 import type { Db } from "../_context";
 import {
@@ -53,10 +53,12 @@ export async function runScoringAndReport(db: Db, studyId: string) {
 
   const agentScoresByVariant = new Map<string, number[]>();
   const agentTaskSignal = new Map<string, number[]>();
+  const agentOutputByRunId = new Map<string, unknown>();
 
   for (const run of agentRuns) {
     if (!run.outputJson) continue;
     const output = JSON.parse(run.outputJson);
+    agentOutputByRunId.set(run.id, output);
     const dimScores = Object.values(output.scores ?? {}) as number[];
     const avg = dimScores.length ? dimScores.reduce((a, b) => a + b, 0) / dimScores.length : 3;
     const list = agentScoresByVariant.get(run.variantId) ?? [];
@@ -74,14 +76,19 @@ export async function runScoringAndReport(db: Db, studyId: string) {
   let totalPredictions = 0;
 
   if (hasHumanValidation) {
+    // Batch-load all evaluator profiles in a single query to avoid N+1
+    const evaluatorIds = [...new Set(humanPreds.map((p) => p.evaluatorId).filter((id): id is string => id != null))];
+    const evaluators = evaluatorIds.length > 0
+      ? await db
+          .select()
+          .from(schema.evaluatorProfiles)
+          .where(inArray(schema.evaluatorProfiles.id, evaluatorIds))
+      : [];
+    const evaluatorById = new Map(evaluators.map((e) => [e.id, e]));
+
     for (const pred of humanPreds) {
       if (!pred.predictedWinnerVariantId) continue;
-      const [evaluator] = pred.evaluatorId
-        ? await db
-            .select()
-            .from(schema.evaluatorProfiles)
-            .where(eq(schema.evaluatorProfiles.id, pred.evaluatorId))
-        : [];
+      const evaluator = pred.evaluatorId ? evaluatorById.get(pred.evaluatorId) : undefined;
       const w = evaluatorTypeWeight((pred.evaluatorType as "target_user") ?? "target_user");
       predictionsByVariant.set(
         pred.predictedWinnerVariantId,
@@ -117,7 +124,7 @@ export async function runScoringAndReport(db: Db, studyId: string) {
     ? (predictionsByVariant.get(winnerVariantId) ?? 0) / Math.max(totalPredictions, 1)
     : 0;
 
-  const agentAgreement = computeAgentAgreement(agentRuns);
+  const agentAgreement = computeAgentAgreement(agentRuns, agentOutputByRunId);
 
   const scoreInputs = variants.map((v, vi) => {
     const agentAvgs = agentScoresByVariant.get(v.id) ?? [3];
@@ -177,7 +184,7 @@ export async function runScoringAndReport(db: Db, studyId: string) {
 
   const agentOutputs = agentRuns
     .filter((r) => r.outputJson)
-    .map((r) => JSON.parse(r.outputJson!));
+    .map((r) => agentOutputByRunId.get(r.id) ?? JSON.parse(r.outputJson!));
   const criteria = criteriaForStudy(study.studyType, study.primaryObjective ?? undefined);
   const agentPanelForSignal = buildAgentPanelForSignal(agentOutputs, criteria);
   const signalQuality = summarizeSignalQuality({
@@ -323,16 +330,17 @@ function buildAgentPanelForSignal(
 
 function computeAgentAgreement(
   agentRuns: Array<{ variantId: string; outputJson: string | null; agentId?: string }>,
+  cachedOutputs: Map<string, unknown>,
 ): number {
   const winnerCounts = new Map<string, number>();
   const byAgent = new Map<string, Array<{ variantId: string; rank: number }>>();
 
   for (const run of agentRuns) {
     if (!run.outputJson) continue;
-    const output = JSON.parse(run.outputJson);
-    const agentKey = output.agentSlug ?? run.agentId ?? "unknown";
+    const output = cachedOutputs.get(run.id) ?? JSON.parse(run.outputJson);
+    const agentKey = (output as { agentSlug?: string }).agentSlug ?? run.agentId ?? "unknown";
     const list = byAgent.get(agentKey) ?? [];
-    list.push({ variantId: run.variantId, rank: output.prediction?.predictedRank ?? 99 });
+    list.push({ variantId: run.variantId, rank: (output as { prediction?: { predictedRank?: number } }).prediction?.predictedRank ?? 99 });
     byAgent.set(agentKey, list);
   }
 

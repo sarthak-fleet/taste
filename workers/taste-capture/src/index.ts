@@ -293,6 +293,7 @@ async function collectMetrics(page: Awaited<ReturnType<Awaited<ReturnType<typeof
 async function putScreenshot(bucket: R2Bucket, key: string, bytes: Uint8Array) {
   await bucket.put(key, bytes, {
     httpMetadata: { contentType: "image/png" },
+    cacheControl: "public, max-age=31536000, immutable",
   });
 }
 

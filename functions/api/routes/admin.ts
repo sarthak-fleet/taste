@@ -8,7 +8,7 @@ export const adminRouter = new Hono<{ Bindings: Env }>();
 
 adminRouter.get("/overview", async (c) => {
   const db = c.get("db");
-  const allStudies = await db.select().from(schema.studies).orderBy(desc(schema.studies.createdAt));
+  const allStudies = await db.select().from(schema.studies).orderBy(desc(schema.studies.createdAt)).limit(10);
   const evaluators = await db.select().from(schema.evaluatorProfiles);
   const battles = await db.select().from(schema.arenaBattles);
 

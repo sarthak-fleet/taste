@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, isNotNull, inArray } from "drizzle-orm";
 import * as schema from "../../../src/db/schema";
 import type { Env } from "../[[route]]";
 import { notFound } from "../_context";
@@ -129,16 +129,29 @@ arenaRouter.post("/battles/:slug/vote", async (c) => {
 
 arenaRouter.get("/leaderboard", async (c) => {
   const db = c.get("db");
-  const votes = await db.select().from(schema.arenaVotes);
-  const battles = await db.select().from(schema.arenaBattles);
 
-  const battleMap = new Map(battles.map((b) => [b.id, b]));
+  // Only load revealed battles that have a winning variant
+  const revealedBattles = await db
+    .select()
+    .from(schema.arenaBattles)
+    .where(and(eq(schema.arenaBattles.status, "revealed"), isNotNull(schema.arenaBattles.winningVariantId)));
+
+  if (revealedBattles.length === 0) return c.json([]);
+
+  const battleMap = new Map(revealedBattles.map((b) => [b.id, b]));
+  const battleIds = revealedBattles.map((b) => b.id);
+
+  // Only load votes for those revealed battles
+  const votes = await db
+    .select()
+    .from(schema.arenaVotes)
+    .where(inArray(schema.arenaVotes.battleId, battleIds));
 
   const scores = new Map<string, { correct: number; total: number; name: string }>();
 
   for (const vote of votes) {
     const battle = battleMap.get(vote.battleId);
-    if (!battle || battle.status !== "revealed" || !battle.winningVariantId) continue;
+    if (!battle) continue;
 
     const key = vote.voterName ?? "Anonymous";
     const entry = scores.get(key) ?? { correct: 0, total: 0, name: key };

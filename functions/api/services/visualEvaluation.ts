@@ -68,29 +68,31 @@ function buildBaselineVariant(variant: Variant, evaluation: VisualEvaluation): T
 
 async function replaceTasteVisualRuns(db: Db, studyId: string, result: TasteVisualResult) {
   const staleAgentIds = new Set([TASTE_BASELINE_MODEL_ID, result.modelId]);
-  for (const agentId of staleAgentIds) {
-    await db
-      .delete(schema.agentRuns)
-      .where(and(eq(schema.agentRuns.studyId, studyId), eq(schema.agentRuns.agentId, agentId)));
-    await db
-      .delete(schema.predictions)
-      .where(and(eq(schema.predictions.studyId, studyId), eq(schema.predictions.evaluatorId, agentId)));
-  }
+  await Promise.all(
+    [...staleAgentIds].flatMap((agentId) => [
+      db
+        .delete(schema.agentRuns)
+        .where(and(eq(schema.agentRuns.studyId, studyId), eq(schema.agentRuns.agentId, agentId))),
+      db
+        .delete(schema.predictions)
+        .where(and(eq(schema.predictions.studyId, studyId), eq(schema.predictions.evaluatorId, agentId))),
+    ]),
+  );
 
   const now = new Date().toISOString();
-  for (const output of result.outputs) {
-    await db.insert(schema.agentRuns).values({
+  await db.insert(schema.agentRuns).values(
+    result.outputs.map((output) => ({
       id: crypto.randomUUID(),
       studyId,
       variantId: output.variantId,
       agentId: TASTE_BASELINE_MODEL_ID,
       outputJson: JSON.stringify(output),
-      status: "completed",
+      status: "completed" as const,
       modelUsed: result.modelId,
       startedAt: now,
       completedAt: now,
-    });
-  }
+    })),
+  );
 
   if (result.overallWinnerVariantId) {
     await db.insert(schema.predictions).values({
