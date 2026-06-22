@@ -36,7 +36,7 @@ function tasteRankerModel(env: Env) {
 studiesRouter.get("/", async (c) => {
   const db = c.get("db");
   const workspaceId = c.req.query("workspaceId");
-  let query = db.select().from(schema.studies).orderBy(desc(schema.studies.createdAt));
+  const query = db.select().from(schema.studies).orderBy(desc(schema.studies.createdAt));
   if (workspaceId) {
     const rows = await db
       .select()

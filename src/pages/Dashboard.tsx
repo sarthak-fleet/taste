@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Plus, FileText, Clock, CheckCircle } from "lucide-react";
 import { api, DEMO_WORKSPACE_ID } from "@/lib/api";
+import type { Study } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +93,7 @@ export default function Dashboard() {
   );
 }
 
-function StudyCard({ study }: { study: import("@/lib/api").Study }) {
+function StudyCard({ study }: { study: Study }) {
   return (
     <Card className="hover:border-primary/30 transition-colors">
       <CardHeader className="pb-2">

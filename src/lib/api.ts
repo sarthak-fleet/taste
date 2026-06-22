@@ -1,3 +1,7 @@
+import type { ReportContent } from "./types.js";
+import type { TasteCaptureManifest } from "./visualEvidence.js";
+import type { SimulationResult } from "./simulation.js";
+
 const API_BASE = "/api";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -63,7 +67,7 @@ export interface Report {
   recommendationVariantId?: string;
   confidenceLevel?: string;
   summary?: string;
-  reportJson?: import("./types").ReportContent;
+  reportJson?: ReportContent;
   deliveredAt?: string;
 }
 
@@ -113,7 +117,7 @@ export const api = {
       captures: Array<{
         variantId?: string;
         variantLabel?: string;
-        manifest: import("./visualEvidence").TasteCaptureManifest;
+        manifest: TasteCaptureManifest;
       }>;
       runBaseline?: boolean;
     },
@@ -132,13 +136,13 @@ export const api = {
     }),
 
   runSimulation: (studyId: string, mode: "agents" | "humans" | "full") =>
-    request<import("./simulation").SimulationResult>(`/studies/${studyId}/simulate`, {
+    request<SimulationResult>(`/studies/${studyId}/simulate`, {
       method: "POST",
       body: JSON.stringify({ mode }),
     }),
 
   getSimulation: (studyId: string) =>
-    request<import("./simulation").SimulationResult>(`/studies/${studyId}/simulation`),
+    request<SimulationResult>(`/studies/${studyId}/simulation`),
 
   listAgents: () =>
     request<Array<{ slug: string; name: string; description: string; agentType: string }>>(

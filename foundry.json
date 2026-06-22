@@ -1,0 +1,11 @@
+{
+  "name": "shiprank",
+  "type": "vite",
+  "linked": false,
+  "standards": {
+    "eslint": true,
+    "tsconfig": true,
+    "prettier": true,
+    "renovate": true
+  }
+}
