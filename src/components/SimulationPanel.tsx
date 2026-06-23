@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Users, Play, GitCompare } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "@/lib/api";
-import type { SimulationResult } from "@/lib/simulation";
-import { agentScoreMatrix } from "@/lib/simulation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AgentEvaluationOverlay } from "@/components/AgentEvaluationOverlay";
-import { resultFromSimulation } from "@/lib/evaluationOverlay";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Bot, GitCompare, Play, Users } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { AgentEvaluationOverlay } from '@/components/AgentEvaluationOverlay';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import { resultFromSimulation } from '@/lib/evaluationOverlay';
+import type { SimulationResult } from '@/lib/simulation';
+import { agentScoreMatrix } from '@/lib/simulation';
 
 export function SimulationPanel({
   studyId,
@@ -20,20 +20,20 @@ export function SimulationPanel({
 }) {
   const queryClient = useQueryClient();
   const [showOverlay, setShowOverlay] = useState(false);
-  const [overlayMode, setOverlayMode] = useState<"agents" | "humans">("agents");
+  const [overlayMode, setOverlayMode] = useState<'agents' | 'humans'>('agents');
 
   const { data: simulation, isLoading } = useQuery({
-    queryKey: ["simulation", studyId],
+    queryKey: ['simulation', studyId],
     queryFn: () => api.getSimulation(studyId),
     retry: false,
   });
 
   const simulateMutation = useMutation({
-    mutationFn: (mode: "agents" | "humans" | "full") => api.runSimulation(studyId, mode),
+    mutationFn: (mode: 'agents' | 'humans' | 'full') => api.runSimulation(studyId, mode),
     onSuccess: (_, mode) => {
-      toast.success(mode === "humans" ? "Human validation added" : "Agent simulation complete");
-      queryClient.invalidateQueries({ queryKey: ["simulation", studyId] });
-      queryClient.invalidateQueries({ queryKey: ["study", studyId] });
+      toast.success(mode === 'humans' ? 'Human validation added' : 'Agent simulation complete');
+      queryClient.invalidateQueries({ queryKey: ['simulation', studyId] });
+      queryClient.invalidateQueries({ queryKey: ['study', studyId] });
       setShowOverlay(false);
     },
     onError: (e) => {
@@ -42,7 +42,7 @@ export function SimulationPanel({
     },
   });
 
-  function startSimulation(mode: "agents" | "humans") {
+  function startSimulation(mode: 'agents' | 'humans') {
     setOverlayMode(mode);
     setShowOverlay(true);
   }
@@ -64,16 +64,12 @@ export function SimulationPanel({
             <Bot className="h-5 w-5 text-primary" /> Agent evaluation
           </h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Agent-first by default — specialized AI evaluators score every variant in minutes.
-            Human validation is optional once you have matched evaluators.
+            Agent-first by default — specialized AI evaluators score every variant in minutes. Human
+            validation is optional once you have matched evaluators.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
-          <Button
-            size="sm"
-            disabled={showOverlay}
-            onClick={() => startSimulation("agents")}
-          >
+          <Button size="sm" disabled={showOverlay} onClick={() => startSimulation('agents')}>
             <Play className="h-4 w-4" />
             Run agents
           </Button>
@@ -81,7 +77,7 @@ export function SimulationPanel({
             size="sm"
             variant="outline"
             disabled={simulateMutation.isPending}
-            onClick={() => simulateMutation.mutate("humans")}
+            onClick={() => simulateMutation.mutate('humans')}
             title="Optional — adds human panel when evaluators are available"
           >
             <Users className="h-4 w-4" /> Add human validation
@@ -114,7 +110,7 @@ export function SimulationPanel({
               icon={Users}
               pick={hasHumans ? result.summary.humanPick : null}
               consensus={result.humanConsensus}
-              emptyLabel={hasHumans ? undefined : "Not run — optional"}
+              emptyLabel={hasHumans ? undefined : 'Not run — optional'}
             />
             {hasHumans && (
               <Card className="border-primary/20">
@@ -123,13 +119,15 @@ export function SimulationPanel({
                   <CardTitle className="text-base">
                     {result.summary.combinedPick
                       ? `Variant ${result.summary.combinedPick.variantLabel}`
-                      : "—"}
+                      : '—'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
-                  Agreement:{" "}
-                  <span className={result.agentHumanAgreement ? "text-emerald-400" : "text-amber-400"}>
-                    {result.agentHumanAgreement ? "Aligned" : "Disagree"}
+                  Agreement:{' '}
+                  <span
+                    className={result.agentHumanAgreement ? 'text-emerald-400' : 'text-amber-400'}
+                  >
+                    {result.agentHumanAgreement ? 'Aligned' : 'Disagree'}
                   </span>
                 </CardContent>
               </Card>
@@ -179,10 +177,11 @@ export function SimulationPanel({
                         <td className="py-2 pr-4">
                           {criterion.consensusVariantLabel
                             ? `Variant ${criterion.consensusVariantLabel}`
-                            : "—"}
+                            : '—'}
                         </td>
                         <td className="py-2 pr-4 capitalize">
-                          {criterion.signalStrength} · {Math.round(criterion.majorityVoteProbability * 100)}%
+                          {criterion.signalStrength} ·{' '}
+                          {Math.round(criterion.majorityVoteProbability * 100)}%
                         </td>
                         <td className="py-2 text-muted-foreground">
                           {criterion.orderInconsistentPairs} inconsistent
@@ -214,7 +213,9 @@ export function SimulationPanel({
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="h-4 w-4" /> Human validation panel
                 </CardTitle>
-                <CardDescription>Optional layer — {result.humanPanel.length} evaluators</CardDescription>
+                <CardDescription>
+                  Optional layer — {result.humanPanel.length} evaluators
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -226,10 +227,12 @@ export function SimulationPanel({
                       <div>
                         <p className="font-medium">{h.evaluator.name}</p>
                         <p className="text-muted-foreground text-xs">
-                          {h.evaluator.role} · {h.evaluator.type.replace(/_/g, " ")}
+                          {h.evaluator.role} · {h.evaluator.type.replace(/_/g, ' ')}
                         </p>
                         {h.quote && (
-                          <p className="text-xs italic text-muted-foreground mt-1">&ldquo;{h.quote}&rdquo;</p>
+                          <p className="text-xs italic text-muted-foreground mt-1">
+                            &ldquo;{h.quote}&rdquo;
+                          </p>
                         )}
                       </div>
                       <div className="text-right shrink-0">
@@ -250,13 +253,13 @@ export function SimulationPanel({
       <AgentEvaluationOverlay
         open={showOverlay}
         taskTitle="Agent panel evaluation"
-        taskSubtitle={variants.map((v) => `Variant ${v.label}`).join(" · ")}
+        taskSubtitle={variants.map((v) => `Variant ${v.label}`).join(' · ')}
         variants={variants}
         onRun={runWithOverlay}
         onClose={() => setShowOverlay(false)}
         onFinished={() => {
-          queryClient.invalidateQueries({ queryKey: ["simulation", studyId] });
-          queryClient.invalidateQueries({ queryKey: ["study", studyId] });
+          queryClient.invalidateQueries({ queryKey: ['simulation', studyId] });
+          queryClient.invalidateQueries({ queryKey: ['study', studyId] });
         }}
       />
     </section>
@@ -274,18 +277,18 @@ function ConsensusCard({
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   pick: { variantLabel: string } | null;
-  consensus: SimulationResult["agentConsensus"];
+  consensus: SimulationResult['agentConsensus'];
   primary?: boolean;
   emptyLabel?: string;
 }) {
   return (
-    <Card className={primary ? "border-primary/30" : undefined}>
+    <Card className={primary ? 'border-primary/30' : undefined}>
       <CardHeader className="pb-2">
         <CardDescription className="flex items-center gap-1.5">
           <Icon className="h-3.5 w-3.5" /> {title}
         </CardDescription>
         <CardTitle className="text-base">
-          {pick ? `Variant ${pick.variantLabel}` : emptyLabel ?? "—"}
+          {pick ? `Variant ${pick.variantLabel}` : (emptyLabel ?? '—')}
         </CardTitle>
       </CardHeader>
       {pick && (
@@ -310,7 +313,7 @@ function AgentMatrix({
 }) {
   const matrix = agentScoreMatrix(result.agentPanel, labelMap);
   const winnerByAgent = new Map(
-    result.agentPanel.map((a) => [a.agentName, a.predictedWinnerLabel]),
+    result.agentPanel.map((a) => [a.agentName, a.predictedWinnerLabel])
   );
 
   if (!matrix.cells.length) return null;
@@ -337,10 +340,10 @@ function AgentMatrix({
                 <span
                   className={
                     score >= 4
-                      ? "text-emerald-400 font-medium"
+                      ? 'text-emerald-400 font-medium'
                       : score < 3
-                        ? "text-red-400"
-                        : "text-muted-foreground"
+                        ? 'text-red-400'
+                        : 'text-muted-foreground'
                   }
                 >
                   {score}

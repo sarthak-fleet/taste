@@ -1,16 +1,16 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "sonner";
-import { AppShell } from "@/components/Layout";
-import Landing from "@/pages/Landing";
-import Dashboard from "@/pages/Dashboard";
-import StudyCreate from "@/pages/StudyCreate";
-import StudyDetail from "@/pages/StudyDetail";
-import ReportPage from "@/pages/Report";
-import Arena from "@/pages/Arena";
-import ArenaBattle from "@/pages/ArenaBattle";
-import Admin from "@/pages/Admin";
-import EvaluatorApply from "@/pages/EvaluatorApply";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { AppShell } from '@/components/Layout';
+import Admin from '@/pages/Admin';
+import Arena from '@/pages/Arena';
+import ArenaBattle from '@/pages/ArenaBattle';
+import Dashboard from '@/pages/Dashboard';
+import EvaluatorApply from '@/pages/EvaluatorApply';
+import Landing from '@/pages/Landing';
+import ReportPage from '@/pages/Report';
+import StudyCreate from '@/pages/StudyCreate';
+import StudyDetail from '@/pages/StudyDetail';
 
 const queryClient = new QueryClient();
 

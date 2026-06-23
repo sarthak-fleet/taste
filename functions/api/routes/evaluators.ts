@@ -1,20 +1,20 @@
-import { Hono } from "hono";
-import { eq } from "drizzle-orm";
-import * as schema from "../../../src/db/schema";
-import type { Env } from "../[[route]]";
-import { badRequest, notFound } from "../_context";
-import type { DimensionScores } from "../../../src/lib/types";
+import { eq } from 'drizzle-orm';
+import { Hono } from 'hono';
+import * as schema from '../../../src/db/schema';
+import type { DimensionScores } from '../../../src/lib/types';
+import { badRequest, notFound } from '../_context';
+import type { Env } from '../[[route]]';
 
 export const evaluatorsRouter = new Hono<{ Bindings: Env }>();
 
-evaluatorsRouter.get("/task/:token", async (c) => {
-  const db = c.get("db");
-  const token = c.req.param("token");
+evaluatorsRouter.get('/task/:token', async (c) => {
+  const db = c.get('db');
+  const token = c.req.param('token');
   const [assignment] = await db
     .select()
     .from(schema.assignments)
     .where(eq(schema.assignments.token, token));
-  if (!assignment) return notFound("Assignment not found");
+  if (!assignment) return notFound('Assignment not found');
 
   const [study] = await db
     .select()
@@ -47,9 +47,9 @@ evaluatorsRouter.get("/task/:token", async (c) => {
   });
 });
 
-evaluatorsRouter.post("/task/:token/submit", async (c) => {
-  const db = c.get("db");
-  const token = c.req.param("token");
+evaluatorsRouter.post('/task/:token/submit', async (c) => {
+  const db = c.get('db');
+  const token = c.req.param('token');
   const body = await c.req.json<{
     evaluations: Array<{
       variantId: string;
@@ -72,8 +72,8 @@ evaluatorsRouter.post("/task/:token/submit", async (c) => {
     .select()
     .from(schema.assignments)
     .where(eq(schema.assignments.token, token));
-  if (!assignment) return notFound("Assignment not found");
-  if (assignment.status === "submitted") return badRequest("Already submitted");
+  if (!assignment) return notFound('Assignment not found');
+  if (assignment.status === 'submitted') return badRequest('Already submitted');
 
   for (const ev of body.evaluations) {
     await db.insert(schema.evaluations).values({
@@ -95,8 +95,8 @@ evaluatorsRouter.post("/task/:token/submit", async (c) => {
     id: crypto.randomUUID(),
     studyId: assignment.studyId,
     evaluatorId: assignment.evaluatorId,
-    evaluatorType: "target_user",
-    source: "human",
+    evaluatorType: 'target_user',
+    source: 'human',
     predictedWinnerVariantId: body.prediction.predictedWinnerVariantId,
     confidence: body.prediction.confidence,
     reasoning: body.prediction.reasoning,
@@ -104,14 +104,14 @@ evaluatorsRouter.post("/task/:token/submit", async (c) => {
 
   await db
     .update(schema.assignments)
-    .set({ status: "submitted", submittedAt: new Date().toISOString() })
+    .set({ status: 'submitted', submittedAt: new Date().toISOString() })
     .where(eq(schema.assignments.id, assignment.id));
 
   return c.json({ ok: true });
 });
 
-evaluatorsRouter.post("/apply", async (c) => {
-  const db = c.get("db");
+evaluatorsRouter.post('/apply', async (c) => {
+  const db = c.get('db');
   const body = await c.req.json<{
     name: string;
     email: string;
@@ -123,7 +123,7 @@ evaluatorsRouter.post("/apply", async (c) => {
   }>();
 
   if (!body.name || !body.email || !body.role) {
-    return badRequest("name, email, and role are required");
+    return badRequest('name, email, and role are required');
   }
 
   await db.insert(schema.evaluatorProfiles).values({
@@ -133,9 +133,9 @@ evaluatorsRouter.post("/apply", async (c) => {
     role: body.role,
     industry: body.industry,
     seniority: body.seniority,
-    evaluatorType: body.evaluatorType ?? "target_user",
+    evaluatorType: body.evaluatorType ?? 'target_user',
     skills: body.skills,
-    verificationStatus: "pending",
+    verificationStatus: 'pending',
   });
 
   return c.json({ ok: true }, 201);

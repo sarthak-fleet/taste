@@ -1,14 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { Shield, BarChart3, Users, Swords } from "lucide-react";
-import { api } from "@/lib/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { formatDate, studyStatusLabel } from "@/lib/utils";
+import { useQuery } from '@tanstack/react-query';
+import { BarChart3, Shield, Swords, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import { formatDate, studyStatusLabel } from '@/lib/utils';
 
 export default function Admin() {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-overview"],
+    queryKey: ['admin-overview'],
     queryFn: () => api.getAdminOverview(),
   });
 
@@ -39,7 +39,10 @@ export default function Admin() {
         <CardContent>
           <div className="space-y-3">
             {recentStudies.map((s) => (
-              <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+              <div
+                key={s.id}
+                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+              >
                 <div>
                   <Link to={`/studies/${s.id}`} className="font-medium hover:text-primary">
                     {s.name}
@@ -48,8 +51,11 @@ export default function Admin() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">{studyStatusLabel(s.status)}</Badge>
-                  {s.status === "completed" && (
-                    <Link to={`/studies/${s.id}/report`} className="text-xs text-primary hover:underline">
+                  {s.status === 'completed' && (
+                    <Link
+                      to={`/studies/${s.id}/report`}
+                      className="text-xs text-primary hover:underline"
+                    >
                       Report
                     </Link>
                   )}

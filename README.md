@@ -9,37 +9,37 @@ Public wedge: **Product Arena** — predict which variant wins.
 ## Quick start
 
 ```bash
-pnpm install
-pnpm db:migrate:local
-pnpm db:seed
-pnpm build && pnpm dev:full
+bun install
+bun db:migrate:local
+bun db:seed
+bun build && bun dev:full
 ```
 
-Open http://localhost:8788 (full stack) or run `pnpm dev` for frontend-only on :5173.
+Open http://localhost:8788 (full stack) or run `bun dev` for frontend-only on :5173.
 
 ## Taste data tools
 
 ```bash
-pnpm capture:taste:install
-pnpm capture:taste -- --url https://example.com --label example
-pnpm validate:taste-capture-queue -- --queue docs/examples/taste-curated-seed-queue.json --check-urls
-pnpm validate:taste-capture-queue -- --queue docs/examples/taste-curated-expansion-queue.json --check-urls
-pnpm queue:taste-captures -- --queue datasets/taste-capture-queue.json --commands reports/taste-capture-queue-commands.sh
-pnpm pair:taste -- --a captures/taste/example-a/manifest.json --b captures/taste/example-b/manifest.json --preferred a
-pnpm synth:taste-degrade -- --manifest captures/taste/example/manifest.json --out captures/taste-pairs
-pnpm baseline:taste -- --pair captures/taste-pairs/example.json
-pnpm evidence:taste -- --study <study-id> --capture A=captures/taste/example-a/manifest.json --capture B=captures/taste/example-b/manifest.json
-pnpm capture-study:taste -- --study <study-id>
-pnpm review:taste-pairs -- --in captures/taste-pairs --out reports/taste-label-queue.html
-pnpm label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8
-pnpm audit:taste-pairs -- --in captures/taste-pairs --strict
-pnpm export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.jsonl
-pnpm split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl
-pnpm audit:taste-jsonl -- --in datasets/taste-holdout.jsonl --strict
-pnpm eval:taste-jsonl -- --in datasets/taste-pairs.jsonl
-pnpm train:taste-ranker -- --in datasets/taste-train.jsonl --out models/taste-linear-ranker.json
-pnpm report:taste-model -- --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --model models/taste-linear-ranker.json --out reports/taste-model-report.json
-pnpm smoke:taste-ranker
+bun capture:taste:install
+bun capture:taste -- --url https://example.com --label example
+bun validate:taste-capture-queue -- --queue docs/examples/taste-curated-seed-queue.json --check-urls
+bun validate:taste-capture-queue -- --queue docs/examples/taste-curated-expansion-queue.json --check-urls
+bun queue:taste-captures -- --queue datasets/taste-capture-queue.json --commands reports/taste-capture-queue-commands.sh
+bun pair:taste -- --a captures/taste/example-a/manifest.json --b captures/taste/example-b/manifest.json --preferred a
+bun synth:taste-degrade -- --manifest captures/taste/example/manifest.json --out captures/taste-pairs
+bun baseline:taste -- --pair captures/taste-pairs/example.json
+bun evidence:taste -- --study <study-id> --capture A=captures/taste/example-a/manifest.json --capture B=captures/taste/example-b/manifest.json
+bun capture-study:taste -- --study <study-id>
+bun review:taste-pairs -- --in captures/taste-pairs --out reports/taste-label-queue.html
+bun label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8
+bun audit:taste-pairs -- --in captures/taste-pairs --strict
+bun export:taste-jsonl -- --in captures/taste-pairs --out datasets/taste-pairs.jsonl
+bun split:taste-jsonl -- --in datasets/taste-pairs.jsonl --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl
+bun audit:taste-jsonl -- --in datasets/taste-holdout.jsonl --strict
+bun eval:taste-jsonl -- --in datasets/taste-pairs.jsonl
+bun train:taste-ranker -- --in datasets/taste-train.jsonl --out models/taste-linear-ranker.json
+bun report:taste-model -- --train datasets/taste-train.jsonl --test datasets/taste-holdout.jsonl --model models/taste-linear-ranker.json --out reports/taste-model-report.json
+bun smoke:taste-ranker
 ```
 
 Capture output is local-only under `captures/`. Pair manifests are the first
@@ -49,7 +49,7 @@ Taste model should beat.
 
 Set `TASTE_RANKER_MODEL_JSON` on the Pages app to route visual evidence through
 the saved local linear ranker before VLM or mechanical fallback. The value is
-the JSON produced by `pnpm train:taste-ranker`. Only use it for product
+the JSON produced by `bun train:taste-ranker`. Only use it for product
 comparison when `reports/taste-model-report.json` has `comparisonReadiness.ok`.
 Do not treat it as the promoted Taste model until `promotionReadiness.ok` is
 also true.
@@ -69,7 +69,7 @@ Set `TASTE_VLM_API_BASE`, `TASTE_VLM_API_KEY`, and `TASTE_VLM_MODEL` on Pages
 to enable the VLM judge when capture artifacts expose HTTP image URLs.
 
 ```bash
-pnpm capture-worker:check
+bun capture-worker:check
 ```
 
 ## Routes
@@ -101,7 +101,7 @@ Cloudflare Pages Functions at `/api/*`:
 ## Deploy
 
 ```bash
-pnpm deploy   # Cloudflare Pages (dist/)
+bun deploy   # Cloudflare Pages (dist/)
 ```
 
 Configure D1 binding `DB` in Cloudflare dashboard; run migrations against production D1.

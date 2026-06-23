@@ -1,24 +1,37 @@
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, XCircle, AlertTriangle, Quote, Bot, GitCompare, ShieldAlert } from "lucide-react";
-import { api } from "@/lib/api";
-import { confidenceLabel } from "@/lib/report";
-import { recommendationLabel } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { ReportContent } from "@/lib/types";
+import { useQuery } from '@tanstack/react-query';
+import {
+  AlertTriangle,
+  Bot,
+  CheckCircle2,
+  GitCompare,
+  Quote,
+  ShieldAlert,
+  XCircle,
+} from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import { confidenceLabel } from '@/lib/report';
+import type { ReportContent } from '@/lib/types';
+import { recommendationLabel } from '@/lib/utils';
 
 export default function ReportPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { data: report, isLoading, error } = useQuery({
-    queryKey: ["report", id],
+  const {
+    data: report,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['report', id],
     queryFn: () => api.getReport(id!),
     enabled: !!id,
   });
 
   if (isLoading) return <div className="p-8 text-muted-foreground">Loading report...</div>;
-  if (error || !report?.reportJson) return <div className="p-8 text-destructive">Report not found</div>;
+  if (error || !report?.reportJson)
+    return <div className="p-8 text-destructive">Report not found</div>;
 
   const content = report.reportJson as ReportContent;
   const rec = content.executiveRecommendation;
@@ -32,15 +45,17 @@ export default function ReportPage() {
     invalidityFlags: [],
   };
   const calibration = content.calibration ?? {
-    status: "uncalibrated" as const,
+    status: 'uncalibrated' as const,
     outcomeSamples: 0,
-    note: "This report was generated before outcome calibration metadata existed.",
+    note: 'This report was generated before outcome calibration metadata existed.',
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">Decision report</p>
+        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">
+          Decision report
+        </p>
         <h1 className="font-display text-3xl md:text-4xl">{rec.action}</h1>
         <div className="flex items-center gap-3 mt-4">
           <Badge variant="success">Confidence: {confidenceLabel(rec.confidence)}</Badge>
@@ -57,10 +72,12 @@ export default function ReportPage() {
           {rec.doNotShip.length > 0 && (
             <div className="flex items-start gap-2 text-sm">
               <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-              <span>Do not ship: {rec.doNotShip.join(", ")}</span>
+              <span>Do not ship: {rec.doNotShip.join(', ')}</span>
             </div>
           )}
-          <p className="text-xs text-muted-foreground border-t border-border pt-4">{rec.confidenceReason}</p>
+          <p className="text-xs text-muted-foreground border-t border-border pt-4">
+            {rec.confidenceReason}
+          </p>
         </CardContent>
       </Card>
 
@@ -82,7 +99,8 @@ export default function ReportPage() {
                 <tr key={r.variantId} className="border-b border-border/50">
                   <td className="py-3 pr-4 font-medium">{r.rank}</td>
                   <td className="py-3 pr-4">
-                    <span className="text-primary font-medium">{r.variantLabel}</span> {r.variantName}
+                    <span className="text-primary font-medium">{r.variantLabel}</span>{' '}
+                    {r.variantName}
                   </td>
                   <td className="py-3 pr-4">{r.overallScore}</td>
                   <td className="py-3 pr-4">
@@ -116,8 +134,8 @@ export default function ReportPage() {
             value={String(signalQuality.criteriaWithCycles.length)}
             detail={
               signalQuality.criteriaWithCycles.length
-                ? signalQuality.criteriaWithCycles.join(", ")
-                : "No criterion cycles detected"
+                ? signalQuality.criteriaWithCycles.join(', ')
+                : 'No criterion cycles detected'
             }
           />
         </div>
@@ -139,11 +157,12 @@ export default function ReportPage() {
                     <td className="py-3 pl-4 pr-3 font-medium">{c.criterionLabel}</td>
                     <td className="py-3 pr-3 capitalize">{c.signalStrength}</td>
                     <td className="py-3 pr-3">
-                      {c.consensusVariantLabel ? `Variant ${c.consensusVariantLabel}` : "—"}
+                      {c.consensusVariantLabel ? `Variant ${c.consensusVariantLabel}` : '—'}
                     </td>
                     <td className="py-3 pr-3">{c.meanKendallTau.toFixed(2)}</td>
                     <td className="py-3 pr-4 text-muted-foreground">
-                      {c.orderInconsistentPairs} inconsistent · {c.lowConfidencePairs} low confidence
+                      {c.orderInconsistentPairs} inconsistent · {c.lowConfidencePairs} low
+                      confidence
                     </td>
                   </tr>
                 ))}
@@ -196,8 +215,8 @@ export default function ReportPage() {
           <CardContent className="space-y-3">
             {content.borrowFrom.map((b) => (
               <div key={b.variantLabel} className="text-sm">
-                <span className="font-medium text-primary">Variant {b.variantLabel}:</span>{" "}
-                <span className="text-muted-foreground">{b.elements.join(", ")}</span>
+                <span className="font-medium text-primary">Variant {b.variantLabel}:</span>{' '}
+                <span className="text-muted-foreground">{b.elements.join(', ')}</span>
               </div>
             ))}
           </CardContent>
@@ -230,7 +249,7 @@ export default function ReportPage() {
               <CardHeader className="pb-2">
                 <CardDescription>Outcome calibration</CardDescription>
                 <CardTitle className="text-base capitalize">
-                  {calibration.status.replace(/_/g, " ")}
+                  {calibration.status.replace(/_/g, ' ')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
@@ -247,7 +266,8 @@ export default function ReportPage() {
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 {signalQuality.invalidityFlags.slice(0, 4).map((flag, i) => (
                   <p key={i}>
-                    <span className="text-foreground capitalize">{flag.level}</span>: {flag.description}
+                    <span className="text-foreground capitalize">{flag.level}</span>:{' '}
+                    {flag.description}
                   </p>
                 ))}
                 {signalQuality.invalidityFlags.length === 0 && <p>No agent validity warnings.</p>}
@@ -293,9 +313,18 @@ export default function ReportPage() {
         </CardHeader>
         <CardContent className="text-sm space-y-2 text-muted-foreground">
           <p>{content.nextTest.description}</p>
-          <p><span className="text-foreground font-medium">Modification:</span> {content.nextTest.modification}</p>
-          <p><span className="text-foreground font-medium">Primary metric:</span> {content.nextTest.primaryMetric}</p>
-          <p><span className="text-foreground font-medium">Secondary:</span> {content.nextTest.secondaryMetrics.join(", ")}</p>
+          <p>
+            <span className="text-foreground font-medium">Modification:</span>{' '}
+            {content.nextTest.modification}
+          </p>
+          <p>
+            <span className="text-foreground font-medium">Primary metric:</span>{' '}
+            {content.nextTest.primaryMetric}
+          </p>
+          <p>
+            <span className="text-foreground font-medium">Secondary:</span>{' '}
+            {content.nextTest.secondaryMetrics.join(', ')}
+          </p>
         </CardContent>
       </Card>
 
@@ -305,10 +334,22 @@ export default function ReportPage() {
           <CardDescription>Recorded for future learning</CardDescription>
         </CardHeader>
         <CardContent className="text-sm space-y-2 text-muted-foreground">
-          <p><span className="text-foreground font-medium">Decision:</span> {content.decisionMemory.decision}</p>
-          <p><span className="text-foreground font-medium">Assumption:</span> {content.decisionMemory.assumption}</p>
-          <p><span className="text-foreground font-medium">Expected:</span> {content.decisionMemory.expectedOutcome}</p>
-          <p><span className="text-foreground font-medium">Review:</span> {content.decisionMemory.reviewDate}</p>
+          <p>
+            <span className="text-foreground font-medium">Decision:</span>{' '}
+            {content.decisionMemory.decision}
+          </p>
+          <p>
+            <span className="text-foreground font-medium">Assumption:</span>{' '}
+            {content.decisionMemory.assumption}
+          </p>
+          <p>
+            <span className="text-foreground font-medium">Expected:</span>{' '}
+            {content.decisionMemory.expectedOutcome}
+          </p>
+          <p>
+            <span className="text-foreground font-medium">Review:</span>{' '}
+            {content.decisionMemory.reviewDate}
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -316,8 +357,15 @@ export default function ReportPage() {
 }
 
 function RecBadge({ rec }: { rec: string }) {
-  const variant = rec === "ship" ? "success" : rec === "kill" ? "danger" : rec === "borrow" ? "warning" : "secondary";
-  return <Badge variant={variant as "success"}>{recommendationLabel(rec)}</Badge>;
+  const variant =
+    rec === 'ship'
+      ? 'success'
+      : rec === 'kill'
+        ? 'danger'
+        : rec === 'borrow'
+          ? 'warning'
+          : 'secondary';
+  return <Badge variant={variant as 'success'}>{recommendationLabel(rec)}</Badge>;
 }
 
 function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {

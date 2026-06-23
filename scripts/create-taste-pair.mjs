@@ -1,33 +1,38 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CRITERIA = new Set([
-  "typography",
-  "layoutHierarchy",
-  "spacing",
-  "colorHarmony",
-  "visualPolish",
-  "brandTone",
-  "readability",
-  "mobileFit",
-  "conversionClarity",
-  "trustSignals",
+  'typography',
+  'layoutHierarchy',
+  'spacing',
+  'colorHarmony',
+  'visualPolish',
+  'brandTone',
+  'readability',
+  'mobileFit',
+  'conversionClarity',
+  'trustSignals',
 ]);
-const PREFERENCES = new Set(["a", "b", "tie", "unknown"]);
-const SOURCE_KINDS = new Set(["manual", "curated_gallery", "synthetic_degradation", "product_feedback"]);
+const PREFERENCES = new Set(['a', 'b', 'tie', 'unknown']);
+const SOURCE_KINDS = new Set([
+  'manual',
+  'curated_gallery',
+  'synthetic_degradation',
+  'product_feedback',
+]);
 
 function parseArgs(argv) {
   const args = new Map();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (!arg.startsWith("--")) continue;
+    if (!arg.startsWith('--')) continue;
     const key = arg.slice(2);
     const next = argv[i + 1];
-    if (!next || next.startsWith("--")) {
-      args.set(key, "true");
+    if (!next || next.startsWith('--')) {
+      args.set(key, 'true');
     } else {
       args.set(key, next);
       i += 1;
@@ -37,12 +42,14 @@ function parseArgs(argv) {
 }
 
 function slugify(value) {
-  return value
-    .toLowerCase()
-    .replace(/^https?:\/\//, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80) || "taste-pair";
+  return (
+    value
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80) || 'taste-pair'
+  );
 }
 
 function resolvePath(value) {
@@ -54,7 +61,7 @@ function relativeToRoot(value) {
 }
 
 async function readCaptureManifest(filePath) {
-  const raw = JSON.parse(await readFile(filePath, "utf8"));
+  const raw = JSON.parse(await readFile(filePath, 'utf8'));
   if (raw.schemaVersion !== 1 || !Array.isArray(raw.artifacts) || !raw.source?.url) {
     throw new Error(`${filePath} is not a Taste capture manifest`);
   }
@@ -78,7 +85,7 @@ function summarizeMechanicalRisk(artifacts) {
   }
 
   return {
-    highestRiskLevel: highestRiskScore >= 45 ? "high" : highestRiskScore >= 20 ? "medium" : "low",
+    highestRiskLevel: highestRiskScore >= 45 ? 'high' : highestRiskScore >= 20 ? 'medium' : 'low',
     highestRiskScore,
     totalClippedTextCandidates,
     totalLowContrastCandidates,
@@ -90,8 +97,8 @@ function summarizeMechanicalRisk(artifacts) {
 function parseCriterionPreferences(value) {
   if (!value) return undefined;
   const preferences = {};
-  for (const entry of value.split(",")) {
-    const [criterion, preference] = entry.split(":").map((part) => part?.trim());
+  for (const entry of value.split(',')) {
+    const [criterion, preference] = entry.split(':').map((part) => part?.trim());
     if (!CRITERIA.has(criterion)) {
       throw new Error(`Unknown criterion "${criterion}"`);
     }
@@ -116,79 +123,100 @@ function buildVariant({ id, manifest, manifestPath, fallbackLabel }) {
 }
 
 function buildLabel(args, createdAt) {
-  const preferredVariantId = args.get("preferred");
+  const preferredVariantId = args.get('preferred');
   if (!preferredVariantId) return undefined;
   if (!PREFERENCES.has(preferredVariantId)) {
-    throw new Error("--preferred must be one of: a, b, tie, unknown");
+    throw new Error('--preferred must be one of: a, b, tie, unknown');
   }
 
-  const confidence = args.has("confidence") ? Number.parseFloat(args.get("confidence")) : undefined;
-  if (confidence !== undefined && (!Number.isFinite(confidence) || confidence < 0 || confidence > 1)) {
-    throw new Error("--confidence must be a number from 0 to 1");
+  const confidence = args.has('confidence') ? Number.parseFloat(args.get('confidence')) : undefined;
+  if (
+    confidence !== undefined &&
+    (!Number.isFinite(confidence) || confidence < 0 || confidence > 1)
+  ) {
+    throw new Error('--confidence must be a number from 0 to 1');
   }
 
   return {
     preferredVariantId,
     confidence,
-    rationale: args.get("rationale"),
-    criterionPreferences: parseCriterionPreferences(args.get("criteria")),
-    annotator: args.get("annotator"),
+    rationale: args.get('rationale'),
+    criterionPreferences: parseCriterionPreferences(args.get('criteria')),
+    annotator: args.get('annotator'),
     labeledAt: createdAt,
   };
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const aPathArg = args.get("a");
-  const bPathArg = args.get("b");
+  const aPathArg = args.get('a');
+  const bPathArg = args.get('b');
   if (!aPathArg || !bPathArg) {
     console.error(
-      "Usage: pnpm pair:taste -- --a captures/a/manifest.json --b captures/b/manifest.json [--preferred a|b|tie|unknown]",
+      'Usage: bun pair:taste -- --a captures/a/manifest.json --b captures/b/manifest.json [--preferred a|b|tie|unknown]'
     );
     process.exit(2);
   }
 
   const aPath = resolvePath(aPathArg);
   const bPath = resolvePath(bPathArg);
-  const [aManifest, bManifest] = await Promise.all([readCaptureManifest(aPath), readCaptureManifest(bPath)]);
+  const [aManifest, bManifest] = await Promise.all([
+    readCaptureManifest(aPath),
+    readCaptureManifest(bPath),
+  ]);
   const createdAt = new Date().toISOString();
-  const label = args.get("label") || `${aManifest.source.label || "a"}-vs-${bManifest.source.label || "b"}`;
-  const sourceKind = args.get("source-kind") || "manual";
+  const label =
+    args.get('label') || `${aManifest.source.label || 'a'}-vs-${bManifest.source.label || 'b'}`;
+  const sourceKind = args.get('source-kind') || 'manual';
   if (!SOURCE_KINDS.has(sourceKind)) {
-    throw new Error("--source-kind must be one of: manual, curated_gallery, synthetic_degradation, product_feedback");
+    throw new Error(
+      '--source-kind must be one of: manual, curated_gallery, synthetic_degradation, product_feedback'
+    );
   }
 
   const pair = {
     schemaVersion: 1,
-    pairId: `${slugify(label)}-${createdAt.replace(/[:.]/g, "-")}`,
+    pairId: `${slugify(label)}-${createdAt.replace(/[:.]/g, '-')}`,
     createdAt,
     source: {
       kind: sourceKind,
-      notes: args.get("source-notes"),
+      notes: args.get('source-notes'),
     },
     context: {
-      productName: args.get("product-name"),
-      studyType: args.get("study-type"),
-      targetUserRole: args.get("target-user"),
-      primaryObjective: args.get("objective"),
-      notes: args.get("context-notes"),
+      productName: args.get('product-name'),
+      studyType: args.get('study-type'),
+      targetUserRole: args.get('target-user'),
+      primaryObjective: args.get('objective'),
+      notes: args.get('context-notes'),
     },
     variants: [
-      buildVariant({ id: "a", manifest: aManifest, manifestPath: aPath, fallbackLabel: "Variant A" }),
-      buildVariant({ id: "b", manifest: bManifest, manifestPath: bPath, fallbackLabel: "Variant B" }),
+      buildVariant({
+        id: 'a',
+        manifest: aManifest,
+        manifestPath: aPath,
+        fallbackLabel: 'Variant A',
+      }),
+      buildVariant({
+        id: 'b',
+        manifest: bManifest,
+        manifestPath: bPath,
+        fallbackLabel: 'Variant B',
+      }),
     ],
     label: buildLabel(args, createdAt),
   };
 
-  const outBase = resolvePath(args.get("out") || "captures/taste-pairs");
+  const outBase = resolvePath(args.get('out') || 'captures/taste-pairs');
   await mkdir(outBase, { recursive: true });
   const outPath = path.join(outBase, `${pair.pairId}.json`);
   await writeFile(outPath, `${JSON.stringify(pair, null, 2)}\n`);
 
-  const status = pair.label ? `label=${pair.label.preferredVariantId}` : "unlabeled";
+  const status = pair.label ? `label=${pair.label.preferredVariantId}` : 'unlabeled';
   console.log(`Created Taste pair ${pair.pairId}`);
   console.log(`Output: ${relativeToRoot(outPath)}`);
-  console.log(`Variants: a=${pair.variants[0].mechanicalSummary.highestRiskLevel}/${pair.variants[0].mechanicalSummary.highestRiskScore}, b=${pair.variants[1].mechanicalSummary.highestRiskLevel}/${pair.variants[1].mechanicalSummary.highestRiskScore}`);
+  console.log(
+    `Variants: a=${pair.variants[0].mechanicalSummary.highestRiskLevel}/${pair.variants[0].mechanicalSummary.highestRiskScore}, b=${pair.variants[1].mechanicalSummary.highestRiskLevel}/${pair.variants[1].mechanicalSummary.highestRiskScore}`
+  );
   console.log(`Status: ${status}`);
 }
 

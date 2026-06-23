@@ -1,6 +1,9 @@
 #!/usr/bin/env bun
-import { runTasteLinearRankerForVariants, type TasteLinearRankerModel } from "../src/lib/tasteRanker.ts";
-import type { TasteBaselineVariant } from "../src/lib/tasteBaseline.ts";
+import type { TasteBaselineVariant } from '../src/lib/tasteBaseline.ts';
+import {
+  runTasteLinearRankerForVariants,
+  type TasteLinearRankerModel,
+} from '../src/lib/tasteRanker.ts';
 
 function variant(id: string, highestRiskScore: number): TasteBaselineVariant {
   return {
@@ -18,48 +21,57 @@ function variant(id: string, highestRiskScore: number): TasteBaselineVariant {
 }
 
 const model: TasteLinearRankerModel = {
-  modelId: "taste-linear-evidence-ranker-smoke",
+  modelId: 'taste-linear-evidence-ranker-smoke',
   featureNames: [
-    "risk_delta",
-    "clipped_delta",
-    "contrast_delta",
-    "failed_images_delta",
-    "overflow_delta",
-    "desktop_text_density_delta",
-    "mobile_text_density_delta",
-    "desktop_first_section_ratio_delta",
-    "mobile_first_section_ratio_delta",
-    "desktop_action_count_delta",
-    "mobile_action_count_delta",
-    "desktop_heading_count_delta",
-    "mobile_heading_count_delta",
-    "desktop_scroll_depth_delta",
-    "mobile_scroll_depth_delta",
+    'risk_delta',
+    'clipped_delta',
+    'contrast_delta',
+    'failed_images_delta',
+    'overflow_delta',
+    'desktop_text_density_delta',
+    'mobile_text_density_delta',
+    'desktop_first_section_ratio_delta',
+    'mobile_first_section_ratio_delta',
+    'desktop_action_count_delta',
+    'mobile_action_count_delta',
+    'desktop_heading_count_delta',
+    'mobile_heading_count_delta',
+    'desktop_scroll_depth_delta',
+    'mobile_scroll_depth_delta',
   ],
   weights: [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   bias: 0,
 };
 
 const result = runTasteLinearRankerForVariants({
-  studyId: "smoke",
-  studyType: "landing_page",
-  variants: [variant("a", 0), variant("b", 80)],
+  studyId: 'smoke',
+  studyType: 'landing_page',
+  variants: [variant('a', 0), variant('b', 80)],
   model,
 });
 
 if (result.modelId !== model.modelId) {
   throw new Error(`Expected modelId ${model.modelId}, got ${result.modelId}`);
 }
-if (result.overallWinnerVariantId !== "a") {
-  throw new Error(`Expected ranker to prefer a, got ${result.overallWinnerVariantId ?? "tie"}`);
+if (result.overallWinnerVariantId !== 'a') {
+  throw new Error(`Expected ranker to prefer a, got ${result.overallWinnerVariantId ?? 'tie'}`);
 }
-if (!result.pairwiseVerdicts.length || result.pairwiseVerdicts.some((verdict) => verdict.agentSlug !== model.modelId)) {
-  throw new Error("Expected ranker pairwise verdicts to use the configured model id");
+if (
+  !result.pairwiseVerdicts.length ||
+  result.pairwiseVerdicts.some((verdict) => verdict.agentSlug !== model.modelId)
+) {
+  throw new Error('Expected ranker pairwise verdicts to use the configured model id');
 }
 
-console.log(JSON.stringify({
-  modelId: result.modelId,
-  winner: result.overallWinnerVariantId,
-  confidence: result.overallConfidence,
-  verdicts: result.pairwiseVerdicts.length,
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      modelId: result.modelId,
+      winner: result.overallWinnerVariantId,
+      confidence: result.overallConfidence,
+      verdicts: result.pairwiseVerdicts.length,
+    },
+    null,
+    2
+  )
+);

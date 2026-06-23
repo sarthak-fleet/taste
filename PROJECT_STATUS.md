@@ -20,9 +20,9 @@ Out of scope: open evaluator marketplace, prediction markets with money, enterpr
 | Auth | SaaS Maker device-flow auth hub for fleet operators (2026-06-20) |
 | Deploy | Cloudflare Pages + separate capture Worker |
 
-**Local dev:** `pnpm install && pnpm db:migrate:local && pnpm db:seed && pnpm build && pnpm dev:full` → http://localhost:8788 (full stack) or `pnpm dev` frontend-only :5173
+**Local dev:** `bun install && bun db:migrate:local && bun db:seed && bun build && bun dev:full` → http://localhost:8788 (full stack) or `bun dev` frontend-only :5173
 
-**Key checks:** `pnpm build` · `pnpm capture-worker:check` · taste capture/validate scripts per README
+**Key checks:** `bun build` · `bun capture-worker:check` · taste capture/validate scripts per README
 
 ```
 Study wizard → D1 (studies, variants, runs, reports)
@@ -49,10 +49,10 @@ Admin: internal ops overview
 | Database | D1 binding `DB` — run migrations against prod after deploy |
 | Capture env | `TASTE_CAPTURE_WORKER_URL`, `TASTE_CAPTURE_WORKER_TOKEN`, `TASTE_VISUAL_EVIDENCE_TOKEN` |
 | VLM env | `TASTE_VLM_API_BASE`, `TASTE_VLM_API_KEY`, `TASTE_VLM_MODEL` |
-| Ranker env | `TASTE_RANKER_MODEL_JSON` (trained JSON from `pnpm train:taste-ranker`) |
+| Ranker env | `TASTE_RANKER_MODEL_JSON` (trained JSON from `bun train:taste-ranker`) |
 | Local captures | Output under `captures/` — gitignored, local-only |
-| Deploy | `pnpm deploy` (Pages); capture Worker deployed separately |
-| Smoke | `pnpm build` · `pnpm smoke:taste-ranker` · `pnpm capture-worker:check` |
+| Deploy | `bun deploy` (Pages); capture Worker deployed separately |
+| Smoke | `bun build` · `bun smoke:taste-ranker` · `bun capture-worker:check` |
 
 ## Timeline
 
@@ -90,7 +90,7 @@ Admin: internal ops overview
 - Product Arena battles (`/arena`, `/arena/:slug`) with vote API.
 - Evaluator application flow (`/evaluators/apply`).
 - Admin overview dashboard (`/admin`, `/api/admin/overview`).
-- D1 schema + seed data; Drizzle migrations (`pnpm db:migrate:local`).
+- D1 schema + seed data; Drizzle migrations (`bun db:migrate:local`).
 
 ### Agent-first evaluation pipeline
 - Six mock agents with structured JSON output and versioned runs.
@@ -100,7 +100,7 @@ Admin: internal ops overview
 - Scoring and report generation libraries (`src/lib/scoring.ts`, `src/lib/report.ts`).
 
 ### Taste model v1 pipeline (shipped)
-- Screenshot capture CLI (`pnpm capture:taste`).
+- Screenshot capture CLI (`bun capture:taste`).
 - Web-TASTE queue runner and curated queues (70 real labels across seed + expansion queues).
 - Pair manifest tooling (`pair:taste`, `synth:taste-degrade`, `baseline:taste`, `evidence:taste`).
 - Mechanical baseline evaluator (deterministic DOM/mechanical features).
@@ -115,12 +115,12 @@ Admin: internal ops overview
 - Callback path: `POST /api/studies/:id/visual-evidence` with token auth (`TASTE_VISUAL_EVIDENCE_TOKEN` / `TASTE_API_TOKEN`).
 - VLM judge path when `TASTE_VLM_API_BASE`, `TASTE_VLM_API_KEY`, `TASTE_VLM_MODEL` set and captures expose HTTP image URLs.
 - Runbook: `docs/taste-capture-production.md`; data loop: `docs/taste-model-data-loop.md`.
-- `pnpm capture-worker:check` validation script.
+- `bun capture-worker:check` validation script.
 
 ### Platform and fleet integration
 - SaaS Maker device-flow auth hub for fleet operators (2026-06-20).
 - Bun standardized for install, build, and `dev:full` orchestration.
-- Cloudflare Pages deploy path (`pnpm deploy`).
+- Cloudflare Pages deploy path (`bun deploy`).
 
 ## Todo / Planned / Deferred / Blocked
 

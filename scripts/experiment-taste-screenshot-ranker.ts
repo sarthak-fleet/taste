@@ -1,31 +1,31 @@
 #!/usr/bin/env bun
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { chromium, type Page } from "playwright";
-import { tasteJsonlFeatureVector, type TasteJsonlRecord } from "../src/lib/tasteJsonl.ts";
-import type { TastePairManifest } from "../src/lib/tasteDataset.ts";
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { chromium, type Page } from 'playwright';
+import type { TastePairManifest } from '../src/lib/tasteDataset.ts';
+import { type TasteJsonlRecord, tasteJsonlFeatureVector } from '../src/lib/tasteJsonl.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const SCREENSHOT_FEATURE_NAMES = [
-  "desktop_brightness_delta",
-  "desktop_contrast_delta",
-  "desktop_saturation_delta",
-  "desktop_dark_ratio_delta",
-  "desktop_light_ratio_delta",
-  "desktop_colorfulness_delta",
-  "desktop_edge_density_delta",
-  "mobile_brightness_delta",
-  "mobile_contrast_delta",
-  "mobile_saturation_delta",
-  "mobile_dark_ratio_delta",
-  "mobile_light_ratio_delta",
-  "mobile_colorfulness_delta",
-  "mobile_edge_density_delta",
+  'desktop_brightness_delta',
+  'desktop_contrast_delta',
+  'desktop_saturation_delta',
+  'desktop_dark_ratio_delta',
+  'desktop_light_ratio_delta',
+  'desktop_colorfulness_delta',
+  'desktop_edge_density_delta',
+  'mobile_brightness_delta',
+  'mobile_contrast_delta',
+  'mobile_saturation_delta',
+  'mobile_dark_ratio_delta',
+  'mobile_light_ratio_delta',
+  'mobile_colorfulness_delta',
+  'mobile_edge_density_delta',
 ] as const;
 
-type Preference = "a" | "b" | "tie" | "unknown";
+type Preference = 'a' | 'b' | 'tie' | 'unknown';
 
 interface CliArgs {
   pairsDir: string;
@@ -39,7 +39,7 @@ interface Example {
   id: string;
   x: number[];
   y: number;
-  label: Exclude<Preference, "tie" | "unknown">;
+  label: Exclude<Preference, 'tie' | 'unknown'>;
 }
 
 interface ImageStats {
@@ -53,28 +53,28 @@ interface ImageStats {
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  let pairsDir = "captures/taste-pairs";
-  let trainPath = "datasets/taste-train.jsonl";
-  let testPath = "datasets/taste-holdout.jsonl";
-  let outPath = "reports/taste-screenshot-ranker-report.json";
+  let pairsDir = 'captures/taste-pairs';
+  let trainPath = 'datasets/taste-train.jsonl';
+  let testPath = 'datasets/taste-holdout.jsonl';
+  let outPath = 'reports/taste-screenshot-ranker-report.json';
   let includeEvidenceFeatures = false;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
-    if (arg === "--pairs" && next) {
+    if (arg === '--pairs' && next) {
       pairsDir = next;
       i += 1;
-    } else if (arg === "--train" && next) {
+    } else if (arg === '--train' && next) {
       trainPath = next;
       i += 1;
-    } else if (arg === "--test" && next) {
+    } else if (arg === '--test' && next) {
       testPath = next;
       i += 1;
-    } else if (arg === "--out" && next) {
+    } else if (arg === '--out' && next) {
       outPath = next;
       i += 1;
-    } else if (arg === "--include-evidence-features") {
+    } else if (arg === '--include-evidence-features') {
       includeEvidenceFeatures = true;
     }
   }
@@ -94,29 +94,32 @@ async function findJsonFiles(dir: string): Promise<string[]> {
     entries.map(async (entry) => {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) return findJsonFiles(fullPath);
-      if (entry.isFile() && entry.name.endsWith(".json")) return [fullPath];
+      if (entry.isFile() && entry.name.endsWith('.json')) return [fullPath];
       return [];
-    }),
+    })
   );
   return nested.flat().sort();
 }
 
 async function readJsonl(filePath: string): Promise<TasteJsonlRecord[]> {
-  const text = await readFile(filePath, "utf8");
-  return text.split("\n").filter(Boolean).map((line) => JSON.parse(line) as TasteJsonlRecord);
+  const text = await readFile(filePath, 'utf8');
+  return text
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as TasteJsonlRecord);
 }
 
 async function readPairMap(pairsDir: string) {
   const pairs = new Map<string, TastePairManifest>();
   for (const file of await findJsonFiles(pairsDir)) {
-    const pair = JSON.parse(await readFile(file, "utf8")) as TastePairManifest;
+    const pair = JSON.parse(await readFile(file, 'utf8')) as TastePairManifest;
     if (pair.schemaVersion === 1 && pair.pairId) pairs.set(pair.pairId, pair);
   }
   return pairs;
 }
 
 async function imageStats(page: Page, imagePath: string): Promise<ImageStats> {
-  await page.goto(pathToFileURL(imagePath).toString(), { waitUntil: "load" });
+  await page.goto(pathToFileURL(imagePath).toString(), { waitUntil: 'load' });
   return page.evaluate(`(() => {
     const image = document.querySelector("img");
     if (!image) throw new Error("Image document did not contain an img element");
@@ -185,13 +188,19 @@ async function imageStats(page: Page, imagePath: string): Promise<ImageStats> {
   })()`) as Promise<ImageStats>;
 }
 
-async function screenshotStatsForVariant(page: Page, pair: TastePairManifest, variantIndex: number) {
+async function screenshotStatsForVariant(
+  page: Page,
+  pair: TastePairManifest,
+  variantIndex: number
+) {
   const variant = pair.variants[variantIndex]!;
   const captureDir = path.dirname(path.resolve(ROOT, variant.captureManifestPath));
-  const byViewport = Object.fromEntries(variant.artifacts.map((artifact) => [artifact.viewport, artifact]));
+  const byViewport = Object.fromEntries(
+    variant.artifacts.map((artifact) => [artifact.viewport, artifact])
+  );
   const stats: ImageStats[] = [];
 
-  for (const viewport of ["desktop", "mobile"] as const) {
+  for (const viewport of ['desktop', 'mobile'] as const) {
     const artifact = byViewport[viewport];
     if (!artifact) throw new Error(`${pair.pairId} ${variant.id} is missing ${viewport} artifact`);
     stats.push(await imageStats(page, path.join(captureDir, artifact.aboveFoldPath)));
@@ -215,8 +224,8 @@ async function screenshotFeatureVector(page: Page, pair: TastePairManifest) {
 }
 
 function target(label: Preference): number | null {
-  if (label === "a") return 1;
-  if (label === "b") return 0;
+  if (label === 'a') return 1;
+  if (label === 'b') return 0;
   return null;
 }
 
@@ -230,11 +239,13 @@ function dot(weights: number[], x: number[]) {
 
 function standardize(train: Example[], test: Example[]) {
   const featureCount = train[0]?.x.length ?? 0;
-  const means = Array.from({ length: featureCount }, (_, index) =>
-    train.reduce((sum, example) => sum + example.x[index]!, 0) / train.length,
+  const means = Array.from(
+    { length: featureCount },
+    (_, index) => train.reduce((sum, example) => sum + example.x[index]!, 0) / train.length
   );
   const scales = means.map((mean, index) => {
-    const variance = train.reduce((sum, example) => sum + (example.x[index]! - mean) ** 2, 0) / train.length;
+    const variance =
+      train.reduce((sum, example) => sum + (example.x[index]! - mean) ** 2, 0) / train.length;
     return Math.sqrt(variance) || 1;
   });
   const apply = (examples: Example[]) =>
@@ -266,7 +277,7 @@ function trainModel(examples: Example[], params: { epochs: number; lr: number; l
 function evaluate(examples: Example[], model: ReturnType<typeof trainModel>, threshold: number) {
   const rows = examples.map((example) => {
     const probA = sigmoid(dot(model.weights, example.x) + model.bias);
-    const predicted = probA >= threshold ? "a" : "b";
+    const predicted = probA >= threshold ? 'a' : 'b';
     return {
       id: example.id,
       predicted,
@@ -299,7 +310,7 @@ function chooseModel(train: Example[]) {
       b.trainEval.accuracy - a.trainEval.accuracy ||
       a.model.l2 - b.model.l2 ||
       a.model.lr - b.model.lr ||
-      a.threshold - b.threshold,
+      a.threshold - b.threshold
   )[0]!;
 }
 
@@ -313,9 +324,9 @@ async function buildExamples(params: {
   const cache = new Map<string, number[]>();
 
   for (const record of params.records) {
-    const label = record.label?.preferredVariantId ?? "unknown";
+    const label = record.label?.preferredVariantId ?? 'unknown';
     const y = target(label);
-    if (y == null || (label !== "a" && label !== "b")) continue;
+    if (y == null || (label !== 'a' && label !== 'b')) continue;
     const pair = params.pairs.get(record.id);
     if (!pair) throw new Error(`Missing pair manifest for ${record.id}`);
     let imageFeatures = cache.get(record.id);
@@ -323,7 +334,9 @@ async function buildExamples(params: {
       imageFeatures = await screenshotFeatureVector(params.page, pair);
       cache.set(record.id, imageFeatures);
     }
-    const evidenceFeatures = params.includeEvidenceFeatures ? tasteJsonlFeatureVector(record) ?? [] : [];
+    const evidenceFeatures = params.includeEvidenceFeatures
+      ? (tasteJsonlFeatureVector(record) ?? [])
+      : [];
     examples.push({ id: record.id, x: [...evidenceFeatures, ...imageFeatures], y, label });
   }
 
@@ -353,17 +366,21 @@ async function main() {
       pairs,
       includeEvidenceFeatures: args.includeEvidenceFeatures,
     });
-    if (!rawTrain.length || !rawTest.length) throw new Error("Need train and test examples");
+    if (!rawTrain.length || !rawTest.length) throw new Error('Need train and test examples');
     const scaled = standardize(rawTrain, rawTest);
     const selected = chooseModel(scaled.train);
     const holdoutEval = evaluate(scaled.test, selected.model, selected.threshold);
     const featureNames = [
-      ...(args.includeEvidenceFeatures ? tasteJsonlFeatureVector(trainRecords[0]!)?.map((_, index) => `evidence_${index}`) ?? [] : []),
+      ...(args.includeEvidenceFeatures
+        ? (tasteJsonlFeatureVector(trainRecords[0]!)?.map((_, index) => `evidence_${index}`) ?? [])
+        : []),
       ...SCREENSHOT_FEATURE_NAMES,
     ];
     const report = {
       generatedAt: new Date().toISOString(),
-      modelId: args.includeEvidenceFeatures ? "taste-screenshot-plus-evidence-ranker-v0" : "taste-screenshot-stats-ranker-v0",
+      modelId: args.includeEvidenceFeatures
+        ? 'taste-screenshot-plus-evidence-ranker-v0'
+        : 'taste-screenshot-stats-ranker-v0',
       inputs: {
         pairs: path.relative(ROOT, args.pairsDir),
         train: path.relative(ROOT, args.trainPath),
@@ -383,20 +400,26 @@ async function main() {
       },
       recommendation:
         holdoutEval.accuracy >= 0.7
-          ? "Screenshot-stat ranker clears the promotion accuracy bar; compare against the main report before promotion."
+          ? 'Screenshot-stat ranker clears the promotion accuracy bar; compare against the main report before promotion.'
           : `Screenshot-stat ranker is not promotion-ready: holdout accuracy ${holdoutEval.accuracy.toFixed(3)} is below 0.700.`,
     };
 
     await mkdir(path.dirname(args.outPath), { recursive: true });
     await writeFile(args.outPath, `${JSON.stringify(report, null, 2)}\n`);
-    console.log(JSON.stringify({
-      report: path.relative(ROOT, args.outPath),
-      modelId: report.modelId,
-      trainAccuracy: report.metrics.train.accuracy,
-      holdoutAccuracy: report.metrics.holdout.accuracy,
-      selected: report.selected,
-      recommendation: report.recommendation,
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          report: path.relative(ROOT, args.outPath),
+          modelId: report.modelId,
+          trainAccuracy: report.metrics.train.accuracy,
+          holdoutAccuracy: report.metrics.holdout.accuracy,
+          selected: report.selected,
+          recommendation: report.recommendation,
+        },
+        null,
+        2
+      )
+    );
   } finally {
     await browser.close();
   }

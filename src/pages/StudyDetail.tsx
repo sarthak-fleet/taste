@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Camera, FileText, ExternalLink, Rocket } from "lucide-react";
-import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { formatDate, studyStatusLabel } from "@/lib/utils";
-import { SimulationPanel } from "@/components/SimulationPanel";
-import { AgentEvaluationOverlay } from "@/components/AgentEvaluationOverlay";
-import { resultFromLaunchResponse } from "@/lib/evaluationOverlay";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Camera, ExternalLink, FileText, Rocket } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { AgentEvaluationOverlay } from '@/components/AgentEvaluationOverlay';
+import { SimulationPanel } from '@/components/SimulationPanel';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import { resultFromLaunchResponse } from '@/lib/evaluationOverlay';
+import { formatDate, studyStatusLabel } from '@/lib/utils';
 
 export default function StudyDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +19,7 @@ export default function StudyDetail() {
   const [showEvalOverlay, setShowEvalOverlay] = useState(false);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["study", id],
+    queryKey: ['study', id],
     queryFn: () => api.getStudy(id!),
     enabled: !!id,
   });
@@ -27,8 +27,8 @@ export default function StudyDetail() {
   const captureMutation = useMutation({
     mutationFn: () => api.captureStudy(id!),
     onSuccess: () => {
-      toast.success("Visual evidence captured");
-      queryClient.invalidateQueries({ queryKey: ["study", id] });
+      toast.success('Visual evidence captured');
+      queryClient.invalidateQueries({ queryKey: ['study', id] });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -38,7 +38,7 @@ export default function StudyDetail() {
 
   const { study, variants, report } = data;
   const latestEvaluationByVariant = new Map(
-    data.visualEvaluations.map((evaluation) => [evaluation.variantId, evaluation]),
+    data.visualEvaluations.map((evaluation) => [evaluation.variantId, evaluation])
   );
   const capturedVariantIds = new Set(latestEvaluationByVariant.keys());
   const capturedCount = variants.filter((variant) => capturedVariantIds.has(variant.id)).length;
@@ -53,7 +53,7 @@ export default function StudyDetail() {
 
   function handleOverlayClose() {
     setShowEvalOverlay(false);
-    queryClient.invalidateQueries({ queryKey: ["study", id] });
+    queryClient.invalidateQueries({ queryKey: ['study', id] });
     navigate(`/studies/${id}/report`);
   }
 
@@ -73,13 +73,15 @@ export default function StudyDetail() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Target user</CardDescription>
-            <CardTitle className="text-base">{study.targetUserRole ?? "—"}</CardTitle>
+            <CardTitle className="text-base">{study.targetUserRole ?? '—'}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Objective</CardDescription>
-            <CardTitle className="text-base">{study.primaryObjective?.replace(/_/g, " ") ?? "—"}</CardTitle>
+            <CardTitle className="text-base">
+              {study.primaryObjective?.replace(/_/g, ' ') ?? '—'}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -106,18 +108,16 @@ export default function StudyDetail() {
               disabled={captureMutation.isPending || urlVariantCount < 2}
             >
               <Camera className="h-4 w-4" />
-              {captureMutation.isPending ? "Capturing..." : "Capture visuals"}
+              {captureMutation.isPending ? 'Capturing...' : 'Capture visuals'}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          {urlVariantCount < 2 && (
-            <p>Capture needs at least two variants with URLs.</p>
-          )}
+          {urlVariantCount < 2 && <p>Capture needs at least two variants with URLs.</p>}
           {latestEvaluation ? (
             <div className="grid gap-1 sm:grid-cols-2">
               <p>Latest capture: {formatDate(latestEvaluation.createdAt)}</p>
-              <p>Latest model: {latestModel ?? "pending baseline"}</p>
+              <p>Latest model: {latestModel ?? 'pending baseline'}</p>
             </div>
           ) : (
             <p>No screenshots captured yet.</p>
@@ -126,13 +126,16 @@ export default function StudyDetail() {
             {variants.map((variant) => {
               const evaluation = latestEvaluationByVariant.get(variant.id);
               return (
-                <Badge key={variant.id} variant={evaluation ? "success" : variant.assetUrl ? "secondary" : "warning"}>
-                  {variant.label}: {evaluation ? "captured" : variant.assetUrl ? "ready" : "no URL"}
+                <Badge
+                  key={variant.id}
+                  variant={evaluation ? 'success' : variant.assetUrl ? 'secondary' : 'warning'}
+                >
+                  {variant.label}: {evaluation ? 'captured' : variant.assetUrl ? 'ready' : 'no URL'}
                 </Badge>
               );
             })}
           </div>
-          </CardContent>
+        </CardContent>
       </Card>
 
       {study.studyBrief && (
@@ -141,7 +144,9 @@ export default function StudyDetail() {
             <CardTitle className="text-base">Study brief</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">{study.studyBrief}</pre>
+            <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">
+              {study.studyBrief}
+            </pre>
           </CardContent>
         </Card>
       )}
@@ -169,7 +174,12 @@ export default function StudyDetail() {
               <CardContent className="text-sm text-muted-foreground">
                 {v.description && <p className="mb-2">{v.description}</p>}
                 {v.assetUrl && (
-                  <a href={v.assetUrl} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline">
+                  <a
+                    href={v.assetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary inline-flex items-center gap-1 hover:underline"
+                  >
                     View asset <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
@@ -180,7 +190,7 @@ export default function StudyDetail() {
       </section>
 
       <div className="flex gap-3">
-        {study.status === "draft" && (
+        {study.status === 'draft' && (
           <Button onClick={() => setShowEvalOverlay(true)} disabled={showEvalOverlay}>
             <Rocket className="h-4 w-4" />
             Launch study

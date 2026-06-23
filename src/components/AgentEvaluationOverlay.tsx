@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import { X, FileText } from "lucide-react";
-import { AgentCinemaVerdict } from "./AgentCinemaVerdict";
-import { cinemaMinDurationMs, deriveGreenRatioFromWinner } from "@/lib/agentCinema";
-import { Button } from "@/components/ui/button";
+import { FileText, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { cinemaMinDurationMs, deriveGreenRatioFromWinner } from '@/lib/agentCinema';
+import { AgentCinemaVerdict } from './AgentCinemaVerdict';
 
 export interface EvaluationOverlayResult {
   winnerLabel?: string;
@@ -31,14 +31,14 @@ export function AgentEvaluationOverlay({
   onClose,
   onFinished,
 }: AgentEvaluationOverlayProps) {
-  const [phase, setPhase] = useState<"running" | "done">("running");
+  const [phase, setPhase] = useState<'running' | 'done'>('running');
   const [apiResult, setApiResult] = useState<EvaluationOverlayResult | null>(null);
   const [cinemaDone, setCinemaDone] = useState(false);
   const [greenRatio, setGreenRatio] = useState(greenRatioProp ?? 0.68);
 
   useEffect(() => {
     if (!open) {
-      setPhase("running");
+      setPhase('running');
       setApiResult(null);
       setCinemaDone(false);
       setGreenRatio(greenRatioProp ?? 0.68);
@@ -69,8 +69,8 @@ export function AgentEvaluationOverlay({
   }, [open, onRun, variants, greenRatioProp]);
 
   useEffect(() => {
-    if (cinemaDone && (apiResult || phase === "running")) {
-      setPhase("done");
+    if (cinemaDone && (apiResult || phase === 'running')) {
+      setPhase('done');
       onFinished?.(apiResult ?? { greenRatio });
     }
   }, [cinemaDone, apiResult, greenRatio, onFinished, phase]);
@@ -97,13 +97,16 @@ export function AgentEvaluationOverlay({
       <div className="w-full max-w-5xl h-full max-h-[90vh] flex flex-col gap-4">
         <AgentCinemaVerdict
           taskTitle={taskTitle}
-          taskSubtitle={taskSubtitle ?? `${variants.length} variants · ${variants.map((v) => v.label).join(" vs ")}`}
+          taskSubtitle={
+            taskSubtitle ??
+            `${variants.length} variants · ${variants.map((v) => v.label).join(' vs ')}`
+          }
           greenRatio={greenRatio}
           minDurationMs={cinemaMinDurationMs()}
           onComplete={handleCinemaComplete}
         />
 
-        {phase === "done" && (
+        {phase === 'done' && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center sm:text-left">
               <p className="text-sm text-muted-foreground">Agent panel verdict</p>
@@ -113,7 +116,7 @@ export function AgentEvaluationOverlay({
                     Ship <span className="text-primary">Variant {winner}</span>
                   </>
                 ) : (
-                  "Evaluation complete"
+                  'Evaluation complete'
                 )}
               </p>
             </div>

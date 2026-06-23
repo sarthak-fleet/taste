@@ -29,7 +29,7 @@ Chromium inside Pages Functions.
   - `R2_PUBLIC_BASE_URL`, optional; required for VLM judging because image
     artifacts must be HTTP URLs rather than private `r2://` keys
 - Pages evaluator env vars, optional:
-  - `TASTE_RANKER_MODEL_JSON`, full JSON output from `pnpm train:taste-ranker`;
+  - `TASTE_RANKER_MODEL_JSON`, full JSON output from `bun train:taste-ranker`;
     when set, this local ranker runs before VLM
   - `TASTE_VLM_API_BASE`, OpenAI-compatible base URL
   - `TASTE_VLM_API_KEY`
@@ -38,9 +38,9 @@ Chromium inside Pages Functions.
 ## Preflight
 
 ```bash
-pnpm build
-pnpm capture-worker:check
-pnpm exec wrangler deploy --config workers/taste-capture/wrangler.toml --dry-run --outdir /tmp/taste-capture-worker
+bun build
+bun capture-worker:check
+bun exec wrangler deploy --config workers/taste-capture/wrangler.toml --dry-run --outdir /tmp/taste-capture-worker
 ```
 
 ## Configure
@@ -48,14 +48,14 @@ pnpm exec wrangler deploy --config workers/taste-capture/wrangler.toml --dry-run
 Create the R2 bucket if it does not already exist:
 
 ```bash
-pnpm exec wrangler r2 bucket create taste-captures
+bun exec wrangler r2 bucket create taste-captures
 ```
 
 Set Worker secrets:
 
 ```bash
-pnpm exec wrangler secret put CAPTURE_WORKER_TOKEN --config workers/taste-capture/wrangler.toml
-pnpm exec wrangler secret put TASTE_API_TOKEN --config workers/taste-capture/wrangler.toml
+bun exec wrangler secret put CAPTURE_WORKER_TOKEN --config workers/taste-capture/wrangler.toml
+bun exec wrangler secret put TASTE_API_TOKEN --config workers/taste-capture/wrangler.toml
 ```
 
 Set Pages environment variables in Cloudflare Pages:
@@ -82,7 +82,7 @@ HTTP image artifact URLs, the app intentionally falls back to
 ## Deploy
 
 ```bash
-pnpm exec wrangler deploy --config workers/taste-capture/wrangler.toml
+bun exec wrangler deploy --config workers/taste-capture/wrangler.toml
 ```
 
 Deploy the Pages app through the existing project deploy path after setting the
@@ -93,7 +93,7 @@ Pages env vars.
 After a study has at least two URL variants:
 
 ```bash
-pnpm capture-study:taste -- --api https://<taste-domain>/api --study <study-id>
+bun capture-study:taste -- --api https://<taste-domain>/api --study <study-id>
 ```
 
 Expected result:

@@ -1,20 +1,20 @@
-import type { ReportContent } from "./types.js";
-import type { TasteCaptureManifest } from "./visualEvidence.js";
-import type { SimulationResult } from "./simulation.js";
+import type { SimulationResult } from './simulation.js';
+import type { ReportContent } from './types.js';
+import type { TasteCaptureManifest } from './visualEvidence.js';
 
-const API_BASE = "/api";
+const API_BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      "content-type": "application/json",
+      'content-type': 'application/json',
       ...options?.headers,
     },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((err as { error?: string }).error ?? "Request failed");
+    throw new Error((err as { error?: string }).error ?? 'Request failed');
   }
   return res.json() as Promise<T>;
 }
@@ -83,10 +83,10 @@ export interface VisualEvaluation {
 }
 
 export const api = {
-  health: () => request<{ ok: boolean }>("/health"),
+  health: () => request<{ ok: boolean }>('/health'),
 
   getStudies: (workspaceId?: string) =>
-    request<Study[]>(`/studies${workspaceId ? `?workspaceId=${workspaceId}` : ""}`),
+    request<Study[]>(`/studies${workspaceId ? `?workspaceId=${workspaceId}` : ''}`),
 
   getStudy: (id: string) =>
     request<{
@@ -100,16 +100,18 @@ export const api = {
     }>(`/studies/${id}`),
 
   createStudy: (data: Record<string, unknown>) =>
-    request<{ study: Study; variants: Variant[] }>("/studies", {
-      method: "POST",
+    request<{ study: Study; variants: Variant[] }>('/studies', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
 
   launchStudy: (id: string) =>
-    request<{ study: Study; report?: Report }>(`/studies/${id}/launch`, { method: "POST" }),
+    request<{ study: Study; report?: Report }>(`/studies/${id}/launch`, { method: 'POST' }),
 
   captureStudy: (id: string) =>
-    request<{ captured: unknown[]; callback?: unknown }>(`/studies/${id}/capture`, { method: "POST" }),
+    request<{ captured: unknown[]; callback?: unknown }>(`/studies/${id}/capture`, {
+      method: 'POST',
+    }),
 
   attachVisualEvidence: (
     studyId: string,
@@ -120,63 +122,67 @@ export const api = {
         manifest: TasteCaptureManifest;
       }>;
       runBaseline?: boolean;
-    },
+    }
   ) =>
-    request<{ persisted: VisualEvaluation[]; baseline: unknown | null }>(`/studies/${studyId}/visual-evidence`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+    request<{ persisted: VisualEvaluation[]; baseline: unknown | null }>(
+      `/studies/${studyId}/visual-evidence`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    ),
 
   getReport: (studyId: string) => request<Report>(`/studies/${studyId}/report`),
 
   submitOutcome: (studyId: string, data: Record<string, unknown>) =>
     request<{ ok: boolean }>(`/studies/${studyId}/outcome`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  runSimulation: (studyId: string, mode: "agents" | "humans" | "full") =>
+  runSimulation: (studyId: string, mode: 'agents' | 'humans' | 'full') =>
     request<SimulationResult>(`/studies/${studyId}/simulate`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify({ mode }),
     }),
 
-  getSimulation: (studyId: string) =>
-    request<SimulationResult>(`/studies/${studyId}/simulation`),
+  getSimulation: (studyId: string) => request<SimulationResult>(`/studies/${studyId}/simulation`),
 
   listAgents: () =>
     request<Array<{ slug: string; name: string; description: string; agentType: string }>>(
-      "/studies/agents/list",
+      '/studies/agents/list'
     ),
 
-  getArenaBattles: () => request<unknown[]>("/arena/battles"),
+  getArenaBattles: () => request<unknown[]>('/arena/battles'),
 
-  getArenaBattle: (slug: string) => request<{
-    battle: Record<string, unknown>;
-    votes: number;
-    voteCounts: { a: number; b: number };
-    communityPrediction: string | null;
-  }>(`/arena/battles/${slug}`),
+  getArenaBattle: (slug: string) =>
+    request<{
+      battle: Record<string, unknown>;
+      votes: number;
+      voteCounts: { a: number; b: number };
+      communityPrediction: string | null;
+    }>(`/arena/battles/${slug}`),
 
   voteArena: (slug: string, data: Record<string, unknown>) =>
     request<{ ok: boolean; agentCritiques: unknown[] }>(`/arena/battles/${slug}/vote`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  getLeaderboard: () => request<Array<{ name: string; accuracy: number; predictions: number }>>("/arena/leaderboard"),
+  getLeaderboard: () =>
+    request<Array<{ name: string; accuracy: number; predictions: number }>>('/arena/leaderboard'),
 
   getAdminOverview: () =>
     request<{
       stats: Record<string, number>;
       recentStudies: Study[];
-    }>("/admin/overview"),
+    }>('/admin/overview'),
 
   applyEvaluator: (data: Record<string, unknown>) =>
-    request<{ ok: boolean }>("/evaluators/apply", {
-      method: "POST",
+    request<{ ok: boolean }>('/evaluators/apply', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
 };
 
-export const DEMO_WORKSPACE_ID = "ws-demo-001";
+export const DEMO_WORKSPACE_ID = 'ws-demo-001';

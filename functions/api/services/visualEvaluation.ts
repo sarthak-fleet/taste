@@ -1,20 +1,24 @@
-import { and, desc, eq } from "drizzle-orm";
-import * as schema from "../../../src/db/schema";
-import type { Db } from "../_context";
-import type { TasteCaptureManifest } from "../../../src/lib/visualEvidence";
-import { summarizeCaptureArtifactRisk } from "../../../src/lib/tasteDataset";
+import { and, desc, eq } from 'drizzle-orm';
+import * as schema from '../../../src/db/schema';
 import {
   runTasteMechanicalBaselineForVariants,
   TASTE_BASELINE_MODEL_ID,
   type TasteBaselineResult,
   type TasteBaselineVariant,
-} from "../../../src/lib/tasteBaseline";
+} from '../../../src/lib/tasteBaseline';
+import { summarizeCaptureArtifactRisk } from '../../../src/lib/tasteDataset';
 import {
   runTasteLinearRankerForVariants,
   type TasteLinearRankerModel,
   type TasteLinearRankerResult,
-} from "../../../src/lib/tasteRanker";
-import { runTasteVlmJudgeForVariants, type TasteVlmConfig, type TasteVlmResult } from "./tasteVlmJudge";
+} from '../../../src/lib/tasteRanker';
+import type { TasteCaptureManifest } from '../../../src/lib/visualEvidence';
+import type { Db } from '../_context';
+import {
+  runTasteVlmJudgeForVariants,
+  type TasteVlmConfig,
+  type TasteVlmResult,
+} from './tasteVlmJudge';
 
 type Study = typeof schema.studies.$inferSelect;
 type Variant = typeof schema.variants.$inferSelect;
@@ -33,8 +37,12 @@ export interface VisualEvidenceInput {
 }
 
 function assertCaptureManifest(value: TasteCaptureManifest): asserts value is TasteCaptureManifest {
-  if (value?.schemaVersion !== 1 || !Array.isArray(value.artifacts) || value.artifacts.length === 0) {
-    throw new Error("Each visual evidence item needs a v1 capture manifest with artifacts");
+  if (
+    value?.schemaVersion !== 1 ||
+    !Array.isArray(value.artifacts) ||
+    value.artifacts.length === 0
+  ) {
+    throw new Error('Each visual evidence item needs a v1 capture manifest with artifacts');
   }
 }
 
@@ -56,7 +64,10 @@ function latestEvaluationByVariant(rows: VisualEvaluation[]): Map<string, Visual
   return latest;
 }
 
-function buildBaselineVariant(variant: Variant, evaluation: VisualEvaluation): TasteBaselineVariant {
+function buildBaselineVariant(
+  variant: Variant,
+  evaluation: VisualEvaluation
+): TasteBaselineVariant {
   const manifest = JSON.parse(evaluation.captureManifestJson) as TasteCaptureManifest;
   return {
     id: variant.id,
@@ -68,29 +79,33 @@ function buildBaselineVariant(variant: Variant, evaluation: VisualEvaluation): T
 
 async function replaceTasteVisualRuns(db: Db, studyId: string, result: TasteVisualResult) {
   const staleAgentIds = new Set([TASTE_BASELINE_MODEL_ID, result.modelId]);
-  for (const agentId of staleAgentIds) {
-    await db
-      .delete(schema.agentRuns)
-      .where(and(eq(schema.agentRuns.studyId, studyId), eq(schema.agentRuns.agentId, agentId)));
-    await db
-      .delete(schema.predictions)
-      .where(and(eq(schema.predictions.studyId, studyId), eq(schema.predictions.evaluatorId, agentId)));
-  }
+  await Promise.all(
+    [...staleAgentIds].flatMap((agentId) => [
+      db
+        .delete(schema.agentRuns)
+        .where(and(eq(schema.agentRuns.studyId, studyId), eq(schema.agentRuns.agentId, agentId))),
+      db
+        .delete(schema.predictions)
+        .where(
+          and(eq(schema.predictions.studyId, studyId), eq(schema.predictions.evaluatorId, agentId))
+        ),
+    ])
+  );
 
   const now = new Date().toISOString();
-  for (const output of result.outputs) {
-    await db.insert(schema.agentRuns).values({
+  await db.insert(schema.agentRuns).values(
+    result.outputs.map((output) => ({
       id: crypto.randomUUID(),
       studyId,
       variantId: output.variantId,
       agentId: TASTE_BASELINE_MODEL_ID,
       outputJson: JSON.stringify(output),
-      status: "completed",
+      status: 'completed' as const,
       modelUsed: result.modelId,
       startedAt: now,
       completedAt: now,
-    });
-  }
+    }))
+  );
 
   if (result.overallWinnerVariantId) {
     await db.insert(schema.predictions).values({
@@ -98,7 +113,7 @@ async function replaceTasteVisualRuns(db: Db, studyId: string, result: TasteVisu
       studyId,
       evaluatorId: TASTE_BASELINE_MODEL_ID,
       evaluatorType: TASTE_BASELINE_MODEL_ID,
-      source: "agent",
+      source: 'agent',
       predictedWinnerVariantId: result.overallWinnerVariantId,
       confidence: result.overallConfidence,
       reasoning: result.summary,
@@ -106,7 +121,12 @@ async function replaceTasteVisualRuns(db: Db, studyId: string, result: TasteVisu
   }
 }
 
-export async function persistVisualEvidence(db: Db, study: Study, variants: Variant[], evidence: VisualEvidenceInput[]) {
+export async function persistVisualEvidence(
+  db: Db,
+  study: Study,
+  variants: Variant[],
+  evidence: VisualEvidenceInput[]
+) {
   const persisted: VisualEvaluation[] = [];
   const now = new Date().toISOString();
 
@@ -114,7 +134,9 @@ export async function persistVisualEvidence(db: Db, study: Study, variants: Vari
     assertCaptureManifest(item.manifest);
     const variant = findVariant(variants, item);
     if (!variant) {
-      throw new Error(`No variant matched visual evidence item ${item.variantId ?? item.variantLabel ?? "(missing id)"}`);
+      throw new Error(
+        `No variant matched visual evidence item ${item.variantId ?? item.variantLabel ?? '(missing id)'}`
+      );
     }
 
     const id = crypto.randomUUID();
@@ -122,14 +144,17 @@ export async function persistVisualEvidence(db: Db, study: Study, variants: Vari
       id,
       studyId: study.id,
       variantId: variant.id,
-      sourceType: "capture_manifest",
+      sourceType: 'capture_manifest',
       sourceUrl: item.manifest.source.url,
       captureManifestJson: JSON.stringify(item.manifest),
-      status: "completed",
+      status: 'completed',
       completedAt: now,
     });
 
-    const [row] = await db.select().from(schema.visualEvaluations).where(eq(schema.visualEvaluations.id, id));
+    const [row] = await db
+      .select()
+      .from(schema.visualEvaluations)
+      .where(eq(schema.visualEvaluations.id, id));
     if (row) persisted.push(row);
   }
 
@@ -140,7 +165,7 @@ export async function runTasteEvaluatorFromLatestEvidence(
   db: Db,
   study: Study,
   variants: Variant[],
-  config: TasteEvaluatorConfig = {},
+  config: TasteEvaluatorConfig = {}
 ): Promise<TasteVisualResult | null> {
   const rows = await db
     .select()
@@ -173,7 +198,7 @@ export async function runTasteEvaluatorFromLatestEvidence(
         targetUserRole: study.targetUserRole ?? undefined,
         variants: evaluatorVariants,
       }).catch((error) => {
-        console.warn("Taste VLM judge failed; falling back to mechanical baseline", error);
+        console.warn('Taste VLM judge failed; falling back to mechanical baseline', error);
         return null;
       });
 
@@ -202,7 +227,7 @@ export async function runTasteEvaluatorFromLatestEvidence(
 export async function runTasteBaselineFromLatestEvidence(
   db: Db,
   study: Study,
-  variants: Variant[],
+  variants: Variant[]
 ): Promise<TasteBaselineResult | null> {
   const result = await runTasteEvaluatorFromLatestEvidence(db, study, variants);
   return result?.modelId === TASTE_BASELINE_MODEL_ID ? (result as TasteBaselineResult) : null;
@@ -216,9 +241,19 @@ export async function attachVisualEvidenceAndRunBaseline(params: {
   runBaseline: boolean;
   evaluatorConfig?: TasteEvaluatorConfig;
 }) {
-  const persisted = await persistVisualEvidence(params.db, params.study, params.variants, params.evidence);
+  const persisted = await persistVisualEvidence(
+    params.db,
+    params.study,
+    params.variants,
+    params.evidence
+  );
   const baseline = params.runBaseline
-    ? await runTasteEvaluatorFromLatestEvidence(params.db, params.study, params.variants, params.evaluatorConfig)
+    ? await runTasteEvaluatorFromLatestEvidence(
+        params.db,
+        params.study,
+        params.variants,
+        params.evaluatorConfig
+      )
     : null;
 
   return { persisted, baseline };

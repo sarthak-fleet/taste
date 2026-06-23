@@ -32,7 +32,7 @@ export interface CinemaSeat {
   size: number;
   spawnAt: number;
   verdictAt: number;
-  finalVerdict: "green" | "red";
+  finalVerdict: 'green' | 'red';
   glow: number;
 }
 
@@ -101,7 +101,7 @@ export function buildCinemaLayout(width: number, height: number): CinemaLayout {
           verdictStart +
           orderT * CINEMA_TIMING.verdictWaveMs +
           hash(id + 77) * CINEMA_TIMING.verdictJitterMs,
-        finalVerdict: "green",
+        finalVerdict: 'green',
         glow: 0,
       });
       id++;
@@ -120,13 +120,13 @@ export function assignVerdicts(seats: CinemaSeat[], greenRatio: number, seed = 4
   }
   const greenSet = new Set(indices.slice(0, greenTarget));
   for (const seat of seats) {
-    seat.finalVerdict = greenSet.has(seat.id) ? "green" : "red";
+    seat.finalVerdict = greenSet.has(seat.id) ? 'green' : 'red';
   }
 }
 
 export function deriveGreenRatioFromWinner(
   winnerLabel: string | undefined,
-  variants: Array<{ label: string }>,
+  variants: Array<{ label: string }>
 ): number {
   if (!winnerLabel || variants.length < 2) return 0.68;
   const idx = variants.findIndex((v) => v.label === winnerLabel);
@@ -139,9 +139,9 @@ export function cinemaPhaseLabel(elapsed: number, _spawned: number, verdictCount
   const t = CINEMA_TIMING;
   const verdictStart = cinemaVerdictStartMs();
 
-  if (elapsed < t.introMs) return "Preparing the grid…";
-  if (elapsed < verdictStart) return "2,000 agents reviewing your task…";
-  if (verdictCount < AGENT_COUNT * 0.12) return "Verdicts incoming…";
-  if (verdictCount < AGENT_COUNT * 0.85) return "Judgment rippling across the grid…";
-  return "Tallying the network…";
+  if (elapsed < t.introMs) return 'Preparing the grid…';
+  if (elapsed < verdictStart) return '2,000 agents reviewing your task…';
+  if (verdictCount < AGENT_COUNT * 0.12) return 'Verdicts incoming…';
+  if (verdictCount < AGENT_COUNT * 0.85) return 'Judgment rippling across the grid…';
+  return 'Tallying the network…';
 }
