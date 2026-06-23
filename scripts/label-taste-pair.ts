@@ -138,9 +138,9 @@ async function resolvePairPath(args: CliArgs) {
 function usage() {
   return [
     'Usage:',
-    'pnpm label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8 --rationale "Cleaner above fold"',
-    'pnpm label:taste-pair -- --id <pairId> --preferred tie --annotator sarthak',
-    'pnpm label:taste-pair -- --pair captures/taste-pairs/example.json --clear',
+    'bun label:taste-pair -- --pair captures/taste-pairs/example.json --preferred a --confidence 0.8 --rationale "Cleaner above fold"',
+    'bun label:taste-pair -- --id <pairId> --preferred tie --annotator sarthak',
+    'bun label:taste-pair -- --pair captures/taste-pairs/example.json --clear',
   ].join('\n');
 }
 

@@ -107,7 +107,7 @@ async function readPair(filePath: string): Promise<TastePairManifest | null> {
 function toQueueItem(pair: TastePairManifest, pairPath: string, outPath: string): QueueItem {
   const relativePairPath = path.relative(ROOT, pairPath);
   const command = (preferred: 'a' | 'b' | 'tie') =>
-    `pnpm label:taste-pair -- --pair ${shellQuote(relativePairPath)} --preferred ${preferred} --confidence 0.8 --rationale ${shellQuote('TODO')}`;
+    `bun label:taste-pair -- --pair ${shellQuote(relativePairPath)} --preferred ${preferred} --confidence 0.8 --rationale ${shellQuote('TODO')}`;
 
   return {
     pairId: pair.pairId,

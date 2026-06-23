@@ -12,9 +12,9 @@
 
 ## Entrypoints
 
-- `pnpm dev:full` — full stack on :8788
-- `pnpm dev` — frontend only on :5173 (needs API proxy)
-- `pnpm deploy` — Cloudflare Pages
+- `bun dev:full` — full stack on :8788
+- `bun dev` — frontend only on :5173 (needs API proxy)
+- `bun deploy` — Cloudflare Pages
 
 ## Active scope
 

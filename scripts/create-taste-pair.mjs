@@ -153,7 +153,7 @@ async function main() {
   const bPathArg = args.get('b');
   if (!aPathArg || !bPathArg) {
     console.error(
-      'Usage: pnpm pair:taste -- --a captures/a/manifest.json --b captures/b/manifest.json [--preferred a|b|tie|unknown]'
+      'Usage: bun pair:taste -- --a captures/a/manifest.json --b captures/b/manifest.json [--preferred a|b|tie|unknown]'
     );
     process.exit(2);
   }

@@ -50,7 +50,7 @@ async function main() {
   const pairPathArg = args.get('pair');
   if (!pairPathArg) {
     console.error(
-      'Usage: pnpm baseline:taste -- --pair captures/taste-pairs/example.json [--out captures/taste-results]'
+      'Usage: bun baseline:taste -- --pair captures/taste-pairs/example.json [--out captures/taste-results]'
     );
     process.exit(2);
   }

@@ -1,6 +1,6 @@
 /**
  * Seeds local D1 database via wrangler.
- * Run: pnpm db:migrate:local && pnpm db:seed
+ * Run: bun db:migrate:local && bun db:seed
  */
 import { execSync } from 'node:child_process';
 

@@ -22,7 +22,7 @@ function parseArgs(argv: string[]): CliArgs {
 
   if (!studyId) {
     throw new Error(
-      'Usage: pnpm capture-study:taste -- --study <study-id> [--api http://127.0.0.1:8788/api]'
+      'Usage: bun capture-study:taste -- --study <study-id> [--api http://127.0.0.1:8788/api]'
     );
   }
 

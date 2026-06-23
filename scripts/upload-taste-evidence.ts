@@ -44,7 +44,7 @@ function parseArgs(argv: string[]): CliArgs {
 
   if (!studyId || captures.length === 0) {
     throw new Error(
-      'Usage: pnpm evidence:taste -- --study <study-id> --capture <variant-id-or-label>=captures/.../manifest.json [--api http://127.0.0.1:8788/api] [--token shared-secret]'
+      'Usage: bun evidence:taste -- --study <study-id> --capture <variant-id-or-label>=captures/.../manifest.json [--api http://127.0.0.1:8788/api] [--token shared-secret]'
     );
   }
 

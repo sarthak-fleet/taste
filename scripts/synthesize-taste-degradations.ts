@@ -55,7 +55,7 @@ function parseArgs(argv: string[]): CliArgs {
 
   if (!inputPath) {
     throw new Error(
-      'Usage: pnpm synth:taste-degrade -- --manifest captures/.../manifest.json [--out captures/taste-pairs]'
+      'Usage: bun synth:taste-degrade -- --manifest captures/.../manifest.json [--out captures/taste-pairs]'
     );
   }
 
