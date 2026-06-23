@@ -42,7 +42,9 @@
     "deploy": "bun run build && wrangler pages deploy dist --project-name=shiprank",
     "prepare": "husky",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "size": "size-limit",
+    "size:check": "size-limit --json"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -64,26 +66,29 @@
     "react-router-dom": "^7.14.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "web-vitals": "^4.2.4"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
     "@cloudflare/puppeteer": "^1.1.0",
     "@cloudflare/workers-types": "^4.20260311.0",
+    "@size-limit/file": "^11.2.0",
     "@tailwindcss/vite": "^4.2.4",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^4.3.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "drizzle-kit": "^0.31.10",
     "husky": "^9.1.7",
     "playwright": "^1.61.0",
+    "size-limit": "^11.2.0",
     "tailwindcss": "^4.2.4",
     "tsx": "^4.19.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.10",
     "vitest": "^4.1.9",
-    "@vitest/coverage-v8": "^4.1.9",
     "wrangler": "^4.85.0"
   }
 }

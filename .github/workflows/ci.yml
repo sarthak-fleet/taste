@@ -25,3 +25,7 @@ jobs:
 
       - name: Run tests
         run: bun run test
+      - name: Build (vite)
+        run: bunx vite build
+      - name: Check bundle size
+        run: bun run size
