@@ -7,6 +7,7 @@ import { adminRouter } from './routes/admin';
 import { arenaRouter } from './routes/arena';
 import { evaluatorsRouter } from './routes/evaluators';
 import { studiesRouter } from './routes/studies';
+import { withTiming } from '../_lib/timing';
 
 export interface Env {
   DB: D1Database;
@@ -46,4 +47,4 @@ app.route('/', api);
 // Also mount at /api for vite proxy and direct /api/* requests
 app.route('/api', api);
 
-export const onRequest = handle(app);
+export const onRequest = withTiming(handle(app));
