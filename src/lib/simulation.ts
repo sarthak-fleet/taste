@@ -1,7 +1,17 @@
-import { AGENT_DEFINITIONS, runMockAgentEvaluation } from "./agents";
-import { HUMAN_EVALUATOR_POOL, runHumanSimulation, type HumanEvalResult } from "./evaluators";
-import type { AgentOutput, CriterionDefinition, PairwiseVerdict, SignalQualitySummary } from "./types";
-import { buildPairwiseVerdicts, criteriaForStudy, evaluatorTypeWeight, summarizeSignalQuality } from "./scoring";
+import { AGENT_DEFINITIONS, runMockAgentEvaluation } from './agents';
+import { HUMAN_EVALUATOR_POOL, type HumanEvalResult, runHumanSimulation } from './evaluators';
+import {
+  buildPairwiseVerdicts,
+  criteriaForStudy,
+  evaluatorTypeWeight,
+  summarizeSignalQuality,
+} from './scoring';
+import type {
+  AgentOutput,
+  CriterionDefinition,
+  PairwiseVerdict,
+  SignalQualitySummary,
+} from './types';
 
 export interface AgentSimResult {
   agentSlug: string;
@@ -25,7 +35,7 @@ export interface ConsensusEntry {
 
 export interface SimulationResult {
   studyId: string;
-  mode: "agents" | "humans" | "full";
+  mode: 'agents' | 'humans' | 'full';
   ranAt: string;
   agentPanel: AgentSimResult[];
   humanPanel: HumanEvalResult[];
@@ -58,7 +68,9 @@ export function runAgentSimulation(params: {
     ? AGENT_DEFINITIONS.filter((a) => params.agentSlugs!.includes(a.slug))
     : AGENT_DEFINITIONS;
 
-  const criteria = params.criteria ?? criteriaForStudy(params.studyContext.studyType, params.studyContext.primaryObjective);
+  const criteria =
+    params.criteria ??
+    criteriaForStudy(params.studyContext.studyType, params.studyContext.primaryObjective);
 
   return agents.map((agent) => {
     const outputs: AgentOutput[] = params.variants.map((variant, variantIndex) =>
@@ -71,7 +83,7 @@ export function runAgentSimulation(params: {
         studyContext: params.studyContext,
         variantIndex,
         totalVariants: params.variants.length,
-      }),
+      })
     );
     const pairwiseVerdicts = buildPairwiseVerdicts({
       agentSlug: agent.slug,
@@ -81,10 +93,9 @@ export function runAgentSimulation(params: {
     });
 
     const winner = outputs.reduce((best, o) =>
-      o.prediction.predictedRank < best.prediction.predictedRank ? o : best,
+      o.prediction.predictedRank < best.prediction.predictedRank ? o : best
     );
-    const avgConfidence =
-      outputs.reduce((s, o) => s + o.prediction.confidence, 0) / outputs.length;
+    const avgConfidence = outputs.reduce((s, o) => s + o.prediction.confidence, 0) / outputs.length;
 
     return {
       agentSlug: agent.slug,
@@ -93,7 +104,7 @@ export function runAgentSimulation(params: {
       outputs,
       pairwiseVerdicts,
       predictedWinnerVariantId: winner.variantId,
-      predictedWinnerLabel: params.variants.find((v) => v.id === winner.variantId)?.label ?? "?",
+      predictedWinnerLabel: params.variants.find((v) => v.id === winner.variantId)?.label ?? '?',
       avgConfidence,
     };
   });
@@ -101,7 +112,7 @@ export function runAgentSimulation(params: {
 
 function buildAgentConsensus(
   agentPanel: AgentSimResult[],
-  variants: Array<{ id: string; label: string }>,
+  variants: Array<{ id: string; label: string }>
 ): ConsensusEntry[] {
   const counts = new Map<string, { votes: number; confidences: number[]; scores: number[] }>();
 
@@ -144,9 +155,12 @@ function buildAgentConsensus(
 
 function buildHumanConsensus(
   humanPanel: HumanEvalResult[],
-  variants: Array<{ id: string; label: string }>,
+  variants: Array<{ id: string; label: string }>
 ): ConsensusEntry[] {
-  const counts = new Map<string, { votes: number; weightedVotes: number; confidences: number[]; scores: number[] }>();
+  const counts = new Map<
+    string,
+    { votes: number; weightedVotes: number; confidences: number[]; scores: number[] }
+  >();
 
   for (const v of variants) {
     counts.set(v.id, { votes: 0, weightedVotes: 0, confidences: [], scores: [] });
@@ -195,13 +209,13 @@ function detectAgentDisagreements(agentPanel: AgentSimResult[]): string[] {
   }
 
   return [...byPick.entries()].map(
-    ([, agents]) => `${agents.join(", ")} preferred different winners`,
+    ([, agents]) => `${agents.join(', ')} preferred different winners`
   );
 }
 
 function computeAgreement(
   agentConsensus: ConsensusEntry[],
-  humanConsensus: ConsensusEntry[],
+  humanConsensus: ConsensusEntry[]
 ): number {
   const agentTop = agentConsensus[0]?.variantId;
   const humanTop = humanConsensus[0]?.variantId;
@@ -211,7 +225,7 @@ function computeAgreement(
 
 export function runFullSimulation(params: {
   studyId: string;
-  mode: "agents" | "humans" | "full";
+  mode: 'agents' | 'humans' | 'full';
   variants: Array<{ id: string; label: string; name: string; description?: string }>;
   studyContext: {
     productName: string;
@@ -222,10 +236,10 @@ export function runFullSimulation(params: {
 }): SimulationResult {
   const criteria = criteriaForStudy(
     params.studyContext.studyType,
-    params.studyContext.primaryObjective,
+    params.studyContext.primaryObjective
   );
   const agentPanel =
-    params.mode === "humans"
+    params.mode === 'humans'
       ? []
       : runAgentSimulation({
           studyId: params.studyId,
@@ -235,7 +249,7 @@ export function runFullSimulation(params: {
         });
 
   const humanPanel =
-    params.mode === "agents"
+    params.mode === 'agents'
       ? []
       : runHumanSimulation({
           variants: params.variants,
@@ -264,10 +278,7 @@ export function runFullSimulation(params: {
   // Agent-first: combined pick defaults to agent consensus; humans refine when present
   let combinedPick = agentPick;
   if (agentPick && humanPick) {
-    combinedPick =
-      agentPick.variantId === humanPick.variantId
-        ? agentPick
-        : agentPick;
+    combinedPick = agentPick.variantId === humanPick.variantId ? agentPick : agentPick;
   } else if (humanPick && !agentPick) {
     combinedPick = humanPick;
   }
@@ -290,7 +301,7 @@ export function runFullSimulation(params: {
 
 export function agentScoreMatrix(
   agentPanel: AgentSimResult[],
-  variantLabels: Map<string, string>,
+  variantLabels: Map<string, string>
 ): {
   agents: string[];
   variantLabels: string[];
@@ -298,9 +309,7 @@ export function agentScoreMatrix(
 } {
   if (!agentPanel.length) return { agents: [], variantLabels: [], cells: [] };
 
-  const labels = agentPanel[0]!.outputs.map(
-    (o) => variantLabels.get(o.variantId) ?? o.variantId,
-  );
+  const labels = agentPanel[0]!.outputs.map((o) => variantLabels.get(o.variantId) ?? o.variantId);
   const agents = agentPanel.map((a) => a.agentName);
 
   const cells = agentPanel.map((agent) =>
@@ -309,10 +318,10 @@ export function agentScoreMatrix(
       return dimScores.length
         ? Math.round((dimScores.reduce((a, b) => a + b, 0) / dimScores.length) * 10) / 10
         : 0;
-    }),
+    })
   );
 
   return { agents, variantLabels: labels, cells };
 }
 
-export { HUMAN_EVALUATOR_POOL, AGENT_DEFINITIONS };
+export { AGENT_DEFINITIONS, HUMAN_EVALUATOR_POOL };

@@ -1,5 +1,5 @@
-import type { DimensionScores, EvaluatorType } from "./types";
-import { dimensionToOverallScore } from "./scoring";
+import { dimensionToOverallScore } from './scoring';
+import type { DimensionScores, EvaluatorType } from './types';
 
 export interface HumanEvaluatorDef {
   name: string;
@@ -10,13 +10,13 @@ export interface HumanEvaluatorDef {
 }
 
 export const HUMAN_EVALUATOR_POOL: HumanEvaluatorDef[] = [
-  { name: "Alex Chen", role: "Backend Engineer", type: "target_user", seniority: "5 years" },
-  { name: "Jordan Park", role: "Engineering Manager", type: "buyer", seniority: "8 years" },
-  { name: "Sam Rivera", role: "Product Designer", type: "domain_expert", seniority: "6 years" },
-  { name: "Taylor Kim", role: "Growth PM", type: "domain_expert", seniority: "4 years" },
-  { name: "Morgan Lee", role: "Full-stack Developer", type: "target_user", seniority: "3 years" },
-  { name: "Casey Wright", role: "DevOps Engineer", type: "power_user", seniority: "7 years" },
-  { name: "Riley Adams", role: "SaaS Founder", type: "domain_expert", seniority: "10 years" },
+  { name: 'Alex Chen', role: 'Backend Engineer', type: 'target_user', seniority: '5 years' },
+  { name: 'Jordan Park', role: 'Engineering Manager', type: 'buyer', seniority: '8 years' },
+  { name: 'Sam Rivera', role: 'Product Designer', type: 'domain_expert', seniority: '6 years' },
+  { name: 'Taylor Kim', role: 'Growth PM', type: 'domain_expert', seniority: '4 years' },
+  { name: 'Morgan Lee', role: 'Full-stack Developer', type: 'target_user', seniority: '3 years' },
+  { name: 'Casey Wright', role: 'DevOps Engineer', type: 'power_user', seniority: '7 years' },
+  { name: 'Riley Adams', role: 'SaaS Founder', type: 'domain_expert', seniority: '10 years' },
 ];
 
 function hashString(s: string): number {
@@ -28,7 +28,7 @@ function hashString(s: string): number {
 export function simulateHumanScores(
   variantId: string,
   variantIndex: number,
-  evaluatorIndex: number,
+  evaluatorIndex: number
 ): DimensionScores {
   const seed = hashString(`${variantId}:${evaluatorIndex}`);
   const base = 2.5 + (variantIndex === 0 ? 0.8 : variantIndex === 1 ? 0.4 : 0);
@@ -90,9 +90,9 @@ export function runHumanSimulation(params: {
         scores,
         overall,
         taskCompleted: scores.completionConfidence >= 3.5,
-        frictionPoints: scores.friction > 3 ? "Perceived setup complexity" : undefined,
-        trustBlockers: scores.trust < 3 ? "Missing proof or credibility signals" : undefined,
-        confusionNotes: scores.clarity < 3 ? "Unclear product purpose on first view" : undefined,
+        frictionPoints: scores.friction > 3 ? 'Perceived setup complexity' : undefined,
+        trustBlockers: scores.trust < 3 ? 'Missing proof or credibility signals' : undefined,
+        confusionNotes: scores.clarity < 3 ? 'Unclear product purpose on first view' : undefined,
       };
     });
 
@@ -112,7 +112,7 @@ export function runHumanSimulation(params: {
       predictedWinnerVariantId: winner.variantId,
       predictedWinnerLabel: winner.variantLabel,
       confidence,
-      reasoning: `Based on ${ev.role} perspective, Variant ${winner.variantLabel} has the clearest path to ${params.studyContext.primaryObjective.replace(/_/g, " ")}.`,
+      reasoning: `Based on ${ev.role} perspective, Variant ${winner.variantLabel} has the clearest path to ${params.studyContext.primaryObjective.replace(/_/g, ' ')}.`,
       quote,
     };
   });

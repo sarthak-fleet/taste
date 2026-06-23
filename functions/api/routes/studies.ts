@@ -1,17 +1,17 @@
-import { Hono } from "hono";
-import { eq, desc } from "drizzle-orm";
-import * as schema from "../../../src/db/schema";
-import type { Env } from "../[[route]]";
-import { badRequest, notFound } from "../_context";
-import { generateStudyBrief } from "../../../src/lib/utils";
-import { runAgentPipeline, runScoringAndReport } from "../services/pipeline";
-import { executeSimulation, getLatestSimulation, listAgents } from "../services/simulation";
+import { desc, eq } from 'drizzle-orm';
+import { Hono } from 'hono';
+import * as schema from '../../../src/db/schema';
+import { parseTasteLinearRankerModelJson } from '../../../src/lib/tasteRanker';
+import { generateStudyBrief } from '../../../src/lib/utils';
+import { badRequest, notFound } from '../_context';
+import type { Env } from '../[[route]]';
+import { runAgentPipeline, runScoringAndReport } from '../services/pipeline';
+import { executeSimulation, getLatestSimulation, listAgents } from '../services/simulation';
 import {
   attachVisualEvidenceAndRunBaseline,
   runTasteEvaluatorFromLatestEvidence,
   type VisualEvidenceInput,
-} from "../services/visualEvaluation";
-import { parseTasteLinearRankerModelJson } from "../../../src/lib/tasteRanker";
+} from '../services/visualEvaluation';
 
 export const studiesRouter = new Hono<{ Bindings: Env }>();
 
@@ -28,14 +28,17 @@ function tasteRankerModel(env: Env) {
   try {
     return parseTasteLinearRankerModelJson(env.TASTE_RANKER_MODEL_JSON);
   } catch (error) {
-    console.warn("TASTE_RANKER_MODEL_JSON is invalid; falling back to VLM/mechanical Taste evaluation", error);
+    console.warn(
+      'TASTE_RANKER_MODEL_JSON is invalid; falling back to VLM/mechanical Taste evaluation',
+      error
+    );
     return undefined;
   }
 }
 
-studiesRouter.get("/", async (c) => {
-  const db = c.get("db");
-  const workspaceId = c.req.query("workspaceId");
+studiesRouter.get('/', async (c) => {
+  const db = c.get('db');
+  const workspaceId = c.req.query('workspaceId');
   const query = db.select().from(schema.studies).orderBy(desc(schema.studies.createdAt));
   if (workspaceId) {
     const rows = await db
@@ -49,15 +52,15 @@ studiesRouter.get("/", async (c) => {
   return c.json(rows);
 });
 
-studiesRouter.get("/agents/list", async (c) => {
+studiesRouter.get('/agents/list', async (c) => {
   return c.json(await listAgents());
 });
 
-studiesRouter.get("/:id", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.get('/:id', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
-  if (!study) return notFound("Study not found");
+  if (!study) return notFound('Study not found');
 
   const studyVariants = await db
     .select()
@@ -67,9 +70,15 @@ studiesRouter.get("/:id", async (c) => {
 
   const [report] = await db.select().from(schema.reports).where(eq(schema.reports.studyId, id));
 
-  const agentRuns = await db.select().from(schema.agentRuns).where(eq(schema.agentRuns.studyId, id));
+  const agentRuns = await db
+    .select()
+    .from(schema.agentRuns)
+    .where(eq(schema.agentRuns.studyId, id));
 
-  const preds = await db.select().from(schema.predictions).where(eq(schema.predictions.studyId, id));
+  const preds = await db
+    .select()
+    .from(schema.predictions)
+    .where(eq(schema.predictions.studyId, id));
 
   const [outcome] = await db.select().from(schema.outcomes).where(eq(schema.outcomes.studyId, id));
 
@@ -88,11 +97,19 @@ studiesRouter.get("/:id", async (c) => {
     .where(eq(schema.visualEvaluations.studyId, id))
     .orderBy(desc(schema.visualEvaluations.createdAt));
 
-  return c.json({ study, variants: studyVariants, report, agentRuns, predictions: preds, outcome, visualEvaluations });
+  return c.json({
+    study,
+    variants: studyVariants,
+    report,
+    agentRuns,
+    predictions: preds,
+    outcome,
+    visualEvaluations,
+  });
 });
 
-studiesRouter.post("/", async (c) => {
-  const db = c.get("db");
+studiesRouter.post('/', async (c) => {
+  const db = c.get('db');
   const body = await c.req.json<{
     workspaceId: string;
     name: string;
@@ -123,14 +140,14 @@ studiesRouter.post("/", async (c) => {
   }>();
 
   if (!body.workspaceId || !body.name || !body.studyType) {
-    return badRequest("workspaceId, name, and studyType are required");
+    return badRequest('workspaceId, name, and studyType are required');
   }
 
   const id = crypto.randomUUID();
   const variantRows = body.variants ?? [];
 
   if (variantRows.length < 2) {
-    return badRequest("At least 2 variants are required");
+    return badRequest('At least 2 variants are required');
   }
 
   const brief = generateStudyBrief({
@@ -151,7 +168,7 @@ studiesRouter.post("/", async (c) => {
     workspaceId: body.workspaceId,
     name: body.name,
     studyType: body.studyType,
-    status: "draft",
+    status: 'draft',
     productName: body.productName,
     productUrl: body.productUrl,
     productDescription: body.productDescription,
@@ -165,8 +182,8 @@ studiesRouter.post("/", async (c) => {
     contextQuestions: body.contextQuestions,
     contextConcerns: body.contextConcerns,
     contextTradeoffs: body.contextTradeoffs,
-    privacyLevel: body.privacyLevel ?? "private",
-    turnaroundLevel: body.turnaroundLevel ?? "full_report",
+    privacyLevel: body.privacyLevel ?? 'private',
+    turnaroundLevel: body.turnaroundLevel ?? 'full_report',
     studyBrief: brief,
   });
 
@@ -179,7 +196,7 @@ studiesRouter.post("/", async (c) => {
       label: v.label,
       description: v.description,
       hypothesis: v.hypothesis,
-      assetType: v.assetType ?? "url",
+      assetType: v.assetType ?? 'url',
       assetUrl: v.assetUrl,
       sortOrder: i,
     });
@@ -195,23 +212,23 @@ studiesRouter.post("/", async (c) => {
   return c.json({ study, variants }, 201);
 });
 
-studiesRouter.post("/:id/launch", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.post('/:id/launch', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
-  if (!study) return notFound("Study not found");
+  if (!study) return notFound('Study not found');
 
   const studyVariants = await db
     .select()
     .from(schema.variants)
     .where(eq(schema.variants.studyId, id));
 
-  if (studyVariants.length < 2) return badRequest("Need at least 2 variants");
+  if (studyVariants.length < 2) return badRequest('Need at least 2 variants');
 
   const now = new Date().toISOString();
   await db
     .update(schema.studies)
-    .set({ status: "evaluating", launchedAt: now })
+    .set({ status: 'evaluating', launchedAt: now })
     .where(eq(schema.studies.id, id));
 
   for (const v of studyVariants) {
@@ -226,14 +243,14 @@ studiesRouter.post("/:id/launch", async (c) => {
 
   await db
     .update(schema.studies)
-    .set({ status: "generating_report" })
+    .set({ status: 'generating_report' })
     .where(eq(schema.studies.id, id));
 
   await runScoringAndReport(db, id);
 
   await db
     .update(schema.studies)
-    .set({ status: "completed", completedAt: new Date().toISOString() })
+    .set({ status: 'completed', completedAt: new Date().toISOString() })
     .where(eq(schema.studies.id, id));
 
   const [updated] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
@@ -242,14 +259,14 @@ studiesRouter.post("/:id/launch", async (c) => {
   return c.json({ study: updated, report });
 });
 
-studiesRouter.post("/:id/capture", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.post('/:id/capture', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const workerUrl = c.env.TASTE_CAPTURE_WORKER_URL;
-  if (!workerUrl) return badRequest("TASTE_CAPTURE_WORKER_URL is not configured");
+  if (!workerUrl) return badRequest('TASTE_CAPTURE_WORKER_URL is not configured');
 
   const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
-  if (!study) return notFound("Study not found");
+  if (!study) return notFound('Study not found');
 
   const studyVariants = await db
     .select()
@@ -267,13 +284,15 @@ studiesRouter.post("/:id/capture", async (c) => {
       notes: variant.name,
     }));
 
-  if (captures.length < 2) return badRequest("At least 2 URL variants are required for capture");
+  if (captures.length < 2) return badRequest('At least 2 URL variants are required for capture');
 
   const response = await fetch(workerUrl, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "content-type": "application/json",
-      ...(c.env.TASTE_CAPTURE_WORKER_TOKEN ? { authorization: `Bearer ${c.env.TASTE_CAPTURE_WORKER_TOKEN}` } : {}),
+      'content-type': 'application/json',
+      ...(c.env.TASTE_CAPTURE_WORKER_TOKEN
+        ? { authorization: `Bearer ${c.env.TASTE_CAPTURE_WORKER_TOKEN}` }
+        : {}),
     },
     body: JSON.stringify({
       studyId: id,
@@ -286,7 +305,7 @@ studiesRouter.post("/:id/capture", async (c) => {
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     const message =
-      typeof payload === "object" && payload && "error" in payload
+      typeof payload === 'object' && payload && 'error' in payload
         ? String((payload as { error?: unknown }).error)
         : `Capture worker failed with ${response.status}`;
     return badRequest(message);
@@ -295,13 +314,13 @@ studiesRouter.post("/:id/capture", async (c) => {
   return c.json(payload);
 });
 
-studiesRouter.post("/:id/visual-evidence", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.post('/:id/visual-evidence', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const visualEvidenceToken = c.env.TASTE_VISUAL_EVIDENCE_TOKEN;
   if (visualEvidenceToken) {
-    const token = c.req.header("authorization")?.replace(/^Bearer\s+/i, "");
-    if (token !== visualEvidenceToken) return c.json({ error: "Unauthorized" }, 401);
+    const token = c.req.header('authorization')?.replace(/^Bearer\s+/i, '');
+    if (token !== visualEvidenceToken) return c.json({ error: 'Unauthorized' }, 401);
   }
 
   const body = await c.req.json<{
@@ -310,7 +329,7 @@ studiesRouter.post("/:id/visual-evidence", async (c) => {
   }>();
 
   const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
-  if (!study) return notFound("Study not found");
+  if (!study) return notFound('Study not found');
 
   const studyVariants = await db
     .select()
@@ -318,7 +337,7 @@ studiesRouter.post("/:id/visual-evidence", async (c) => {
     .where(eq(schema.variants.studyId, id))
     .orderBy(schema.variants.sortOrder);
 
-  if (!body.captures?.length) return badRequest("captures are required");
+  if (!body.captures?.length) return badRequest('captures are required');
 
   try {
     const result = await attachVisualEvidenceAndRunBaseline({
@@ -343,20 +362,20 @@ studiesRouter.post("/:id/visual-evidence", async (c) => {
       baseline: result.baseline,
     });
   } catch (error) {
-    return badRequest(error instanceof Error ? error.message : "Invalid visual evidence");
+    return badRequest(error instanceof Error ? error.message : 'Invalid visual evidence');
   }
 });
 
-studiesRouter.post("/:id/simulate", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
-  const body = (await c.req.json<{ mode?: "agents" | "humans" | "full" }>().catch(() => ({
-    mode: "agents" as const,
-  }))) as { mode?: "agents" | "humans" | "full" };
-  const mode = body.mode ?? "agents";
+studiesRouter.post('/:id/simulate', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
+  const body = (await c.req.json<{ mode?: 'agents' | 'humans' | 'full' }>().catch(() => ({
+    mode: 'agents' as const,
+  }))) as { mode?: 'agents' | 'humans' | 'full' };
+  const mode = body.mode ?? 'agents';
 
   const [study] = await db.select().from(schema.studies).where(eq(schema.studies.id, id));
-  if (!study) return notFound("Study not found");
+  if (!study) return notFound('Study not found');
 
   const studyVariants = await db
     .select()
@@ -364,34 +383,34 @@ studiesRouter.post("/:id/simulate", async (c) => {
     .where(eq(schema.variants.studyId, id))
     .orderBy(schema.variants.sortOrder);
 
-  if (studyVariants.length < 2) return badRequest("Need at least 2 variants");
+  if (studyVariants.length < 2) return badRequest('Need at least 2 variants');
 
   const result = await executeSimulation(db, study, studyVariants, mode);
   return c.json(result);
 });
 
-studiesRouter.get("/:id/simulation", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.get('/:id/simulation', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const result = await getLatestSimulation(db, id);
-  if (!result) return notFound("No simulation run yet");
+  if (!result) return notFound('No simulation run yet');
   return c.json(result);
 });
 
-studiesRouter.get("/:id/report", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.get('/:id/report', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const [report] = await db.select().from(schema.reports).where(eq(schema.reports.studyId, id));
-  if (!report) return notFound("Report not found");
+  if (!report) return notFound('Report not found');
   return c.json({
     ...report,
     reportJson: report.reportJson ? JSON.parse(report.reportJson) : null,
   });
 });
 
-studiesRouter.post("/:id/outcome", async (c) => {
-  const db = c.get("db");
-  const id = c.req.param("id");
+studiesRouter.post('/:id/outcome', async (c) => {
+  const db = c.get('db');
+  const id = c.req.param('id');
   const body = await c.req.json<{
     outcomeType?: string;
     shippedVariantId?: string;
@@ -405,7 +424,7 @@ studiesRouter.post("/:id/outcome", async (c) => {
   await db.insert(schema.outcomes).values({
     id: crypto.randomUUID(),
     studyId: id,
-    outcomeType: body.outcomeType ?? "soft",
+    outcomeType: body.outcomeType ?? 'soft',
     shippedVariantId: body.shippedVariantId,
     winningVariantId: body.winningVariantId,
     metricName: body.metricName,

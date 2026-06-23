@@ -1,15 +1,19 @@
 #!/usr/bin/env bun
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  type TasteJsonlPreference,
+  type TasteJsonlRecord,
+  tasteJsonlFeatureVector,
+} from '../src/lib/tasteJsonl.ts';
 import {
   predictTasteRankerProbFromFeatures,
   TASTE_RANKER_FEATURE_NAMES,
   type TasteLinearRankerModel,
-} from "../src/lib/tasteRanker.ts";
-import { tasteJsonlFeatureVector, type TasteJsonlPreference, type TasteJsonlRecord } from "../src/lib/tasteJsonl.ts";
+} from '../src/lib/tasteRanker.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 interface TrainExample {
   id: string;
@@ -27,8 +31,8 @@ interface CliArgs {
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  let inputPath = "datasets/taste-pairs.jsonl";
-  let outPath = "models/taste-linear-ranker.json";
+  let inputPath = 'datasets/taste-pairs.jsonl';
+  let outPath = 'models/taste-linear-ranker.json';
   let epochs = 400;
   let lr = 0.08;
   let l2 = 0.001;
@@ -36,19 +40,19 @@ function parseArgs(argv: string[]): CliArgs {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
-    if (arg === "--in" && next) {
+    if (arg === '--in' && next) {
       inputPath = next;
       i += 1;
-    } else if (arg === "--out" && next) {
+    } else if (arg === '--out' && next) {
       outPath = next;
       i += 1;
-    } else if (arg === "--epochs" && next) {
+    } else if (arg === '--epochs' && next) {
       epochs = Number.parseInt(next, 10);
       i += 1;
-    } else if (arg === "--lr" && next) {
+    } else if (arg === '--lr' && next) {
       lr = Number.parseFloat(next);
       i += 1;
-    } else if (arg === "--l2" && next) {
+    } else if (arg === '--l2' && next) {
       l2 = Number.parseFloat(next);
       i += 1;
     }
@@ -68,9 +72,9 @@ function features(record: TasteJsonlRecord): number[] | null {
 }
 
 function target(label: TasteJsonlPreference): number | null {
-  if (label === "a") return 1;
-  if (label === "b") return 0;
-  if (label === "tie") return 0.5;
+  if (label === 'a') return 1;
+  if (label === 'b') return 0;
+  if (label === 'tie') return 0.5;
   return null;
 }
 
@@ -83,16 +87,16 @@ function dot(weights: number[], x: number[]) {
 }
 
 function predictPreference(probA: number): TasteJsonlPreference {
-  if (probA > 0.55) return "a";
-  if (probA < 0.45) return "b";
-  return "tie";
+  if (probA > 0.55) return 'a';
+  if (probA < 0.45) return 'b';
+  return 'tie';
 }
 
 function accuracy(examples: TrainExample[], weights: number[], bias: number) {
   if (!examples.length) return 0;
   let correct = 0;
   const model: TasteLinearRankerModel = {
-    modelId: "taste-linear-evidence-ranker-v0",
+    modelId: 'taste-linear-evidence-ranker-v0',
     featureNames: TASTE_RANKER_FEATURE_NAMES,
     weights,
     bias,
@@ -106,17 +110,17 @@ function accuracy(examples: TrainExample[], weights: number[], bias: number) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const lines = (await readFile(args.inputPath, "utf8")).split("\n").filter(Boolean);
+  const lines = (await readFile(args.inputPath, 'utf8')).split('\n').filter(Boolean);
   const records = lines.map((line) => JSON.parse(line) as TasteJsonlRecord);
   const examples = records.flatMap((record): TrainExample[] => {
-    const label = record.label?.preferredVariantId ?? "unknown";
+    const label = record.label?.preferredVariantId ?? 'unknown';
     const y = target(label);
     const x = features(record);
     if (y == null || !x) return [];
     return [{ id: record.id, x, y, label }];
   });
 
-  if (!examples.length) throw new Error("No labeled examples available for training");
+  if (!examples.length) throw new Error('No labeled examples available for training');
 
   const weights = Array.from({ length: TASTE_RANKER_FEATURE_NAMES.length }, () => 0);
   let bias = 0;
@@ -133,7 +137,7 @@ async function main() {
   }
 
   const model = {
-    modelId: "taste-linear-evidence-ranker-v0",
+    modelId: 'taste-linear-evidence-ranker-v0',
     trainedAt: new Date().toISOString(),
     featureNames: TASTE_RANKER_FEATURE_NAMES,
     weights,
@@ -149,12 +153,18 @@ async function main() {
 
   await mkdir(path.dirname(args.outPath), { recursive: true });
   await writeFile(args.outPath, `${JSON.stringify(model, null, 2)}\n`);
-  console.log(JSON.stringify({
-    modelId: model.modelId,
-    output: path.relative(ROOT, args.outPath),
-    examples: model.training.examples,
-    accuracy: model.training.accuracy,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        modelId: model.modelId,
+        output: path.relative(ROOT, args.outPath),
+        examples: model.training.examples,
+        accuracy: model.training.accuracy,
+      },
+      null,
+      2
+    )
+  );
 }
 
 main().catch((error) => {

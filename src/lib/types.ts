@@ -1,26 +1,26 @@
 export type StudyStatus =
-  | "draft"
-  | "pending_review"
-  | "evaluating"
-  | "generating_report"
-  | "completed"
-  | "cancelled";
+  | 'draft'
+  | 'pending_review'
+  | 'evaluating'
+  | 'generating_report'
+  | 'completed'
+  | 'cancelled';
 
 export type StudyType =
-  | "landing_page"
-  | "onboarding"
-  | "signup_flow"
-  | "pricing_page"
-  | "copy_messaging"
-  | "ux_flow";
+  | 'landing_page'
+  | 'onboarding'
+  | 'signup_flow'
+  | 'pricing_page'
+  | 'copy_messaging'
+  | 'ux_flow';
 
-export type PrivacyLevel = "private" | "private_benchmark" | "arena" | "public";
+export type PrivacyLevel = 'private' | 'private_benchmark' | 'arena' | 'public';
 
-export type TurnaroundLevel = "agent_only" | "human_lite" | "full_report";
+export type TurnaroundLevel = 'agent_only' | 'human_lite' | 'full_report';
 
-export type EvaluatorType = "target_user" | "domain_expert" | "buyer" | "power_user" | "general";
+export type EvaluatorType = 'target_user' | 'domain_expert' | 'buyer' | 'power_user' | 'general';
 
-export type ConfidenceLevel = "low" | "medium" | "medium_high" | "high";
+export type ConfidenceLevel = 'low' | 'medium' | 'medium_high' | 'high';
 
 export interface DimensionScores {
   clarity: number;
@@ -34,25 +34,30 @@ export interface DimensionScores {
   conversionIntent: number;
 }
 
-export type SignalStrength = "noise" | "weak" | "moderate" | "strong";
-export type ValidityFlagLevel = "none" | "minor" | "major";
+export type SignalStrength = 'noise' | 'weak' | 'moderate' | 'strong';
+export type ValidityFlagLevel = 'none' | 'minor' | 'major';
 
 export interface CriterionDefinition {
   key: keyof DimensionScores;
   label: string;
   weight: number;
-  kind: "preference" | "fidelity" | "friction" | "trust";
+  kind: 'preference' | 'fidelity' | 'friction' | 'trust';
 }
 
 export interface AgentFinding {
-  severity: "low" | "medium" | "high";
+  severity: 'low' | 'medium' | 'high';
   type: string;
   description: string;
 }
 
 export interface AgentValidityFlag {
   level: ValidityFlagLevel;
-  type: "missing_asset" | "irrelevant_rationale" | "fabricated_evidence" | "cannot_judge" | "quality_warning";
+  type:
+    | 'missing_asset'
+    | 'irrelevant_rationale'
+    | 'fabricated_evidence'
+    | 'cannot_judge'
+    | 'quality_warning';
   description: string;
 }
 
@@ -117,7 +122,7 @@ export interface SignalQualitySummary {
 }
 
 export interface AgentCalibrationSummary {
-  status: "uncalibrated" | "outcome_matched" | "outcome_missed";
+  status: 'uncalibrated' | 'outcome_matched' | 'outcome_missed';
   outcomeSamples: number;
   historicalAccuracy?: number;
   predictedVariantLabel?: string;
@@ -131,7 +136,7 @@ export interface VariantRanking {
   variantName: string;
   rank: number;
   overallScore: number;
-  recommendation: "ship" | "borrow" | "test" | "kill";
+  recommendation: 'ship' | 'borrow' | 'test' | 'kill';
   confidence: ConfidenceLevel;
   scores: {
     targetUser: number;
@@ -185,41 +190,41 @@ export interface ReportContent {
 }
 
 export const STUDY_TYPES: { value: StudyType; label: string }[] = [
-  { value: "landing_page", label: "Landing page comparison" },
-  { value: "onboarding", label: "Onboarding flow comparison" },
-  { value: "signup_flow", label: "Signup flow comparison" },
-  { value: "pricing_page", label: "Pricing page comparison" },
-  { value: "copy_messaging", label: "Copy / messaging comparison" },
-  { value: "ux_flow", label: "UX flow comparison" },
+  { value: 'landing_page', label: 'Landing page comparison' },
+  { value: 'onboarding', label: 'Onboarding flow comparison' },
+  { value: 'signup_flow', label: 'Signup flow comparison' },
+  { value: 'pricing_page', label: 'Pricing page comparison' },
+  { value: 'copy_messaging', label: 'Copy / messaging comparison' },
+  { value: 'ux_flow', label: 'UX flow comparison' },
 ];
 
 export const OBJECTIVES = [
-  { value: "maximize_signup", label: "Maximize signup conversion" },
-  { value: "increase_activation", label: "Increase activation" },
-  { value: "reduce_confusion", label: "Reduce confusion" },
-  { value: "increase_trust", label: "Increase trust" },
-  { value: "improve_value", label: "Improve perceived value" },
-  { value: "task_completion", label: "Increase task completion" },
-  { value: "reduce_friction", label: "Reduce friction" },
+  { value: 'maximize_signup', label: 'Maximize signup conversion' },
+  { value: 'increase_activation', label: 'Increase activation' },
+  { value: 'reduce_confusion', label: 'Reduce confusion' },
+  { value: 'increase_trust', label: 'Increase trust' },
+  { value: 'improve_value', label: 'Improve perceived value' },
+  { value: 'task_completion', label: 'Increase task completion' },
+  { value: 'reduce_friction', label: 'Reduce friction' },
 ];
 
 export const METRICS = [
-  { value: "task_completion", label: "Task completion" },
-  { value: "comprehension", label: "Comprehension" },
-  { value: "conversion_intent", label: "Conversion intent" },
-  { value: "trust_score", label: "Trust score" },
-  { value: "setup_confidence", label: "Setup confidence" },
-  { value: "willingness_to_continue", label: "Willingness to continue" },
+  { value: 'task_completion', label: 'Task completion' },
+  { value: 'comprehension', label: 'Comprehension' },
+  { value: 'conversion_intent', label: 'Conversion intent' },
+  { value: 'trust_score', label: 'Trust score' },
+  { value: 'setup_confidence', label: 'Setup confidence' },
+  { value: 'willingness_to_continue', label: 'Willingness to continue' },
 ];
 
 export const DIMENSION_LABELS: Record<keyof DimensionScores, string> = {
-  clarity: "Clarity",
-  relevance: "Relevance",
-  trust: "Trust",
-  firstActionClarity: "First-action clarity",
-  perceivedValue: "Perceived value",
-  friction: "Friction (lower is better)",
-  differentiation: "Differentiation",
-  completionConfidence: "Completion confidence",
-  conversionIntent: "Conversion intent",
+  clarity: 'Clarity',
+  relevance: 'Relevance',
+  trust: 'Trust',
+  firstActionClarity: 'First-action clarity',
+  perceivedValue: 'Perceived value',
+  friction: 'Friction (lower is better)',
+  differentiation: 'Differentiation',
+  completionConfidence: 'Completion confidence',
+  conversionIntent: 'Conversion intent',
 };

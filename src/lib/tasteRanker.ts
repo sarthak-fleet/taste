@@ -1,28 +1,28 @@
-import { criteriaForStudy } from "./scoring";
-import type { AgentOutput, DimensionScores, PairwiseVerdict } from "./types";
-import type { TasteCriterion } from "./tasteDataset";
+import { criteriaForStudy } from './scoring';
 import {
   runTasteMechanicalBaselineForVariants,
   type TasteBaselineResult,
   type TasteBaselineVariant,
-} from "./tasteBaseline";
+} from './tasteBaseline';
+import type { TasteCriterion } from './tasteDataset';
+import type { AgentOutput, DimensionScores, PairwiseVerdict } from './types';
 
 export const TASTE_RANKER_FEATURE_NAMES = [
-  "risk_delta",
-  "clipped_delta",
-  "contrast_delta",
-  "failed_images_delta",
-  "overflow_delta",
-  "desktop_text_density_delta",
-  "mobile_text_density_delta",
-  "desktop_first_section_ratio_delta",
-  "mobile_first_section_ratio_delta",
-  "desktop_action_count_delta",
-  "mobile_action_count_delta",
-  "desktop_heading_count_delta",
-  "mobile_heading_count_delta",
-  "desktop_scroll_depth_delta",
-  "mobile_scroll_depth_delta",
+  'risk_delta',
+  'clipped_delta',
+  'contrast_delta',
+  'failed_images_delta',
+  'overflow_delta',
+  'desktop_text_density_delta',
+  'mobile_text_density_delta',
+  'desktop_first_section_ratio_delta',
+  'mobile_first_section_ratio_delta',
+  'desktop_action_count_delta',
+  'mobile_action_count_delta',
+  'desktop_heading_count_delta',
+  'mobile_heading_count_delta',
+  'desktop_scroll_depth_delta',
+  'mobile_scroll_depth_delta',
 ] as const;
 
 export interface TasteLinearRankerModel {
@@ -60,17 +60,22 @@ function dot(weights: number[], x: number[]) {
 }
 
 function assertRankerModel(value: TasteLinearRankerModel): asserts value is TasteLinearRankerModel {
-  if (!value || typeof value.modelId !== "string" || !value.modelId) {
-    throw new Error("Taste ranker model needs a modelId");
+  if (!value || typeof value.modelId !== 'string' || !value.modelId) {
+    throw new Error('Taste ranker model needs a modelId');
   }
-  if (!Array.isArray(value.featureNames) || value.featureNames.join("|") !== TASTE_RANKER_FEATURE_NAMES.join("|")) {
-    throw new Error(`Taste ranker model featureNames must be ${TASTE_RANKER_FEATURE_NAMES.join(",")}`);
+  if (
+    !Array.isArray(value.featureNames) ||
+    value.featureNames.join('|') !== TASTE_RANKER_FEATURE_NAMES.join('|')
+  ) {
+    throw new Error(
+      `Taste ranker model featureNames must be ${TASTE_RANKER_FEATURE_NAMES.join(',')}`
+    );
   }
   if (!Array.isArray(value.weights) || value.weights.length !== TASTE_RANKER_FEATURE_NAMES.length) {
     throw new Error(`Taste ranker model needs ${TASTE_RANKER_FEATURE_NAMES.length} weights`);
   }
   if (!value.weights.every((weight) => Number.isFinite(weight)) || !Number.isFinite(value.bias)) {
-    throw new Error("Taste ranker model weights and bias must be finite numbers");
+    throw new Error('Taste ranker model weights and bias must be finite numbers');
   }
 }
 
@@ -80,13 +85,16 @@ export function parseTasteLinearRankerModelJson(json: string): TasteLinearRanker
   return model;
 }
 
-export function tasteRankerFeatureVector(a: TasteBaselineVariant, b: TasteBaselineVariant): number[] {
+export function tasteRankerFeatureVector(
+  a: TasteBaselineVariant,
+  b: TasteBaselineVariant
+): number[] {
   const av = a.mechanicalSummary;
   const bv = b.mechanicalSummary;
-  const desktopA = artifactMetrics(a, "desktop");
-  const desktopB = artifactMetrics(b, "desktop");
-  const mobileA = artifactMetrics(a, "mobile");
-  const mobileB = artifactMetrics(b, "mobile");
+  const desktopA = artifactMetrics(a, 'desktop');
+  const desktopB = artifactMetrics(b, 'desktop');
+  const mobileA = artifactMetrics(a, 'mobile');
+  const mobileB = artifactMetrics(b, 'mobile');
   return [
     (bv.highestRiskScore - av.highestRiskScore) / 100,
     (bv.totalClippedTextCandidates - av.totalClippedTextCandidates) / 20,
@@ -106,7 +114,7 @@ export function tasteRankerFeatureVector(a: TasteBaselineVariant, b: TasteBaseli
   ];
 }
 
-function artifactMetrics(variant: TasteBaselineVariant, viewport: "desktop" | "mobile") {
+function artifactMetrics(variant: TasteBaselineVariant, viewport: 'desktop' | 'mobile') {
   return variant.artifacts.find((artifact) => artifact.viewport === viewport)?.metrics;
 }
 
@@ -119,11 +127,18 @@ function scrollDepth(metrics: ReturnType<typeof artifactMetrics>) {
   return metrics.page.scrollHeight / Math.max(1, metrics.page.viewportHeight);
 }
 
-export function predictTasteRankerProbFromFeatures(model: TasteLinearRankerModel, features: number[]) {
+export function predictTasteRankerProbFromFeatures(
+  model: TasteLinearRankerModel,
+  features: number[]
+) {
   return sigmoid(dot(model.weights, features) + model.bias);
 }
 
-export function predictTasteRankerProbA(model: TasteLinearRankerModel, a: TasteBaselineVariant, b: TasteBaselineVariant) {
+export function predictTasteRankerProbA(
+  model: TasteLinearRankerModel,
+  a: TasteBaselineVariant,
+  b: TasteBaselineVariant
+) {
   return predictTasteRankerProbFromFeatures(model, tasteRankerFeatureVector(a, b));
 }
 
@@ -187,19 +202,21 @@ function rewriteOutput(params: {
   const scores = Object.fromEntries(
     Object.entries(params.output.scores).map(([key, value]) => [
       key,
-      key === "friction" ? Math.max(1, Math.min(5, (value ?? 3) - adjustment)) : Math.max(1, Math.min(5, (value ?? 3) + adjustment)),
-    ]),
+      key === 'friction'
+        ? Math.max(1, Math.min(5, (value ?? 3) - adjustment))
+        : Math.max(1, Math.min(5, (value ?? 3) + adjustment)),
+    ])
   ) as Partial<DimensionScores>;
 
   return {
     ...params.output,
     agentId: params.modelId,
     agentSlug: params.modelId,
-    agentName: "Taste Linear Ranker",
+    agentName: 'Taste Linear Ranker',
     scores,
     prediction: {
       predictedRank: params.rank,
-      predictedMetric: "taste_linear_mechanical_preference",
+      predictedMetric: 'taste_linear_mechanical_preference',
       confidence: params.confidence,
     },
     recommendation:
@@ -215,11 +232,11 @@ function buildRankerVerdicts(params: {
   studyType?: string;
   primaryObjective?: string;
 }): PairwiseVerdict[] {
-  const criteria = criteriaForStudy(params.studyType ?? "landing_page", params.primaryObjective);
+  const criteria = criteriaForStudy(params.studyType ?? 'landing_page', params.primaryObjective);
   return criteria.flatMap((criterion) =>
     params.pairs.map((pair) => ({
       agentSlug: params.modelId,
-      agentName: "Taste Linear Ranker",
+      agentName: 'Taste Linear Ranker',
       criterion: criterion.key,
       criterionLabel: criterion.label,
       variantAId: pair.variantA.id,
@@ -241,18 +258,24 @@ function buildRankerVerdicts(params: {
         pair.preferredVariantId == null
           ? `Local ranker found no clear preference on ${criterion.label.toLowerCase()}.`
           : `Local ranker preferred ${
-              pair.preferredVariantId === pair.variantA.id ? pair.variantA.label : pair.variantB.label
+              pair.preferredVariantId === pair.variantA.id
+                ? pair.variantA.label
+                : pair.variantB.label
             } using learned evidence weights.`,
-    })),
+    }))
   );
 }
 
-function topPairConfidence(pairs: PairPrediction[], winnerId: string | null, secondId: string | null) {
+function topPairConfidence(
+  pairs: PairPrediction[],
+  winnerId: string | null,
+  secondId: string | null
+) {
   if (!winnerId || !secondId) return 0.5;
   const pair = pairs.find(
     (candidate) =>
       (candidate.variantA.id === winnerId && candidate.variantB.id === secondId) ||
-      (candidate.variantA.id === secondId && candidate.variantB.id === winnerId),
+      (candidate.variantA.id === secondId && candidate.variantB.id === winnerId)
   );
   return pair?.confidence ?? 0.5;
 }
@@ -281,16 +304,24 @@ export function runTasteLinearRankerForVariants(params: {
   const top = ranked[0];
   const second = ranked[1];
   const topGap = top && second ? top.score - second.score : 0;
-  const directTopConfidence = topPairConfidence(pairs, top?.variant.id ?? null, second?.variant.id ?? null);
-  const overallWinnerVariantId = top && topGap >= 0.08 && directTopConfidence > 0.54 ? top.variant.id : null;
+  const directTopConfidence = topPairConfidence(
+    pairs,
+    top?.variant.id ?? null,
+    second?.variant.id ?? null
+  );
+  const overallWinnerVariantId =
+    top && topGap >= 0.08 && directTopConfidence > 0.54 ? top.variant.id : null;
   const outputs = baseline.outputs.map((output) =>
     rewriteOutput({
       output,
       modelId: params.model.modelId,
       rank: ranks.get(output.variantId) ?? output.prediction.predictedRank,
       total: baseline.outputs.length,
-      confidence: output.variantId === overallWinnerVariantId ? directTopConfidence : Math.max(0.45, directTopConfidence - 0.08),
-    }),
+      confidence:
+        output.variantId === overallWinnerVariantId
+          ? directTopConfidence
+          : Math.max(0.45, directTopConfidence - 0.08),
+    })
   );
 
   return {
@@ -308,7 +339,7 @@ export function runTasteLinearRankerForVariants(params: {
     criterionScoresByVariant: baseline.criterionScoresByVariant,
     summary:
       overallWinnerVariantId == null
-        ? "Local Taste ranker found no clear winner; use VLM, human, or more labels."
+        ? 'Local Taste ranker found no clear winner; use VLM, human, or more labels.'
         : `Local Taste ranker prefers ${outputs.find((output) => output.variantId === overallWinnerVariantId)?.variantLabel}.`,
   };
 }

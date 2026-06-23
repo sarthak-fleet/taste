@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Bot, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Bot, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { api } from '@/lib/api';
 
 interface VariantPreview {
   name: string;
@@ -21,10 +21,10 @@ interface VariantPreview {
 export default function ArenaBattle() {
   const { slug } = useParams<{ slug: string }>();
   const [voted, setVoted] = useState(false);
-  const [prediction, setPrediction] = useState<"a" | "b" | null>(null);
+  const [prediction, setPrediction] = useState<'a' | 'b' | null>(null);
   const [confidence, setConfidence] = useState(70);
-  const [rationale, setRationale] = useState("");
-  const [voterName, setVoterName] = useState("");
+  const [rationale, setRationale] = useState('');
+  const [voterName, setVoterName] = useState('');
   const [agentCritiques, setAgentCritiques] = useState<Array<{
     agent: string;
     preferred: string;
@@ -33,7 +33,7 @@ export default function ArenaBattle() {
   }> | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["arena-battle", slug],
+    queryKey: ['arena-battle', slug],
     queryFn: () => api.getArenaBattle(slug!),
     enabled: !!slug,
   });
@@ -49,7 +49,7 @@ export default function ArenaBattle() {
     onSuccess: (res) => {
       setVoted(true);
       setAgentCritiques(res.agentCritiques as typeof agentCritiques);
-      toast.success("Prediction submitted");
+      toast.success('Prediction submitted');
     },
     onError: (e) => toast.error(e.message),
   });
@@ -69,27 +69,29 @@ export default function ArenaBattle() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <Badge variant="warning" className="mb-3">Product Arena</Badge>
+      <Badge variant="warning" className="mb-3">
+        Product Arena
+      </Badge>
       <h1 className="font-display text-3xl mb-2">{battle.title}</h1>
       <p className="text-muted-foreground mb-8">{battle.description}</p>
 
       <p className="text-sm font-medium mb-4">
-        Goal: <span className="text-primary">{battle.goal.replace(/_/g, " ")}</span>
+        Goal: <span className="text-primary">{battle.goal.replace(/_/g, ' ')}</span>
       </p>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <VariantCard
           label="A"
           variant={battle.variantA}
-          selected={prediction === "a"}
-          onSelect={() => !voted && setPrediction("a")}
+          selected={prediction === 'a'}
+          onSelect={() => !voted && setPrediction('a')}
           disabled={voted}
         />
         <VariantCard
           label="B"
           variant={battle.variantB}
-          selected={prediction === "b"}
-          onSelect={() => !voted && setPrediction("b")}
+          selected={prediction === 'b'}
+          onSelect={() => !voted && setPrediction('b')}
           disabled={voted}
         />
       </div>
@@ -122,7 +124,11 @@ export default function ArenaBattle() {
             </div>
             <div>
               <Label>Name (optional, for leaderboard)</Label>
-              <Input value={voterName} onChange={(e) => setVoterName(e.target.value)} placeholder="Your name" />
+              <Input
+                value={voterName}
+                onChange={(e) => setVoterName(e.target.value)}
+                placeholder="Your name"
+              />
             </div>
             <Button
               onClick={() => voteMutation.mutate()}
@@ -138,7 +144,9 @@ export default function ArenaBattle() {
             <CardContent className="p-6 flex items-center gap-3">
               <CheckCircle2 className="h-6 w-6 text-primary" />
               <div>
-                <p className="font-medium">Your prediction: Variant {prediction?.toUpperCase()}, {confidence}%</p>
+                <p className="font-medium">
+                  Your prediction: Variant {prediction?.toUpperCase()}, {confidence}%
+                </p>
                 <p className="text-sm text-muted-foreground">{rationale}</p>
               </div>
             </CardContent>
@@ -153,12 +161,20 @@ export default function ArenaBattle() {
                 {agentCritiques.map((c) => (
                   <Card key={c.agent}>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm capitalize">{c.agent.replace(/_/g, " ")}</CardTitle>
-                      <CardDescription>Preferred: Variant {c.preferred.toUpperCase()}</CardDescription>
+                      <CardTitle className="text-sm capitalize">
+                        {c.agent.replace(/_/g, ' ')}
+                      </CardTitle>
+                      <CardDescription>
+                        Preferred: Variant {c.preferred.toUpperCase()}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="text-xs text-muted-foreground space-y-1">
-                      <p><span className="text-foreground">A:</span> {c.summaryA}</p>
-                      <p><span className="text-foreground">B:</span> {c.summaryB}</p>
+                      <p>
+                        <span className="text-foreground">A:</span> {c.summaryA}
+                      </p>
+                      <p>
+                        <span className="text-foreground">B:</span> {c.summaryB}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -166,16 +182,17 @@ export default function ArenaBattle() {
             </section>
           )}
 
-          {battle.status === "revealed" && battle.winningVariantId && (
+          {battle.status === 'revealed' && battle.winningVariantId && (
             <Card className="border-emerald-500/30">
               <CardContent className="p-6">
                 <p className="font-medium">
-                  Result revealed: Variant {battle.winningVariantId.toUpperCase()} won the real test.
+                  Result revealed: Variant {battle.winningVariantId.toUpperCase()} won the real
+                  test.
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {prediction === battle.winningVariantId
-                    ? "Your prediction was correct!"
-                    : "Your prediction differed from the outcome."}
+                    ? 'Your prediction was correct!'
+                    : 'Your prediction differed from the outcome.'}
                 </p>
               </CardContent>
             </Card>
@@ -211,12 +228,12 @@ function VariantCard({
       onClick={onSelect}
       disabled={disabled}
       className={`text-left rounded-lg border-2 transition-all overflow-hidden ${
-        selected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/40"
-      } ${disabled ? "cursor-default" : "cursor-pointer"}`}
+        selected ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary/40'
+      } ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
     >
       <div
         className="h-32 p-6 flex flex-col justify-end"
-        style={{ backgroundColor: variant.previewColor ?? "#1a1a2e" }}
+        style={{ backgroundColor: variant.previewColor ?? '#1a1a2e' }}
       >
         <span className="text-xs font-bold text-white/60">VARIANT {label}</span>
         <h3 className="text-white font-semibold text-lg">{variant.name}</h3>
@@ -226,7 +243,9 @@ function VariantCard({
         {variant.highlights && (
           <ul className="text-xs space-y-1">
             {variant.highlights.map((h) => (
-              <li key={h} className="text-muted-foreground">• {h}</li>
+              <li key={h} className="text-muted-foreground">
+                • {h}
+              </li>
             ))}
           </ul>
         )}

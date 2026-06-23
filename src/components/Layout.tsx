@@ -1,17 +1,17 @@
-import { Link, useLocation } from "react-router-dom";
-import { BarChart3, Swords, LayoutDashboard, Shield, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { BarChart3, LayoutDashboard, Shield, Swords, Users } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/arena", label: "Product Arena", icon: Swords },
-  { href: "/evaluators/apply", label: "Become evaluator", icon: Users },
-  { href: "/admin", label: "Admin", icon: Shield },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/arena', label: 'Product Arena', icon: Swords },
+  { href: '/evaluators/apply', label: 'Become evaluator', icon: Users },
+  { href: '/admin', label: 'Admin', icon: Shield },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const isMarketing = location.pathname === "/";
+  const isMarketing = location.pathname === '/';
 
   if (isMarketing) return <>{children}</>;
 
@@ -29,10 +29,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 to={item.href}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors",
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors',
                   location.pathname.startsWith(item.href)
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 )}
               >
                 <item.icon className="h-4 w-4" />

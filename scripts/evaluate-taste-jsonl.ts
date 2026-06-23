@@ -1,16 +1,16 @@
 #!/usr/bin/env bun
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   evaluateTasteJsonl,
   predictTasteJsonlMechanically,
   predictTasteJsonlWithModel,
   type TasteJsonlRecord,
-} from "../src/lib/tasteJsonl.ts";
-import { parseTasteLinearRankerModelJson } from "../src/lib/tasteRanker.ts";
+} from '../src/lib/tasteJsonl.ts';
+import { parseTasteLinearRankerModelJson } from '../src/lib/tasteRanker.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 interface CliArgs {
   inputPath: string;
@@ -19,20 +19,20 @@ interface CliArgs {
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  let inputPath = "datasets/taste-pairs.jsonl";
+  let inputPath = 'datasets/taste-pairs.jsonl';
   let tieMargin = 5;
   let modelPath: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
-    if (arg === "--in" && next) {
+    if (arg === '--in' && next) {
       inputPath = next;
       i += 1;
-    } else if (arg === "--tie-margin" && next) {
+    } else if (arg === '--tie-margin' && next) {
       tieMargin = Number.parseFloat(next);
       i += 1;
-    } else if (arg === "--model" && next) {
+    } else if (arg === '--model' && next) {
       modelPath = next;
       i += 1;
     }
@@ -48,24 +48,32 @@ function parseArgs(argv: string[]): CliArgs {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const model = args.modelPath
-    ? parseTasteLinearRankerModelJson(await readFile(args.modelPath, "utf8"))
+    ? parseTasteLinearRankerModelJson(await readFile(args.modelPath, 'utf8'))
     : null;
-  const lines = (await readFile(args.inputPath, "utf8")).split("\n").filter(Boolean);
+  const lines = (await readFile(args.inputPath, 'utf8')).split('\n').filter(Boolean);
   const records = lines.map((line) => JSON.parse(line) as TasteJsonlRecord);
   const result = evaluateTasteJsonl(records, (record) =>
-    model ? predictTasteJsonlWithModel(record, model) : predictTasteJsonlMechanically(record, args.tieMargin),
+    model
+      ? predictTasteJsonlWithModel(record, model)
+      : predictTasteJsonlMechanically(record, args.tieMargin)
   );
 
-  console.log(JSON.stringify({
-    metric: model ? "trained_ranker_pairwise_accuracy" : "mechanical_risk_pairwise_accuracy",
-    modelId: model?.modelId ?? "mechanical-risk-baseline",
-    records: result.records,
-    labeled: result.labeled,
-    correct: result.correct,
-    accuracy: result.accuracy,
-    tieMargin: args.tieMargin,
-    misses: result.misses.slice(0, 20),
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        metric: model ? 'trained_ranker_pairwise_accuracy' : 'mechanical_risk_pairwise_accuracy',
+        modelId: model?.modelId ?? 'mechanical-risk-baseline',
+        records: result.records,
+        labeled: result.labeled,
+        correct: result.correct,
+        accuracy: result.accuracy,
+        tieMargin: args.tieMargin,
+        misses: result.misses.slice(0, 20),
+      },
+      null,
+      2
+    )
+  );
 }
 
 main().catch((error) => {

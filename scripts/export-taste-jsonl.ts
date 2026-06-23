@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { TastePairManifest } from "../src/lib/tasteDataset.ts";
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type { TastePairManifest } from '../src/lib/tasteDataset.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 interface CliArgs {
   inputDir: string;
@@ -14,38 +14,38 @@ interface CliArgs {
 
 interface JsonlRecord {
   id: string;
-  context: TastePairManifest["context"];
-  source: TastePairManifest["source"];
+  context: TastePairManifest['context'];
+  source: TastePairManifest['source'];
   variants: Array<{
     id: string;
     label: string;
     url: string;
-    artifacts: TastePairManifest["variants"][number]["artifacts"];
+    artifacts: TastePairManifest['variants'][number]['artifacts'];
     screenshots: Array<{
       viewport: string;
       aboveFoldPath: string;
       fullPagePath: string;
     }>;
-    mechanicalSummary: TastePairManifest["variants"][number]["mechanicalSummary"];
+    mechanicalSummary: TastePairManifest['variants'][number]['mechanicalSummary'];
   }>;
-  label: TastePairManifest["label"] | null;
+  label: TastePairManifest['label'] | null;
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  let inputDir = "captures/taste-pairs";
-  let outPath = "datasets/taste-pairs.jsonl";
+  let inputDir = 'captures/taste-pairs';
+  let outPath = 'datasets/taste-pairs.jsonl';
   let includeUnlabeled = false;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
-    if (arg === "--in" && next) {
+    if (arg === '--in' && next) {
       inputDir = next;
       i += 1;
-    } else if (arg === "--out" && next) {
+    } else if (arg === '--out' && next) {
       outPath = next;
       i += 1;
-    } else if (arg === "--include-unlabeled") {
+    } else if (arg === '--include-unlabeled') {
       includeUnlabeled = true;
     }
   }
@@ -63,16 +63,17 @@ async function findJsonFiles(dir: string): Promise<string[]> {
     entries.map(async (entry) => {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) return findJsonFiles(fullPath);
-      if (entry.isFile() && entry.name.endsWith(".json")) return [fullPath];
+      if (entry.isFile() && entry.name.endsWith('.json')) return [fullPath];
       return [];
-    }),
+    })
   );
   return files.flat().sort();
 }
 
 async function readPair(filePath: string): Promise<TastePairManifest | null> {
-  const pair = JSON.parse(await readFile(filePath, "utf8")) as TastePairManifest;
-  if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2) return null;
+  const pair = JSON.parse(await readFile(filePath, 'utf8')) as TastePairManifest;
+  if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2)
+    return null;
   return pair;
 }
 
@@ -110,8 +111,13 @@ async function main() {
   }
 
   await mkdir(path.dirname(args.outPath), { recursive: true });
-  await writeFile(args.outPath, records.map((record) => JSON.stringify(record)).join("\n") + (records.length ? "\n" : ""));
-  console.log(`Exported ${records.length} Taste pair record(s) to ${path.relative(ROOT, args.outPath)}`);
+  await writeFile(
+    args.outPath,
+    records.map((record) => JSON.stringify(record)).join('\n') + (records.length ? '\n' : '')
+  );
+  console.log(
+    `Exported ${records.length} Taste pair record(s) to ${path.relative(ROOT, args.outPath)}`
+  );
 }
 
 main().catch((error) => {

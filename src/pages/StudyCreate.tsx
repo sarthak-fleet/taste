@@ -1,18 +1,24 @@
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { Plus, Trash2, Rocket } from "lucide-react";
-import { toast } from "sonner";
-import { api, DEMO_WORKSPACE_ID } from "@/lib/api";
-import { STUDY_TYPES, OBJECTIVES, METRICS } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AgentEvaluationOverlay } from "@/components/AgentEvaluationOverlay";
-import { resultFromLaunchResponse } from "@/lib/evaluationOverlay";
+import { useMutation } from '@tanstack/react-query';
+import { Plus, Rocket, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { AgentEvaluationOverlay } from '@/components/AgentEvaluationOverlay';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { api, DEMO_WORKSPACE_ID } from '@/lib/api';
+import { resultFromLaunchResponse } from '@/lib/evaluationOverlay';
+import { METRICS, OBJECTIVES, STUDY_TYPES } from '@/lib/types';
 
 interface VariantDraft {
   name: string;
@@ -22,27 +28,27 @@ interface VariantDraft {
   assetUrl: string;
 }
 
-const LABELS = ["A", "B", "C", "D", "E"];
+const LABELS = ['A', 'B', 'C', 'D', 'E'];
 
 export default function StudyCreate() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
-  const [name, setName] = useState("");
-  const [studyType, setStudyType] = useState("landing_page");
-  const [productName, setProductName] = useState("");
-  const [productUrl, setProductUrl] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [targetUserRole, setTargetUserRole] = useState("");
-  const [targetUserDescription, setTargetUserDescription] = useState("");
-  const [primaryObjective, setPrimaryObjective] = useState("maximize_signup");
-  const [primaryMetric, setPrimaryMetric] = useState("conversion_intent");
-  const [contextQuestions, setContextQuestions] = useState("");
-  const [contextConcerns, setContextConcerns] = useState("");
+  const [name, setName] = useState('');
+  const [studyType, setStudyType] = useState('landing_page');
+  const [productName, setProductName] = useState('');
+  const [productUrl, setProductUrl] = useState('');
+  const [productDescription, setProductDescription] = useState('');
+  const [targetUserRole, setTargetUserRole] = useState('');
+  const [targetUserDescription, setTargetUserDescription] = useState('');
+  const [primaryObjective, setPrimaryObjective] = useState('maximize_signup');
+  const [primaryMetric, setPrimaryMetric] = useState('conversion_intent');
+  const [contextQuestions, setContextQuestions] = useState('');
+  const [contextConcerns, setContextConcerns] = useState('');
   const [showEvalOverlay, setShowEvalOverlay] = useState(false);
   const [variants, setVariants] = useState<VariantDraft[]>([
-    { name: "", label: "A", description: "", hypothesis: "", assetUrl: "" },
-    { name: "", label: "B", description: "", hypothesis: "", assetUrl: "" },
+    { name: '', label: 'A', description: '', hypothesis: '', assetUrl: '' },
+    { name: '', label: 'B', description: '', hypothesis: '', assetUrl: '' },
   ]);
 
   const createMutation = useMutation({
@@ -65,18 +71,18 @@ export default function StudyCreate() {
           label: v.label,
           description: v.description,
           hypothesis: v.hypothesis,
-          assetType: "url",
+          assetType: 'url',
           assetUrl: v.assetUrl,
         })),
       }),
     onSuccess: (data) => {
-      toast.success("Study created");
+      toast.success('Study created');
       navigate(`/studies/${data.study.id}`);
     },
     onError: (e) => toast.error(e.message),
   });
 
-  const launchStudyIdRef = useRef("");
+  const launchStudyIdRef = useRef('');
 
   function handleLaunchClick() {
     setShowEvalOverlay(true);
@@ -101,7 +107,7 @@ export default function StudyCreate() {
         label: v.label,
         description: v.description,
         hypothesis: v.hypothesis,
-        assetType: "url",
+        assetType: 'url',
         assetUrl: v.assetUrl,
       })),
     });
@@ -120,25 +126,31 @@ export default function StudyCreate() {
 
   function addVariant() {
     if (variants.length >= 5) return;
-    setVariants([...variants, { name: "", label: LABELS[variants.length]!, description: "", hypothesis: "", assetUrl: "" }]);
+    setVariants([
+      ...variants,
+      { name: '', label: LABELS[variants.length]!, description: '', hypothesis: '', assetUrl: '' },
+    ]);
   }
 
   function removeVariant(i: number) {
     if (variants.length <= 2) return;
-    setVariants(variants.filter((_, idx) => idx !== i).map((v, idx) => ({ ...v, label: LABELS[idx]! })));
+    setVariants(
+      variants.filter((_, idx) => idx !== i).map((v, idx) => ({ ...v, label: LABELS[idx]! }))
+    );
   }
 
   function updateVariant(i: number, field: keyof VariantDraft, value: string) {
     setVariants(variants.map((v, idx) => (idx === i ? { ...v, [field]: value } : v)));
   }
 
-  const steps = ["Product", "Decision", "Variants", "Review"];
+  const steps = ['Product', 'Decision', 'Variants', 'Review'];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-semibold mb-2">Create study</h1>
       <p className="text-muted-foreground text-sm mb-8">
-        Define your product decision. ShipRank will evaluate variants and return a ranked recommendation.
+        Define your product decision. ShipRank will evaluate variants and return a ranked
+        recommendation.
       </p>
 
       <div className="flex gap-2 mb-8">
@@ -148,7 +160,9 @@ export default function StudyCreate() {
             type="button"
             onClick={() => setStep(i)}
             className={`flex-1 py-2 text-sm rounded-md border transition-colors ${
-              step === i ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+              step === i
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground'
             }`}
           >
             {i + 1}. {s}
@@ -165,15 +179,27 @@ export default function StudyCreate() {
           <CardContent className="space-y-4">
             <div>
               <Label>Study name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Devtool onboarding v2" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Devtool onboarding v2"
+              />
             </div>
             <div>
               <Label>Product name</Label>
-              <Input value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="DeployWatch" />
+              <Input
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                placeholder="DeployWatch"
+              />
             </div>
             <div>
               <Label>Product URL</Label>
-              <Input value={productUrl} onChange={(e) => setProductUrl(e.target.value)} placeholder="https://..." />
+              <Input
+                value={productUrl}
+                onChange={(e) => setProductUrl(e.target.value)}
+                placeholder="https://..."
+              />
             </div>
             <div>
               <Label>One-line description</Label>
@@ -183,7 +209,9 @@ export default function StudyCreate() {
                 placeholder="A deployment monitoring tool for backend teams"
               />
             </div>
-            <Button onClick={() => setStep(1)} disabled={!name}>Continue</Button>
+            <Button onClick={() => setStep(1)} disabled={!name}>
+              Continue
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -198,10 +226,14 @@ export default function StudyCreate() {
             <div>
               <Label>Study type</Label>
               <Select value={studyType} onValueChange={setStudyType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {STUDY_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -225,10 +257,14 @@ export default function StudyCreate() {
             <div>
               <Label>Primary objective</Label>
               <Select value={primaryObjective} onValueChange={setPrimaryObjective}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {OBJECTIVES.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -236,10 +272,14 @@ export default function StudyCreate() {
             <div>
               <Label>Primary metric</Label>
               <Select value={primaryMetric} onValueChange={setPrimaryMetric}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {METRICS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -261,8 +301,12 @@ export default function StudyCreate() {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(0)}>Back</Button>
-              <Button onClick={() => setStep(2)} disabled={!targetUserRole}>Continue</Button>
+              <Button variant="outline" onClick={() => setStep(0)}>
+                Back
+              </Button>
+              <Button onClick={() => setStep(2)} disabled={!targetUserRole}>
+                Continue
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -272,7 +316,9 @@ export default function StudyCreate() {
         <Card>
           <CardHeader>
             <CardTitle>Variants</CardTitle>
-            <CardDescription>Add 2–5 variants to compare. URLs or descriptions work for MVP.</CardDescription>
+            <CardDescription>
+              Add 2–5 variants to compare. URLs or descriptions work for MVP.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {variants.map((v, i) => (
@@ -287,22 +333,22 @@ export default function StudyCreate() {
                 </div>
                 <Input
                   value={v.name}
-                  onChange={(e) => updateVariant(i, "name", e.target.value)}
+                  onChange={(e) => updateVariant(i, 'name', e.target.value)}
                   placeholder="Code-first onboarding"
                 />
                 <Input
                   value={v.assetUrl}
-                  onChange={(e) => updateVariant(i, "assetUrl", e.target.value)}
+                  onChange={(e) => updateVariant(i, 'assetUrl', e.target.value)}
                   placeholder="https://prototype.example.com/variant-b"
                 />
                 <Textarea
                   value={v.description}
-                  onChange={(e) => updateVariant(i, "description", e.target.value)}
+                  onChange={(e) => updateVariant(i, 'description', e.target.value)}
                   placeholder="Brief description of this variant"
                 />
                 <Input
                   value={v.hypothesis}
-                  onChange={(e) => updateVariant(i, "hypothesis", e.target.value)}
+                  onChange={(e) => updateVariant(i, 'hypothesis', e.target.value)}
                   placeholder="Hypothesis: developers prefer seeing setup code immediately"
                 />
               </div>
@@ -313,11 +359,10 @@ export default function StudyCreate() {
               </Button>
             )}
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-              <Button
-                onClick={() => setStep(3)}
-                disabled={variants.some((v) => !v.name)}
-              >
+              <Button variant="outline" onClick={() => setStep(1)}>
+                Back
+              </Button>
+              <Button onClick={() => setStep(3)} disabled={variants.some((v) => !v.name)}>
                 Continue
               </Button>
             </div>
@@ -330,16 +375,20 @@ export default function StudyCreate() {
           <CardHeader>
             <CardTitle>Review & launch</CardTitle>
             <CardDescription>
-              Launching runs the AI agent panel across all variants and generates your decision report.
-              Human validation can be added later from the study page.
+              Launching runs the AI agent panel across all variants and generates your decision
+              report. Human validation can be added later from the study page.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <dl className="grid grid-cols-2 gap-3 text-sm">
-              <dt className="text-muted-foreground">Study</dt><dd>{name}</dd>
-              <dt className="text-muted-foreground">Product</dt><dd>{productName || "—"}</dd>
-              <dt className="text-muted-foreground">Target user</dt><dd>{targetUserRole}</dd>
-              <dt className="text-muted-foreground">Variants</dt><dd>{variants.length}</dd>
+              <dt className="text-muted-foreground">Study</dt>
+              <dd>{name}</dd>
+              <dt className="text-muted-foreground">Product</dt>
+              <dd>{productName || '—'}</dd>
+              <dt className="text-muted-foreground">Target user</dt>
+              <dd>{targetUserRole}</dd>
+              <dt className="text-muted-foreground">Variants</dt>
+              <dd>{variants.length}</dd>
             </dl>
             <ul className="text-sm space-y-1 border-t border-border pt-4">
               {variants.map((v) => (
@@ -349,7 +398,9 @@ export default function StudyCreate() {
               ))}
             </ul>
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
+              <Button variant="outline" onClick={() => setStep(2)}>
+                Back
+              </Button>
               <Button
                 variant="secondary"
                 onClick={() => createMutation.mutate()}
@@ -359,7 +410,9 @@ export default function StudyCreate() {
               </Button>
               <Button
                 onClick={handleLaunchClick}
-                disabled={showEvalOverlay || !name || !targetUserRole || variants.some((v) => !v.name)}
+                disabled={
+                  showEvalOverlay || !name || !targetUserRole || variants.some((v) => !v.name)
+                }
               >
                 <Rocket className="h-4 w-4" />
                 Launch study
@@ -371,7 +424,7 @@ export default function StudyCreate() {
 
       <AgentEvaluationOverlay
         open={showEvalOverlay}
-        taskTitle={name || "Variant evaluation"}
+        taskTitle={name || 'Variant evaluation'}
         taskSubtitle={productName ? `${productName} · ${targetUserRole}` : targetUserRole}
         variants={variants.map((v) => ({ label: v.label, name: v.name }))}
         onRun={runLaunchEvaluation}

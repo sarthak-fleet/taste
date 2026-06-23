@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 import {
   AGENT_COUNT,
   assignVerdicts,
   buildCinemaLayout,
   CINEMA_TIMING,
+  type CinemaSeat,
   cinemaMinDurationMs,
   cinemaPhaseLabel,
   cinemaVerdictStartMs,
-  type CinemaSeat,
-} from "@/lib/agentCinema";
+} from '@/lib/agentCinema';
 
 export interface AgentCinemaResult {
   greenCount: number;
@@ -37,13 +37,18 @@ export function AgentCinemaVerdict({
   const completedRef = useRef(false);
   const ratioLockedRef = useRef(false);
   const activeRatioRef = useRef(greenRatio);
-  const [stats, setStats] = useState({ spawned: 0, green: 0, red: 0, phase: "Preparing the grid…" });
+  const [stats, setStats] = useState({
+    spawned: 0,
+    green: 0,
+    red: 0,
+    phase: 'Preparing the grid…',
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     completedRef.current = false;
@@ -67,7 +72,7 @@ export function AgentCinemaVerdict({
     const onResize = () => {
       ({ layout, w, h } = resize());
     };
-    window.addEventListener("resize", onResize);
+    window.addEventListener('resize', onResize);
 
     const verdictLockAt = cinemaVerdictStartMs() - CINEMA_TIMING.ratioLockBeforeVerdictMs;
 
@@ -83,13 +88,13 @@ export function AgentCinemaVerdict({
 
       if (fade > 0.25) {
         ctx.fillStyle = `rgba(255,255,255,${0.9 * fade})`;
-        ctx.font = "600 14px DM Sans, system-ui";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+        ctx.font = '600 14px DM Sans, system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText(taskTitle, s.x + s.w / 2, s.y + s.h * 0.42);
         if (taskSubtitle) {
           ctx.fillStyle = `rgba(255,255,255,${0.5 * fade})`;
-          ctx.font = "400 11px DM Sans, system-ui";
+          ctx.font = '400 11px DM Sans, system-ui';
           ctx.fillText(taskSubtitle, s.x + s.w / 2, s.y + s.h * 0.72);
         }
       }
@@ -97,7 +102,7 @@ export function AgentCinemaVerdict({
 
     const drawFlatGrid = () => {
       const g = layout.grid;
-      ctx.strokeStyle = "rgba(255,255,255,0.04)";
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
       ctx.lineWidth = 1;
       ctx.strokeRect(g.x, g.y, g.w, g.h);
     };
@@ -111,10 +116,10 @@ export function AgentCinemaVerdict({
         seat.glow = Math.min(1, (elapsed - seat.verdictAt) / CINEMA_TIMING.verdictGlowMs);
       }
 
-      let fill = "rgba(51, 65, 85, 0.75)";
-      if (showVerdict && seat.finalVerdict === "green") {
+      let fill = 'rgba(51, 65, 85, 0.75)';
+      if (showVerdict && seat.finalVerdict === 'green') {
         fill = `rgba(34, 197, 94, ${0.5 + seat.glow * 0.5})`;
-      } else if (showVerdict && seat.finalVerdict === "red") {
+      } else if (showVerdict && seat.finalVerdict === 'red') {
         fill = `rgba(239, 68, 68, ${0.5 + seat.glow * 0.5})`;
       } else if (reviewing) {
         const breathe = (Math.sin(elapsed / 700 + seat.id * 0.02) + 1) / 2;
@@ -126,7 +131,7 @@ export function AgentCinemaVerdict({
 
       if (showVerdict && seat.glow > 0.3) {
         ctx.strokeStyle =
-          seat.finalVerdict === "green"
+          seat.finalVerdict === 'green'
             ? `rgba(134, 239, 172, ${seat.glow * 0.8})`
             : `rgba(252, 165, 165, ${seat.glow * 0.8})`;
         ctx.lineWidth = 1;
@@ -141,7 +146,7 @@ export function AgentCinemaVerdict({
       const elapsed = now - startRef.current;
       ctx.clearRect(0, 0, w, h);
 
-      ctx.fillStyle = "#080c12";
+      ctx.fillStyle = '#080c12';
       ctx.fillRect(0, 0, w, h);
 
       drawFlatGrid();
@@ -159,7 +164,7 @@ export function AgentCinemaVerdict({
       for (const seat of seatsRef.current) {
         if (drawSeat2D(seat, elapsed)) spawned++;
         if (elapsed >= seat.verdictAt) {
-          if (seat.finalVerdict === "green") green++;
+          if (seat.finalVerdict === 'green') green++;
           else red++;
         }
       }
@@ -189,7 +194,7 @@ export function AgentCinemaVerdict({
 
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener('resize', onResize);
     };
   }, [taskTitle, taskSubtitle, greenRatio, minDurationMs, onComplete]);
 
@@ -212,9 +217,7 @@ export function AgentCinemaVerdict({
           <Stat label="Agents spawned" value={stats.spawned.toLocaleString()} />
           <Stat label="Ship" value={stats.green.toLocaleString()} color="text-emerald-400" />
           <Stat label="Kill" value={stats.red.toLocaleString()} color="text-red-400" />
-          {verdictTotal > 100 && (
-            <Stat label="Ship %" value={`${pct}%`} color="text-primary" />
-          )}
+          {verdictTotal > 100 && <Stat label="Ship %" value={`${pct}%`} color="text-primary" />}
         </div>
         <div className="mt-4 h-1 rounded-full bg-white/10 overflow-hidden flex">
           <div
@@ -235,7 +238,9 @@ function Stat({ label, value, color }: { label: string; value: string; color?: s
   return (
     <div>
       <p className="text-[10px] uppercase tracking-wider text-white/40">{label}</p>
-      <p className={`text-2xl font-semibold tabular-nums transition-all duration-700 ${color ?? "text-white"}`}>
+      <p
+        className={`text-2xl font-semibold tabular-nums transition-all duration-700 ${color ?? 'text-white'}`}
+      >
         {value}
       </p>
     </div>

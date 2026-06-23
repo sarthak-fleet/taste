@@ -104,7 +104,10 @@
       "id": "database-mongodb-vs-turso",
       "label": "Database landing: MongoDB vs Turso",
       "productName": "Databases",
-      "a": { "url": "https://www.mongodb.com/products/platform/atlas-database", "label": "MongoDB Atlas" },
+      "a": {
+        "url": "https://www.mongodb.com/products/platform/atlas-database",
+        "label": "MongoDB Atlas"
+      },
       "b": { "url": "https://turso.tech", "label": "Turso" }
     },
     {

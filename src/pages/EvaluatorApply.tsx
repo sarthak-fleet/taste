@@ -1,31 +1,37 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Users, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMutation } from '@tanstack/react-query';
+import { CheckCircle2, Users } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { api } from '@/lib/api';
 
 export default function EvaluatorApply() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    role: "",
-    industry: "",
-    seniority: "",
-    evaluatorType: "target_user",
-    skills: "",
+    name: '',
+    email: '',
+    role: '',
+    industry: '',
+    seniority: '',
+    evaluatorType: 'target_user',
+    skills: '',
   });
 
   const mutation = useMutation({
     mutationFn: () => api.applyEvaluator(form),
     onSuccess: () => {
       setSubmitted(true);
-      toast.success("Application submitted");
+      toast.success('Application submitted');
     },
     onError: (e) => toast.error(e.message),
   });
@@ -49,14 +55,16 @@ export default function EvaluatorApply() {
         <h1 className="text-2xl font-semibold">Become an evaluator</h1>
       </div>
       <p className="text-muted-foreground text-sm mb-8">
-        Join the judgment network. Get paid for structured product evaluations. Build reputation
-        for accurate predictions.
+        Join the judgment network. Get paid for structured product evaluations. Build reputation for
+        accurate predictions.
       </p>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Evaluator application</CardTitle>
-          <CardDescription>We&apos;re recruiting SaaS/devtool target users, PMs, designers, and founders.</CardDescription>
+          <CardDescription>
+            We&apos;re recruiting SaaS/devtool target users, PMs, designers, and founders.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -65,7 +73,11 @@ export default function EvaluatorApply() {
           </div>
           <div>
             <Label>Email</Label>
-            <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <Input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
           </div>
           <div>
             <Label>Role</Label>
@@ -77,8 +89,13 @@ export default function EvaluatorApply() {
           </div>
           <div>
             <Label>Evaluator type</Label>
-            <Select value={form.evaluatorType} onValueChange={(v) => setForm({ ...form, evaluatorType: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={form.evaluatorType}
+              onValueChange={(v) => setForm({ ...form, evaluatorType: v })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="target_user">Target user</SelectItem>
                 <SelectItem value="domain_expert">Domain expert</SelectItem>
@@ -89,15 +106,27 @@ export default function EvaluatorApply() {
           </div>
           <div>
             <Label>Industry</Label>
-            <Input value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} placeholder="SaaS, devtools, AI tools" />
+            <Input
+              value={form.industry}
+              onChange={(e) => setForm({ ...form, industry: e.target.value })}
+              placeholder="SaaS, devtools, AI tools"
+            />
           </div>
           <div>
             <Label>Seniority</Label>
-            <Input value={form.seniority} onChange={(e) => setForm({ ...form, seniority: e.target.value })} placeholder="5 years" />
+            <Input
+              value={form.seniority}
+              onChange={(e) => setForm({ ...form, seniority: e.target.value })}
+              placeholder="5 years"
+            />
           </div>
           <div>
             <Label>Tools / skills</Label>
-            <Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="React, Kubernetes, Figma..." />
+            <Input
+              value={form.skills}
+              onChange={(e) => setForm({ ...form, skills: e.target.value })}
+              placeholder="React, Kubernetes, Figma..."
+            />
           </div>
           <Button
             onClick={() => mutation.mutate()}

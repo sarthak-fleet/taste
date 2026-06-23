@@ -1,4 +1,4 @@
-import type { AgentOutput, DimensionScores } from "./types";
+import type { AgentOutput, DimensionScores } from './types';
 
 export interface AgentDefinition {
   slug: string;
@@ -10,46 +10,46 @@ export interface AgentDefinition {
 
 export const AGENT_DEFINITIONS: AgentDefinition[] = [
   {
-    slug: "ux_clarity",
-    name: "UX Clarity Agent",
-    description: "Evaluates layout hierarchy, product explanation, and next-action clarity.",
-    agentType: "ux_clarity",
-    focusAreas: ["clarity", "firstActionClarity", "friction"],
+    slug: 'ux_clarity',
+    name: 'UX Clarity Agent',
+    description: 'Evaluates layout hierarchy, product explanation, and next-action clarity.',
+    agentType: 'ux_clarity',
+    focusAreas: ['clarity', 'firstActionClarity', 'friction'],
   },
   {
-    slug: "skeptical_buyer",
-    name: "Skeptical Target User",
-    description: "Challenges value prop, trust signals, and likelihood to continue.",
-    agentType: "skeptical_buyer",
-    focusAreas: ["trust", "relevance", "conversionIntent"],
+    slug: 'skeptical_buyer',
+    name: 'Skeptical Target User',
+    description: 'Challenges value prop, trust signals, and likelihood to continue.',
+    agentType: 'skeptical_buyer',
+    focusAreas: ['trust', 'relevance', 'conversionIntent'],
   },
   {
-    slug: "conversion_funnel",
-    name: "Conversion / Funnel Agent",
-    description: "Analyzes CTA strength, signup intent, and funnel drop-off risk.",
-    agentType: "conversion",
-    focusAreas: ["conversionIntent", "firstActionClarity", "perceivedValue"],
+    slug: 'conversion_funnel',
+    name: 'Conversion / Funnel Agent',
+    description: 'Analyzes CTA strength, signup intent, and funnel drop-off risk.',
+    agentType: 'conversion',
+    focusAreas: ['conversionIntent', 'firstActionClarity', 'perceivedValue'],
   },
   {
-    slug: "technical_user",
-    name: "Technical User Agent",
-    description: "For devtool/SaaS: setup clarity, technical credibility, jargon quality.",
-    agentType: "technical",
-    focusAreas: ["relevance", "trust", "completionConfidence"],
+    slug: 'technical_user',
+    name: 'Technical User Agent',
+    description: 'For devtool/SaaS: setup clarity, technical credibility, jargon quality.',
+    agentType: 'technical',
+    focusAreas: ['relevance', 'trust', 'completionConfidence'],
   },
   {
-    slug: "copy_critic",
-    name: "Copy Critic Agent",
-    description: "Headline strength, messaging specificity, generic-copy flags.",
-    agentType: "copy",
-    focusAreas: ["clarity", "differentiation", "perceivedValue"],
+    slug: 'copy_critic',
+    name: 'Copy Critic Agent',
+    description: 'Headline strength, messaging specificity, generic-copy flags.',
+    agentType: 'copy',
+    focusAreas: ['clarity', 'differentiation', 'perceivedValue'],
   },
   {
-    slug: "accessibility_basics",
-    name: "Accessibility / Basics Agent",
-    description: "Readability, contrast, text density, mobile layout concerns.",
-    agentType: "accessibility",
-    focusAreas: ["clarity", "friction"],
+    slug: 'accessibility_basics',
+    name: 'Accessibility / Basics Agent',
+    description: 'Readability, contrast, text density, mobile layout concerns.',
+    agentType: 'accessibility',
+    focusAreas: ['clarity', 'friction'],
   },
 ];
 
@@ -81,11 +81,12 @@ export function runMockAgentEvaluation(params: {
 }): AgentOutput {
   const agent = AGENT_DEFINITIONS.find((a) => a.slug === params.agentSlug)!;
   const seed = hashString(
-    `${params.agentSlug}:${params.variantId}:${params.studyContext.productName}`,
+    `${params.agentSlug}:${params.variantId}:${params.studyContext.productName}`
   );
 
   const baseQuality = seededScore(seed, 2.5, 4.8);
-  const indexBonus = params.totalVariants > 1 ? (params.totalVariants - params.variantIndex) * 0.15 : 0;
+  const indexBonus =
+    params.totalVariants > 1 ? (params.totalVariants - params.variantIndex) * 0.15 : 0;
 
   const scores: Partial<DimensionScores> = {
     clarity: Math.min(5, seededScore(seed + 1, 2, 5) + indexBonus * 0.3),
@@ -116,7 +117,7 @@ export function runMockAgentEvaluation(params: {
     scores,
     prediction: {
       predictedRank,
-      predictedMetric: params.studyContext.primaryObjective || "task_completion",
+      predictedMetric: params.studyContext.primaryObjective || 'task_completion',
       confidence,
     },
     findings,
@@ -128,58 +129,58 @@ export function runMockAgentEvaluation(params: {
 function generateFindings(
   agent: AgentDefinition,
   params: { variantLabel: string; variantName: string; variantDescription?: string },
-  scores: Partial<DimensionScores>,
-): AgentOutput["findings"] {
-  const findings: AgentOutput["findings"] = [];
+  scores: Partial<DimensionScores>
+): AgentOutput['findings'] {
+  const findings: AgentOutput['findings'] = [];
 
   if ((scores.clarity ?? 3) < 3) {
     findings.push({
-      severity: "high",
-      type: "clarity",
+      severity: 'high',
+      type: 'clarity',
       description: `${params.variantLabel}: Product purpose is not immediately clear from the hero section.`,
     });
   } else if ((scores.clarity ?? 3) >= 4) {
     findings.push({
-      severity: "low",
-      type: "clarity",
+      severity: 'low',
+      type: 'clarity',
       description: `${params.variantLabel}: Value proposition is communicated quickly and specifically.`,
     });
   }
 
   if ((scores.trust ?? 3) < 3) {
     findings.push({
-      severity: "medium",
-      type: "trust",
+      severity: 'medium',
+      type: 'trust',
       description: `${params.variantLabel}: Lacks social proof or security signals that would build credibility.`,
     });
   }
 
   if ((scores.firstActionClarity ?? 3) >= 4) {
     findings.push({
-      severity: "low",
-      type: "first_action",
+      severity: 'low',
+      type: 'first_action',
       description: `${params.variantLabel}: The primary CTA and next step are immediately obvious.`,
     });
   } else {
     findings.push({
-      severity: "high",
-      type: "first_action",
+      severity: 'high',
+      type: 'first_action',
       description: `${params.variantLabel}: Multiple competing actions create decision friction.`,
     });
   }
 
-  if (agent.slug === "copy_critic" && (scores.differentiation ?? 3) < 3.5) {
+  if (agent.slug === 'copy_critic' && (scores.differentiation ?? 3) < 3.5) {
     findings.push({
-      severity: "medium",
-      type: "copy",
+      severity: 'medium',
+      type: 'copy',
       description: `${params.variantLabel}: Headline uses generic AI/SaaS language without specific differentiation.`,
     });
   }
 
-  if (agent.slug === "technical_user") {
+  if (agent.slug === 'technical_user') {
     findings.push({
-      severity: (scores.completionConfidence ?? 3) >= 4 ? "low" : "medium",
-      type: "technical",
+      severity: (scores.completionConfidence ?? 3) >= 4 ? 'low' : 'medium',
+      type: 'technical',
       description:
         (scores.completionConfidence ?? 3) >= 4
           ? `${params.variantLabel}: Setup path feels concrete for technical users.`
@@ -193,44 +194,48 @@ function generateFindings(
 function generateRecommendation(
   agent: AgentDefinition,
   params: { variantLabel: string; variantName: string },
-  scores: Partial<DimensionScores>,
+  scores: Partial<DimensionScores>
 ): string {
-  const strong = Object.entries(scores).filter(([, v]) => (v ?? 0) >= 4).map(([k]) => k);
-  const weak = Object.entries(scores).filter(([, v]) => (v ?? 0) < 3).map(([k]) => k);
+  const strong = Object.entries(scores)
+    .filter(([, v]) => (v ?? 0) >= 4)
+    .map(([k]) => k);
+  const weak = Object.entries(scores)
+    .filter(([, v]) => (v ?? 0) < 3)
+    .map(([k]) => k);
 
   if (strong.length >= 3) {
-    return `Strong candidate. ${params.variantLabel} (${params.variantName}) excels in ${strong.slice(0, 2).join(" and ")}.`;
+    return `Strong candidate. ${params.variantLabel} (${params.variantName}) excels in ${strong.slice(0, 2).join(' and ')}.`;
   }
   if (weak.length >= 2) {
-    return `Needs work. Address ${weak.slice(0, 2).join(" and ")} before shipping ${params.variantLabel}.`;
+    return `Needs work. Address ${weak.slice(0, 2).join(' and ')} before shipping ${params.variantLabel}.`;
   }
-  return `Moderate performance. ${params.variantLabel} is viable but not a clear winner on ${agent.focusAreas.join(", ")}.`;
+  return `Moderate performance. ${params.variantLabel} is viable but not a clear winner on ${agent.focusAreas.join(', ')}.`;
 }
 
 function generateValidityFlags(
   params: { variantLabel: string; variantDescription?: string },
-  scores: Partial<DimensionScores>,
-): AgentOutput["validityFlags"] {
-  const flags: AgentOutput["validityFlags"] = [];
+  scores: Partial<DimensionScores>
+): AgentOutput['validityFlags'] {
+  const flags: AgentOutput['validityFlags'] = [];
 
   if (!params.variantDescription?.trim()) {
     flags.push({
-      level: "minor",
-      type: "missing_asset",
+      level: 'minor',
+      type: 'missing_asset',
       description: `${params.variantLabel}: Limited variant description, so evidence is inferred from the study brief.`,
     });
   }
 
   if ((scores.clarity ?? 3) < 2.4 && (scores.relevance ?? 3) < 2.8) {
     flags.push({
-      level: "major",
-      type: "cannot_judge",
+      level: 'major',
+      type: 'cannot_judge',
       description: `${params.variantLabel}: Agent could not form a reliable judgment because clarity and relevance were both low.`,
     });
   } else if ((scores.trust ?? 3) < 2.4) {
     flags.push({
-      level: "minor",
-      type: "quality_warning",
+      level: 'minor',
+      type: 'quality_warning',
       description: `${params.variantLabel}: Trust evidence is weak; verify claims before shipping.`,
     });
   }

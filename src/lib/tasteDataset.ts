@@ -1,21 +1,21 @@
-import type { CaptureArtifact } from "./visualEvidence";
+import type { CaptureArtifact } from './visualEvidence';
 
 export const TASTE_CRITERIA = [
-  "typography",
-  "layoutHierarchy",
-  "spacing",
-  "colorHarmony",
-  "visualPolish",
-  "brandTone",
-  "readability",
-  "mobileFit",
-  "conversionClarity",
-  "trustSignals",
+  'typography',
+  'layoutHierarchy',
+  'spacing',
+  'colorHarmony',
+  'visualPolish',
+  'brandTone',
+  'readability',
+  'mobileFit',
+  'conversionClarity',
+  'trustSignals',
 ] as const;
 
 export type TasteCriterion = (typeof TASTE_CRITERIA)[number];
-export type TastePairVariantId = "a" | "b";
-export type TastePairPreference = TastePairVariantId | "tie" | "unknown";
+export type TastePairVariantId = 'a' | 'b';
+export type TastePairPreference = TastePairVariantId | 'tie' | 'unknown';
 
 export interface TastePairContext {
   productName?: string;
@@ -33,7 +33,7 @@ export interface TastePairVariant {
   capturedAt: string;
   artifacts: CaptureArtifact[];
   mechanicalSummary: {
-    highestRiskLevel: "low" | "medium" | "high";
+    highestRiskLevel: 'low' | 'medium' | 'high';
     highestRiskScore: number;
     totalClippedTextCandidates: number;
     totalLowContrastCandidates: number;
@@ -56,7 +56,7 @@ export interface TastePairManifest {
   pairId: string;
   createdAt: string;
   source: {
-    kind: "manual" | "curated_gallery" | "synthetic_degradation" | "product_feedback";
+    kind: 'manual' | 'curated_gallery' | 'synthetic_degradation' | 'product_feedback';
     notes?: string;
   };
   context: TastePairContext;
@@ -64,9 +64,11 @@ export interface TastePairManifest {
   label?: TastePairLabel;
 }
 
-export function summarizeCaptureArtifactRisk(artifacts: CaptureArtifact[]): TastePairVariant["mechanicalSummary"] {
+export function summarizeCaptureArtifactRisk(
+  artifacts: CaptureArtifact[]
+): TastePairVariant['mechanicalSummary'] {
   let highestRiskScore = 0;
-  let highestRiskLevel: "low" | "medium" | "high" = "low";
+  let highestRiskLevel: 'low' | 'medium' | 'high' = 'low';
   let totalClippedTextCandidates = 0;
   let totalLowContrastCandidates = 0;
   let totalFailedImages = 0;
@@ -82,9 +84,9 @@ export function summarizeCaptureArtifactRisk(artifacts: CaptureArtifact[]): Tast
   }
 
   if (highestRiskScore >= 45) {
-    highestRiskLevel = "high";
+    highestRiskLevel = 'high';
   } else if (highestRiskScore >= 20) {
-    highestRiskLevel = "medium";
+    highestRiskLevel = 'medium';
   }
 
   return {

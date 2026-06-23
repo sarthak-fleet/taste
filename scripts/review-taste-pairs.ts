@@ -1,16 +1,16 @@
 #!/usr/bin/env bun
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { TastePairManifest } from "../src/lib/tasteDataset.ts";
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type { TastePairManifest } from '../src/lib/tasteDataset.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 interface CliArgs {
   inputDir: string;
   outPath: string;
   includeLabeled: boolean;
-  format: "html" | "json";
+  format: 'html' | 'json';
 }
 
 interface QueueItem {
@@ -22,7 +22,7 @@ interface QueueItem {
     id: string;
     label: string;
     url: string;
-    risk: TastePairManifest["variants"][number]["mechanicalSummary"];
+    risk: TastePairManifest['variants'][number]['mechanicalSummary'];
     screenshots: Array<{
       viewport: string;
       aboveFoldPath: string;
@@ -37,24 +37,24 @@ interface QueueItem {
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  let inputDir = "captures/taste-pairs";
-  let outPath = "reports/taste-label-queue.html";
+  let inputDir = 'captures/taste-pairs';
+  let outPath = 'reports/taste-label-queue.html';
   let includeLabeled = false;
-  let format: "html" | "json" = "html";
+  let format: 'html' | 'json' = 'html';
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
-    if (arg === "--in" && next) {
+    if (arg === '--in' && next) {
       inputDir = next;
       i += 1;
-    } else if (arg === "--out" && next) {
+    } else if (arg === '--out' && next) {
       outPath = next;
       i += 1;
-    } else if (arg === "--include-labeled") {
+    } else if (arg === '--include-labeled') {
       includeLabeled = true;
-    } else if (arg === "--format" && next) {
-      if (next !== "html" && next !== "json") throw new Error("--format must be html or json");
+    } else if (arg === '--format' && next) {
+      if (next !== 'html' && next !== 'json') throw new Error('--format must be html or json');
       format = next;
       i += 1;
     }
@@ -74,19 +74,19 @@ async function findJsonFiles(dir: string): Promise<string[]> {
     entries.map(async (entry) => {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) return findJsonFiles(fullPath);
-      if (entry.isFile() && entry.name.endsWith(".json")) return [fullPath];
+      if (entry.isFile() && entry.name.endsWith('.json')) return [fullPath];
       return [];
-    }),
+    })
   );
   return nested.flat().sort();
 }
 
 function escapeHtml(value: string) {
   return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
 }
 
 function shellQuote(value: string) {
@@ -98,15 +98,16 @@ function relativeFromOut(outPath: string, assetPath: string) {
 }
 
 async function readPair(filePath: string): Promise<TastePairManifest | null> {
-  const pair = JSON.parse(await readFile(filePath, "utf8")) as TastePairManifest;
-  if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2) return null;
+  const pair = JSON.parse(await readFile(filePath, 'utf8')) as TastePairManifest;
+  if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2)
+    return null;
   return pair;
 }
 
 function toQueueItem(pair: TastePairManifest, pairPath: string, outPath: string): QueueItem {
   const relativePairPath = path.relative(ROOT, pairPath);
-  const command = (preferred: "a" | "b" | "tie") =>
-    `pnpm label:taste-pair -- --pair ${shellQuote(relativePairPath)} --preferred ${preferred} --confidence 0.8 --rationale ${shellQuote("TODO")}`;
+  const command = (preferred: 'a' | 'b' | 'tie') =>
+    `pnpm label:taste-pair -- --pair ${shellQuote(relativePairPath)} --preferred ${preferred} --confidence 0.8 --rationale ${shellQuote('TODO')}`;
 
   return {
     pairId: pair.pairId,
@@ -125,9 +126,9 @@ function toQueueItem(pair: TastePairManifest, pairPath: string, outPath: string)
       })),
     })),
     labelCommands: {
-      a: command("a"),
-      b: command("b"),
-      tie: command("tie"),
+      a: command('a'),
+      b: command('b'),
+      tie: command('tie'),
     },
   };
 }
@@ -144,9 +145,9 @@ function renderHtml(items: QueueItem[]) {
                   <img src="${escapeHtml(shot.aboveFoldPath)}" alt="${escapeHtml(`${variant.label} ${shot.viewport} above fold`)}" />
                   <figcaption>${escapeHtml(shot.viewport)} above fold</figcaption>
                 </figure>
-              `,
+              `
             )
-            .join("");
+            .join('');
           return `
             <section class="variant">
               <h3>${escapeHtml(variant.id.toUpperCase())}: ${escapeHtml(variant.label)}</h3>
@@ -162,7 +163,7 @@ function renderHtml(items: QueueItem[]) {
             </section>
           `;
         })
-        .join("");
+        .join('');
       return `
         <article class="pair">
           <header>
@@ -170,7 +171,7 @@ function renderHtml(items: QueueItem[]) {
               <p>${escapeHtml(item.sourceKind)} · ${escapeHtml(item.pairPath)}</p>
               <h2>${escapeHtml(item.pairId)}</h2>
             </div>
-            <strong>${escapeHtml(item.label ?? "unlabeled")}</strong>
+            <strong>${escapeHtml(item.label ?? 'unlabeled')}</strong>
           </header>
           <div class="variants">${variants}</div>
           <div class="commands">
@@ -181,7 +182,7 @@ function renderHtml(items: QueueItem[]) {
         </article>
       `;
     })
-    .join("");
+    .join('');
 
   return `<!doctype html>
 <html lang="en">
@@ -220,7 +221,7 @@ function renderHtml(items: QueueItem[]) {
   <main>
     <h1>Taste Label Queue</h1>
     <p class="summary">${items.length} pair(s). Pick the better website visually, then run one label command.</p>
-    ${cards || "<p>No pairs matched this queue.</p>"}
+    ${cards || '<p>No pairs matched this queue.</p>'}
   </main>
 </body>
 </html>
@@ -240,18 +241,27 @@ async function main() {
   }
 
   await mkdir(path.dirname(args.outPath), { recursive: true });
-  if (args.format === "json") {
-    await writeFile(args.outPath, `${JSON.stringify({ generatedAt: new Date().toISOString(), items }, null, 2)}\n`);
+  if (args.format === 'json') {
+    await writeFile(
+      args.outPath,
+      `${JSON.stringify({ generatedAt: new Date().toISOString(), items }, null, 2)}\n`
+    );
   } else {
     await writeFile(args.outPath, renderHtml(items));
   }
 
-  console.log(JSON.stringify({
-    output: path.relative(ROOT, args.outPath),
-    format: args.format,
-    pairs: items.length,
-    includeLabeled: args.includeLabeled,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        output: path.relative(ROOT, args.outPath),
+        format: args.format,
+        pairs: items.length,
+        includeLabeled: args.includeLabeled,
+      },
+      null,
+      2
+    )
+  );
 }
 
 main().catch((error) => {

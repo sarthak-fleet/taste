@@ -1,11 +1,11 @@
-import type { TasteBaselineVariant } from "./tasteBaseline";
+import type { TasteBaselineVariant } from './tasteBaseline';
 import {
   predictTasteRankerProbFromFeatures,
-  tasteRankerFeatureVector,
   type TasteLinearRankerModel,
-} from "./tasteRanker";
+  tasteRankerFeatureVector,
+} from './tasteRanker';
 
-export type TasteJsonlPreference = "a" | "b" | "tie" | "unknown";
+export type TasteJsonlPreference = 'a' | 'b' | 'tie' | 'unknown';
 
 export interface TasteJsonlRecord {
   id: string;
@@ -16,8 +16,8 @@ export interface TasteJsonlRecord {
   variants: Array<{
     id: string;
     label?: string;
-    artifacts?: TasteBaselineVariant["artifacts"];
-    mechanicalSummary: TasteBaselineVariant["mechanicalSummary"];
+    artifacts?: TasteBaselineVariant['artifacts'];
+    mechanicalSummary: TasteBaselineVariant['mechanicalSummary'];
   }>;
   label: {
     preferredVariantId: TasteJsonlPreference;
@@ -56,20 +56,20 @@ export interface TasteJsonlReadinessGate {
 }
 
 export function tasteJsonlSourceKind(record: TasteJsonlRecord) {
-  return record.source?.kind ?? "unknown";
+  return record.source?.kind ?? 'unknown';
 }
 
 export function isTasteJsonlLabeled(record: TasteJsonlRecord) {
-  return Boolean(record.label && record.label.preferredVariantId !== "unknown");
+  return Boolean(record.label && record.label.preferredVariantId !== 'unknown');
 }
 
 export function isTasteJsonlRealLabel(record: TasteJsonlRecord) {
-  return isTasteJsonlLabeled(record) && tasteJsonlSourceKind(record) !== "synthetic_degradation";
+  return isTasteJsonlLabeled(record) && tasteJsonlSourceKind(record) !== 'synthetic_degradation';
 }
 
 export function tasteJsonlToBaselineVariant(
-  variant: TasteJsonlRecord["variants"][number],
-  index: number,
+  variant: TasteJsonlRecord['variants'][number],
+  index: number
 ): TasteBaselineVariant {
   return {
     id: variant.id,
@@ -82,35 +82,43 @@ export function tasteJsonlToBaselineVariant(
 export function tasteJsonlFeatureVector(record: TasteJsonlRecord): number[] | null {
   const [a, b] = record.variants;
   if (!a || !b) return null;
-  return tasteRankerFeatureVector(tasteJsonlToBaselineVariant(a, 0), tasteJsonlToBaselineVariant(b, 1));
+  return tasteRankerFeatureVector(
+    tasteJsonlToBaselineVariant(a, 0),
+    tasteJsonlToBaselineVariant(b, 1)
+  );
 }
 
 export function predictTasteJsonlWithModel(
   record: TasteJsonlRecord,
-  model: TasteLinearRankerModel,
+  model: TasteLinearRankerModel
 ): TasteJsonlPreference {
   const x = tasteJsonlFeatureVector(record);
-  if (!x) return "unknown";
+  if (!x) return 'unknown';
   const probA = predictTasteRankerProbFromFeatures(model, x);
-  if (probA > 0.55) return "a";
-  if (probA < 0.45) return "b";
-  return "tie";
+  if (probA > 0.55) return 'a';
+  if (probA < 0.45) return 'b';
+  return 'tie';
 }
 
-export function predictTasteJsonlMechanically(record: TasteJsonlRecord, tieMargin: number): TasteJsonlPreference {
+export function predictTasteJsonlMechanically(
+  record: TasteJsonlRecord,
+  tieMargin: number
+): TasteJsonlPreference {
   const [a, b] = record.variants;
-  if (!a || !b) return "unknown";
+  if (!a || !b) return 'unknown';
   const aRisk = a.mechanicalSummary.highestRiskScore;
   const bRisk = b.mechanicalSummary.highestRiskScore;
-  if (Math.abs(aRisk - bRisk) <= tieMargin) return "tie";
-  return aRisk < bRisk ? "a" : "b";
+  if (Math.abs(aRisk - bRisk) <= tieMargin) return 'tie';
+  return aRisk < bRisk ? 'a' : 'b';
 }
 
 export function evaluateTasteJsonl(
   records: TasteJsonlRecord[],
-  predict: (record: TasteJsonlRecord) => TasteJsonlPreference,
+  predict: (record: TasteJsonlRecord) => TasteJsonlPreference
 ): TasteJsonlEvaluation {
-  const labeled = records.filter((record) => record.label && record.label.preferredVariantId !== "unknown");
+  const labeled = records.filter(
+    (record) => record.label && record.label.preferredVariantId !== 'unknown'
+  );
   const scored = labeled.map((record) => ({
     id: record.id,
     predicted: predict(record),
@@ -143,14 +151,14 @@ export function summarizeTasteJsonlDataset(records: TasteJsonlRecord[]): TasteJs
   for (const record of records) {
     const sourceKind = tasteJsonlSourceKind(record);
     sourceCounts[sourceKind] = (sourceCounts[sourceKind] ?? 0) + 1;
-    const preference = record.label?.preferredVariantId ?? "unknown";
+    const preference = record.label?.preferredVariantId ?? 'unknown';
     labelCounts[preference] += 1;
     if (!isTasteJsonlLabeled(record)) continue;
 
     labeled += 1;
-    if (sourceKind === "synthetic_degradation") {
+    if (sourceKind === 'synthetic_degradation') {
       syntheticLabeled += 1;
-    } else if (sourceKind === "unknown") {
+    } else if (sourceKind === 'unknown') {
       unknownSourceLabeled += 1;
     } else {
       realLabeled += 1;
@@ -170,17 +178,21 @@ export function summarizeTasteJsonlDataset(records: TasteJsonlRecord[]): TasteJs
 
 export function evaluateTasteJsonlReadiness(
   summary: TasteJsonlDatasetSummary,
-  params: { minRealLabeled: number; minTotalLabeled: number },
+  params: { minRealLabeled: number; minTotalLabeled: number }
 ): TasteJsonlReadinessGate {
   const reasons: string[] = [];
   if (summary.labeled < params.minTotalLabeled) {
-    reasons.push(`Need at least ${params.minTotalLabeled} total labeled records; found ${summary.labeled}.`);
+    reasons.push(
+      `Need at least ${params.minTotalLabeled} total labeled records; found ${summary.labeled}.`
+    );
   }
   if (summary.realLabeled < params.minRealLabeled) {
-    reasons.push(`Need at least ${params.minRealLabeled} real non-synthetic labels; found ${summary.realLabeled}.`);
+    reasons.push(
+      `Need at least ${params.minRealLabeled} real non-synthetic labels; found ${summary.realLabeled}.`
+    );
   }
   if (summary.syntheticLabeled > 0 && summary.realLabeled === 0) {
-    reasons.push("Dataset has synthetic labels but no real labels.");
+    reasons.push('Dataset has synthetic labels but no real labels.');
   }
 
   return {

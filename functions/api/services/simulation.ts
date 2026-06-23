@@ -1,8 +1,8 @@
-import { eq, desc } from "drizzle-orm";
-import * as schema from "../../../src/db/schema";
-import type { Db } from "../_context";
-import { runFullSimulation, type SimulationResult } from "../../../src/lib/simulation";
-import { AGENT_DEFINITIONS } from "../../../src/lib/agents";
+import { desc, eq } from 'drizzle-orm';
+import * as schema from '../../../src/db/schema';
+import { AGENT_DEFINITIONS } from '../../../src/lib/agents';
+import { runFullSimulation, type SimulationResult } from '../../../src/lib/simulation';
+import type { Db } from '../_context';
 
 type Study = typeof schema.studies.$inferSelect;
 type Variant = typeof schema.variants.$inferSelect;
@@ -11,15 +11,15 @@ function studyContext(study: Study) {
   return {
     productName: study.productName ?? study.name,
     studyType: study.studyType,
-    targetUserRole: study.targetUserRole ?? "target user",
-    primaryObjective: study.primaryObjective ?? "task_completion",
+    targetUserRole: study.targetUserRole ?? 'target user',
+    primaryObjective: study.primaryObjective ?? 'task_completion',
   };
 }
 
 export async function persistAgentRuns(
   db: Db,
   studyId: string,
-  agentPanel: SimulationResult["agentPanel"],
+  agentPanel: SimulationResult['agentPanel']
 ) {
   for (const agent of agentPanel) {
     for (const output of agent.outputs) {
@@ -29,8 +29,8 @@ export async function persistAgentRuns(
         variantId: output.variantId,
         agentId: output.agentSlug,
         outputJson: JSON.stringify(output),
-        status: "completed",
-        modelUsed: "simulation-v1",
+        status: 'completed',
+        modelUsed: 'simulation-v1',
         startedAt: new Date().toISOString(),
         completedAt: new Date().toISOString(),
       });
@@ -41,7 +41,7 @@ export async function persistAgentRuns(
           studyId,
           evaluatorId: output.agentSlug,
           evaluatorType: output.agentSlug,
-          source: "agent",
+          source: 'agent',
           predictedWinnerVariantId: output.variantId,
           confidence: output.prediction.confidence,
           reasoning: output.recommendation,
@@ -54,10 +54,10 @@ export async function persistAgentRuns(
 export async function persistHumanEvaluations(
   db: Db,
   studyId: string,
-  humanPanel: SimulationResult["humanPanel"],
+  humanPanel: SimulationResult['humanPanel']
 ) {
   for (const human of humanPanel) {
-    const email = `${human.evaluator.name.toLowerCase().replace(/\s/g, ".")}@eval.shiprank.dev`;
+    const email = `${human.evaluator.name.toLowerCase().replace(/\s/g, '.')}@eval.shiprank.dev`;
 
     let [evaluator] = await db
       .select()
@@ -73,7 +73,7 @@ export async function persistHumanEvaluations(
         role: human.evaluator.role,
         evaluatorType: human.evaluator.type,
         seniority: human.evaluator.seniority,
-        verificationStatus: "verified",
+        verificationStatus: 'verified',
         reputationScore: 70,
       });
       [evaluator] = await db
@@ -88,7 +88,7 @@ export async function persistHumanEvaluations(
       id: assignmentId,
       studyId,
       evaluatorId: evaluator!.id,
-      status: "submitted",
+      status: 'submitted',
       token,
       submittedAt: new Date().toISOString(),
     });
@@ -113,7 +113,7 @@ export async function persistHumanEvaluations(
       studyId,
       evaluatorId: evaluator!.id,
       evaluatorType: human.evaluator.type,
-      source: "human",
+      source: 'human',
       predictedWinnerVariantId: human.predictedWinnerVariantId,
       confidence: human.confidence,
       reasoning: human.reasoning,
@@ -146,7 +146,7 @@ export async function executeSimulation(
   db: Db,
   study: Study,
   variants: Variant[],
-  mode: "agents" | "humans" | "full",
+  mode: 'agents' | 'humans' | 'full'
 ): Promise<SimulationResult> {
   const variantInputs = variants.map((v) => ({
     id: v.id,
@@ -162,10 +162,10 @@ export async function executeSimulation(
     studyContext: studyContext(study),
   });
 
-  if (mode === "agents" || mode === "full") {
+  if (mode === 'agents' || mode === 'full') {
     await persistAgentRuns(db, study.id, result.agentPanel);
   }
-  if (mode === "humans" || mode === "full") {
+  if (mode === 'humans' || mode === 'full') {
     await persistHumanEvaluations(db, study.id, result.humanPanel);
   }
 

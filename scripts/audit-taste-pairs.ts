@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { TastePairManifest, TastePairPreference } from "../src/lib/tasteDataset.ts";
+import { readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type { TastePairManifest, TastePairPreference } from '../src/lib/tasteDataset.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 interface CliArgs {
   inputDir: string;
@@ -25,7 +25,7 @@ interface PairAuditSummary {
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  let inputDir = "captures/taste-pairs";
+  let inputDir = 'captures/taste-pairs';
   let minRealLabeled = 10;
   let minTotalLabeled = 10;
   let strict = false;
@@ -33,16 +33,16 @@ function parseArgs(argv: string[]): CliArgs {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
-    if (arg === "--in" && next) {
+    if (arg === '--in' && next) {
       inputDir = next;
       i += 1;
-    } else if (arg === "--min-real" && next) {
+    } else if (arg === '--min-real' && next) {
       minRealLabeled = Number.parseInt(next, 10);
       i += 1;
-    } else if (arg === "--min-total" && next) {
+    } else if (arg === '--min-total' && next) {
       minTotalLabeled = Number.parseInt(next, 10);
       i += 1;
-    } else if (arg === "--strict") {
+    } else if (arg === '--strict') {
       strict = true;
     }
   }
@@ -61,21 +61,22 @@ async function findJsonFiles(dir: string): Promise<string[]> {
     entries.map(async (entry) => {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) return findJsonFiles(fullPath);
-      if (entry.isFile() && entry.name.endsWith(".json")) return [fullPath];
+      if (entry.isFile() && entry.name.endsWith('.json')) return [fullPath];
       return [];
-    }),
+    })
   );
   return nested.flat().sort();
 }
 
 async function readPair(filePath: string): Promise<TastePairManifest | null> {
-  const pair = JSON.parse(await readFile(filePath, "utf8")) as TastePairManifest;
-  if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2) return null;
+  const pair = JSON.parse(await readFile(filePath, 'utf8')) as TastePairManifest;
+  if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2)
+    return null;
   return pair;
 }
 
 function isLabeled(pair: TastePairManifest) {
-  return Boolean(pair.label && pair.label.preferredVariantId !== "unknown");
+  return Boolean(pair.label && pair.label.preferredVariantId !== 'unknown');
 }
 
 function summarize(pairs: Array<{ pair: TastePairManifest; filePath: string }>): PairAuditSummary {
@@ -86,7 +87,7 @@ function summarize(pairs: Array<{ pair: TastePairManifest; filePath: string }>):
     tie: 0,
     unknown: 0,
   } satisfies Record<TastePairPreference, number>;
-  const unlabeledPairs: PairAuditSummary["unlabeledPairs"] = [];
+  const unlabeledPairs: PairAuditSummary['unlabeledPairs'] = [];
   let labeled = 0;
   let realLabeled = 0;
   let syntheticLabeled = 0;
@@ -94,7 +95,7 @@ function summarize(pairs: Array<{ pair: TastePairManifest; filePath: string }>):
   for (const { pair, filePath } of pairs) {
     const sourceKind = pair.source.kind;
     sourceCounts[sourceKind] = (sourceCounts[sourceKind] ?? 0) + 1;
-    const preference = pair.label?.preferredVariantId ?? "unknown";
+    const preference = pair.label?.preferredVariantId ?? 'unknown';
     labelCounts[preference] += 1;
 
     if (!isLabeled(pair)) {
@@ -107,7 +108,7 @@ function summarize(pairs: Array<{ pair: TastePairManifest; filePath: string }>):
     }
 
     labeled += 1;
-    if (sourceKind === "synthetic_degradation") syntheticLabeled += 1;
+    if (sourceKind === 'synthetic_degradation') syntheticLabeled += 1;
     else realLabeled += 1;
   }
 
@@ -123,16 +124,23 @@ function summarize(pairs: Array<{ pair: TastePairManifest; filePath: string }>):
   };
 }
 
-function readiness(summary: PairAuditSummary, params: { minRealLabeled: number; minTotalLabeled: number }) {
+function readiness(
+  summary: PairAuditSummary,
+  params: { minRealLabeled: number; minTotalLabeled: number }
+) {
   const reasons: string[] = [];
   if (summary.labeled < params.minTotalLabeled) {
-    reasons.push(`Need at least ${params.minTotalLabeled} total labeled pairs; found ${summary.labeled}.`);
+    reasons.push(
+      `Need at least ${params.minTotalLabeled} total labeled pairs; found ${summary.labeled}.`
+    );
   }
   if (summary.realLabeled < params.minRealLabeled) {
-    reasons.push(`Need at least ${params.minRealLabeled} real non-synthetic labeled pairs; found ${summary.realLabeled}.`);
+    reasons.push(
+      `Need at least ${params.minRealLabeled} real non-synthetic labeled pairs; found ${summary.realLabeled}.`
+    );
   }
   if (summary.syntheticLabeled > 0 && summary.realLabeled === 0) {
-    reasons.push("Pair collection has synthetic labels but no real labels.");
+    reasons.push('Pair collection has synthetic labels but no real labels.');
   }
 
   return {
@@ -157,11 +165,17 @@ async function main() {
     minTotalLabeled: args.minTotalLabeled,
   });
 
-  console.log(JSON.stringify({
-    input: path.relative(ROOT, args.inputDir),
-    summary,
-    readiness: gate,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        input: path.relative(ROOT, args.inputDir),
+        summary,
+        readiness: gate,
+      },
+      null,
+      2
+    )
+  );
   if (args.strict && !gate.ok) process.exit(1);
 }
 

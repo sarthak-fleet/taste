@@ -1,18 +1,10 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  Bot,
-  CheckCircle2,
-  GitCompareArrows,
-  Target,
-  Users,
-  Zap,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AgentEvaluationOverlay } from "@/components/AgentEvaluationOverlay";
+import { ArrowRight, Bot, CheckCircle2, GitCompareArrows, Target, Users, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AgentEvaluationOverlay } from '@/components/AgentEvaluationOverlay';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Landing() {
   const [showDemo, setShowDemo] = useState(false);
@@ -81,17 +73,17 @@ export default function Landing() {
           {[
             {
               icon: Zap,
-              title: "Too many variants",
-              desc: "10 landing pages, 10 onboarding flows, 10 pricing pages — all plausible, none validated.",
+              title: 'Too many variants',
+              desc: '10 landing pages, 10 onboarding flows, 10 pricing pages — all plausible, none validated.',
             },
             {
               icon: Target,
-              title: "Not enough traffic",
+              title: 'Not enough traffic',
               desc: "You can't A/B test everything. You need a pre-A/B decision layer.",
             },
             {
               icon: CheckCircle2,
-              title: "Decisions, not feedback",
+              title: 'Decisions, not feedback',
               desc: "Ship Variant B. Borrow D's trust section. Kill A and C. With evidence and confidence.",
             },
           ].map((item) => (
@@ -111,10 +103,26 @@ export default function Landing() {
           <h2 className="font-display text-3xl mb-12 text-center">How it works</h2>
           <div className="grid md:grid-cols-4 gap-8">
             {[
-              { step: "01", title: "Submit variants", desc: "URLs, screenshots, or prototypes. 2–5 options." },
-              { step: "02", title: "Agents evaluate", desc: "6 specialized AI evaluator agents score every variant in minutes." },
-              { step: "03", title: "Get the report", desc: "Ranked recommendation with agent evidence — ship, kill, or borrow." },
-              { step: "04", title: "Humans optional", desc: "Add matched evaluators later to validate before live A/B." },
+              {
+                step: '01',
+                title: 'Submit variants',
+                desc: 'URLs, screenshots, or prototypes. 2–5 options.',
+              },
+              {
+                step: '02',
+                title: 'Agents evaluate',
+                desc: '6 specialized AI evaluator agents score every variant in minutes.',
+              },
+              {
+                step: '03',
+                title: 'Get the report',
+                desc: 'Ranked recommendation with agent evidence — ship, kill, or borrow.',
+              },
+              {
+                step: '04',
+                title: 'Humans optional',
+                desc: 'Add matched evaluators later to validate before live A/B.',
+              },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="text-4xl font-display text-primary/40 mb-3">{item.step}</div>
@@ -129,13 +137,13 @@ export default function Landing() {
       <section className="max-w-6xl mx-auto px-4 py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <Badge variant="warning" className="mb-4">Product Arena</Badge>
-            <h2 className="font-display text-3xl md:text-4xl mb-4">
-              Public variant battles
-            </h2>
+            <Badge variant="warning" className="mb-4">
+              Product Arena
+            </Badge>
+            <h2 className="font-display text-3xl md:text-4xl mb-4">Public variant battles</h2>
             <p className="text-muted-foreground mb-6">
-              Two variants enter. Humans and AI agents predict which wins. Best predictors climb
-              the leaderboard. Your distribution wedge and evaluator recruitment engine.
+              Two variants enter. Humans and AI agents predict which wins. Best predictors climb the
+              leaderboard. Your distribution wedge and evaluator recruitment engine.
             </p>
             <Button asChild variant="outline">
               <Link to="/arena">Explore battles</Link>
@@ -167,7 +175,9 @@ export default function Landing() {
             </div>
             <div>
               <p className="font-semibold">Agent-first. Humans when ready.</p>
-              <p className="text-sm text-muted-foreground">No evaluator cold-start required to get a decision.</p>
+              <p className="text-sm text-muted-foreground">
+                No evaluator cold-start required to get a decision.
+              </p>
             </div>
           </div>
           <Button asChild size="lg">
@@ -185,15 +195,15 @@ export default function Landing() {
         taskTitle="Which onboarding flow should we ship?"
         taskSubtitle="Devtool · backend engineers · 4 variants"
         variants={[
-          { label: "A", name: "Marketing-first" },
-          { label: "B", name: "Code-first" },
-          { label: "C", name: "Checklist" },
-          { label: "D", name: "AI-guided" },
+          { label: 'A', name: 'Marketing-first' },
+          { label: 'B', name: 'Code-first' },
+          { label: 'C', name: 'Checklist' },
+          { label: 'D', name: 'AI-guided' },
         ]}
         greenRatio={0.71}
         onRun={async () => {
           await new Promise((r) => setTimeout(r, 16000));
-          return { winnerLabel: "B", greenRatio: 0.71 };
+          return { winnerLabel: 'B', greenRatio: 0.71 };
         }}
         onClose={() => setShowDemo(false)}
       />

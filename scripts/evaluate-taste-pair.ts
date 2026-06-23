@@ -1,21 +1,21 @@
 #!/usr/bin/env bun
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { runTasteMechanicalBaseline } from "../src/lib/tasteBaseline.ts";
-import type { TastePairManifest, TastePairPreference } from "../src/lib/tasteDataset.ts";
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { runTasteMechanicalBaseline } from '../src/lib/tasteBaseline.ts';
+import type { TastePairManifest, TastePairPreference } from '../src/lib/tasteDataset.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseArgs(argv: string[]): Map<string, string> {
   const args = new Map<string, string>();
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (!arg.startsWith("--")) continue;
+    if (!arg.startsWith('--')) continue;
     const key = arg.slice(2);
     const next = argv[i + 1];
-    if (!next || next.startsWith("--")) {
-      args.set(key, "true");
+    if (!next || next.startsWith('--')) {
+      args.set(key, 'true');
     } else {
       args.set(key, next);
       i += 1;
@@ -33,25 +33,30 @@ function relativeToRoot(value: string): string {
 }
 
 function preferenceFromWinner(winnerVariantId: string | null): TastePairPreference {
-  if (winnerVariantId === "a" || winnerVariantId === "b") return winnerVariantId;
-  return "tie";
+  if (winnerVariantId === 'a' || winnerVariantId === 'b') return winnerVariantId;
+  return 'tie';
 }
 
-function labelMatches(predicted: TastePairPreference, label?: TastePairManifest["label"]): boolean | null {
-  if (!label || label.preferredVariantId === "unknown") return null;
+function labelMatches(
+  predicted: TastePairPreference,
+  label?: TastePairManifest['label']
+): boolean | null {
+  if (!label || label.preferredVariantId === 'unknown') return null;
   return predicted === label.preferredVariantId;
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const pairPathArg = args.get("pair");
+  const pairPathArg = args.get('pair');
   if (!pairPathArg) {
-    console.error("Usage: pnpm baseline:taste -- --pair captures/taste-pairs/example.json [--out captures/taste-results]");
+    console.error(
+      'Usage: pnpm baseline:taste -- --pair captures/taste-pairs/example.json [--out captures/taste-results]'
+    );
     process.exit(2);
   }
 
   const pairPath = resolvePath(pairPathArg);
-  const pair = JSON.parse(await readFile(pairPath, "utf8")) as TastePairManifest;
+  const pair = JSON.parse(await readFile(pairPath, 'utf8')) as TastePairManifest;
   if (pair.schemaVersion !== 1 || !Array.isArray(pair.variants) || pair.variants.length !== 2) {
     throw new Error(`${pairPath} is not a Taste pair manifest`);
   }
@@ -71,16 +76,22 @@ async function main() {
     result,
   };
 
-  const outBase = resolvePath(args.get("out") || "captures/taste-baseline");
+  const outBase = resolvePath(args.get('out') || 'captures/taste-baseline');
   await mkdir(outBase, { recursive: true });
   const outPath = path.join(outBase, `${pair.pairId}-${result.modelId}.json`);
   await writeFile(outPath, `${JSON.stringify(evaluation, null, 2)}\n`);
 
   const labelStatus =
-    evaluation.labelMatch == null ? "no comparable label" : evaluation.labelMatch ? "label match" : "label mismatch";
+    evaluation.labelMatch == null
+      ? 'no comparable label'
+      : evaluation.labelMatch
+        ? 'label match'
+        : 'label mismatch';
   console.log(`Evaluated Taste pair ${pair.pairId}`);
   console.log(`Output: ${relativeToRoot(outPath)}`);
-  console.log(`Prediction: ${predictedPreference}, confidence=${result.overallConfidence.toFixed(2)} (${labelStatus})`);
+  console.log(
+    `Prediction: ${predictedPreference}, confidence=${result.overallConfidence.toFixed(2)} (${labelStatus})`
+  );
 }
 
 main().catch((error) => {

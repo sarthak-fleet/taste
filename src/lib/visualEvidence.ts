@@ -1,4 +1,4 @@
-export type CaptureViewportName = "desktop" | "mobile";
+export type CaptureViewportName = 'desktop' | 'mobile';
 
 export interface CaptureViewport {
   name: CaptureViewportName;
@@ -49,7 +49,7 @@ export interface MechanicalMetrics {
   };
   risk: {
     score: number;
-    level: "low" | "medium" | "high";
+    level: 'low' | 'medium' | 'high';
     reasons: string[];
   };
 }
@@ -73,11 +73,13 @@ export interface TasteCaptureManifest {
 }
 
 export const TASTE_CAPTURE_VIEWPORTS: CaptureViewport[] = [
-  { name: "desktop", width: 1440, height: 1100, deviceScaleFactor: 1 },
-  { name: "mobile", width: 390, height: 1100, deviceScaleFactor: 1, isMobile: true },
+  { name: 'desktop', width: 1440, height: 1100, deviceScaleFactor: 1 },
+  { name: 'mobile', width: 390, height: 1100, deviceScaleFactor: 1, isMobile: true },
 ];
 
-export function summarizeMechanicalRisk(metrics: Omit<MechanicalMetrics, "risk">): MechanicalMetrics["risk"] {
+export function summarizeMechanicalRisk(
+  metrics: Omit<MechanicalMetrics, 'risk'>
+): MechanicalMetrics['risk'] {
   const reasons: string[] = [];
   let score = 0;
 
@@ -103,12 +105,14 @@ export function summarizeMechanicalRisk(metrics: Omit<MechanicalMetrics, "risk">
 
   if (metrics.page.firstSectionHeightRatio != null && metrics.page.firstSectionHeightRatio > 1.25) {
     score += 10;
-    reasons.push(`first section is ${metrics.page.firstSectionHeightRatio.toFixed(1)}x viewport height`);
+    reasons.push(
+      `first section is ${metrics.page.firstSectionHeightRatio.toFixed(1)}x viewport height`
+    );
   }
 
   if (metrics.page.visibleActionCount === 0) {
     score += 10;
-    reasons.push("no visible above-fold action");
+    reasons.push('no visible above-fold action');
   }
 
   if (metrics.page.failedImageCount > 0) {
@@ -117,7 +121,7 @@ export function summarizeMechanicalRisk(metrics: Omit<MechanicalMetrics, "risk">
   }
 
   const bounded = Math.min(100, Math.round(score));
-  const level = bounded >= 45 ? "high" : bounded >= 20 ? "medium" : "low";
+  const level = bounded >= 45 ? 'high' : bounded >= 20 ? 'medium' : 'low';
 
   return {
     score: bounded,
