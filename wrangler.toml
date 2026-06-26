@@ -5,5 +5,5 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "shiprank-db"
-database_id = "local-shiprank-db"
+database_id = "b535a229-2995-45ce-9ca9-2ca76f3b2a30"
 migrations_dir = "drizzle/migrations"
