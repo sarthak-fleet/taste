@@ -6,7 +6,7 @@
  * and logs requests slower than 200 ms via `console.warn`.
  */
 export function withTiming(
-  handler: (context: any) => Promise<Response> | Response,
+  handler: (context: any) => Promise<Response> | Response
 ): (context: any) => Promise<Response> {
   return async (context) => {
     const { request } = context;
@@ -26,9 +26,7 @@ export function withTiming(
 
     // Log slow requests
     if (duration > 200) {
-      console.warn(
-        `[slow] ${request.method} ${url.pathname} — ${Math.round(duration)}ms`,
-      );
+      console.warn(`[slow] ${request.method} ${url.pathname} — ${Math.round(duration)}ms`);
     }
 
     return timedResponse;

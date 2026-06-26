@@ -21,6 +21,7 @@ import { resultFromLaunchResponse } from '@/lib/evaluationOverlay';
 import { METRICS, OBJECTIVES, STUDY_TYPES } from '@/lib/types';
 
 interface VariantDraft {
+  id: string;
   name: string;
   label: string;
   description: string;
@@ -47,8 +48,22 @@ export default function StudyCreate() {
   const [contextConcerns, setContextConcerns] = useState('');
   const [showEvalOverlay, setShowEvalOverlay] = useState(false);
   const [variants, setVariants] = useState<VariantDraft[]>([
-    { name: '', label: 'A', description: '', hypothesis: '', assetUrl: '' },
-    { name: '', label: 'B', description: '', hypothesis: '', assetUrl: '' },
+    {
+      id: crypto.randomUUID(),
+      name: '',
+      label: 'A',
+      description: '',
+      hypothesis: '',
+      assetUrl: '',
+    },
+    {
+      id: crypto.randomUUID(),
+      name: '',
+      label: 'B',
+      description: '',
+      hypothesis: '',
+      assetUrl: '',
+    },
   ]);
 
   const createMutation = useMutation({
@@ -128,7 +143,14 @@ export default function StudyCreate() {
     if (variants.length >= 5) return;
     setVariants([
       ...variants,
-      { name: '', label: LABELS[variants.length]!, description: '', hypothesis: '', assetUrl: '' },
+      {
+        id: crypto.randomUUID(),
+        name: '',
+        label: LABELS[variants.length]!,
+        description: '',
+        hypothesis: '',
+        assetUrl: '',
+      },
     ]);
   }
 
@@ -322,7 +344,7 @@ export default function StudyCreate() {
           </CardHeader>
           <CardContent className="space-y-6">
             {variants.map((v, i) => (
-              <div key={i} className="border border-border rounded-lg p-4 space-y-3">
+              <div key={v.id} className="border border-border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-primary">Variant {v.label}</span>
                   {variants.length > 2 && (

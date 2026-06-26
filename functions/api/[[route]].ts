@@ -3,11 +3,11 @@ import { Hono } from 'hono';
 import { handle } from 'hono/cloudflare-pages';
 import { cors } from 'hono/cors';
 import * as schema from '../../src/db/schema';
+import { withTiming } from '../_lib/timing';
 import { adminRouter } from './routes/admin';
 import { arenaRouter } from './routes/arena';
 import { evaluatorsRouter } from './routes/evaluators';
 import { studiesRouter } from './routes/studies';
-import { withTiming } from '../_lib/timing';
 
 export interface Env {
   DB: D1Database;

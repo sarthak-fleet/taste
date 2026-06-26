@@ -11,7 +11,11 @@ import {
 } from './tasteJsonl';
 
 function makeMechanicalSummary(overrides: Partial<Record<string, number>> = {}) {
+  const highestRiskScore = overrides.highestRiskScore ?? 0;
+  const highestRiskLevel: 'low' | 'medium' | 'high' =
+    highestRiskScore >= 45 ? 'high' : highestRiskScore >= 20 ? 'medium' : 'low';
   return {
+    highestRiskLevel,
     highestRiskScore: 0,
     totalClippedTextCandidates: 0,
     totalLowContrastCandidates: 0,
@@ -138,7 +142,7 @@ describe('evaluateTasteJsonl', () => {
     expect(result.correct).toBe(1);
     expect(result.accuracy).toBeCloseTo(0.5);
     expect(result.misses).toHaveLength(1);
-    expect(result.misses[0]!.id).toBe('r2');
+    expect(result.misses[0]?.id).toBe('r2');
   });
 
   it('returns accuracy 0 with no labeled records', () => {
@@ -168,8 +172,8 @@ describe('summarizeTasteJsonlDataset', () => {
     expect(summary.realLabeled).toBe(1);
     expect(summary.syntheticLabeled).toBe(1);
     expect(summary.unknownSourceLabeled).toBe(1);
-    expect(summary.sourceCounts['real']).toBe(1);
-    expect(summary.sourceCounts['synthetic_degradation']).toBe(1);
+    expect(summary.sourceCounts.real).toBe(1);
+    expect(summary.sourceCounts.synthetic_degradation).toBe(1);
     expect(summary.labelCounts.a).toBe(1);
     expect(summary.labelCounts.b).toBe(1);
     expect(summary.labelCounts.tie).toBe(1);

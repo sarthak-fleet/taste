@@ -200,8 +200,8 @@ export function SimulationPanel({
                 <CardTitle className="text-sm">Agent disagreements</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-1">
-                {result.agentDisagreements.map((d, i) => (
-                  <p key={i}>• {d}</p>
+                {result.agentDisagreements.map((d) => (
+                  <p key={d}>• {d}</p>
                 ))}
               </CardContent>
             </Card>
@@ -335,8 +335,8 @@ function AgentMatrix({
         {matrix.agents.map((agent, i) => (
           <tr key={agent} className="border-b border-border/50">
             <td className="py-2 pr-4 font-medium">{agent}</td>
-            {matrix.cells[i]!.map((score, j) => (
-              <td key={j} className="py-2 px-2 text-center">
+            {matrix.cells[i]?.map((score, j) => (
+              <td key={`${agent}-${matrix.variantLabels[j]}`} className="py-2 px-2 text-center">
                 <span
                   className={
                     score >= 4

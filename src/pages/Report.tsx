@@ -181,8 +181,8 @@ export default function ReportPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              {content.whyWinnerWon.map((w, i) => (
-                <li key={i} className="flex gap-2">
+              {content.whyWinnerWon.map((w) => (
+                <li key={w} className="flex gap-2">
                   <span className="text-primary">•</span> {w}
                 </li>
               ))}
@@ -197,8 +197,8 @@ export default function ReportPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              {content.winnerWeaknesses.map((w, i) => (
-                <li key={i} className="flex gap-2">
+              {content.winnerWeaknesses.map((w) => (
+                <li key={w} className="flex gap-2">
                   <span className="text-amber-400">•</span> {w}
                 </li>
               ))}
@@ -228,8 +228,8 @@ export default function ReportPage() {
           <Quote className="h-5 w-5" /> Human evaluator evidence
         </h2>
         <div className="grid gap-4">
-          {content.humanEvidence.map((h, i) => (
-            <Card key={i}>
+          {content.humanEvidence.map((h) => (
+            <Card key={`${h.role}: ${h.quote}`}>
               <CardContent className="p-4">
                 <p className="text-sm italic">&ldquo;{h.quote}&rdquo;</p>
                 <p className="text-xs text-muted-foreground mt-2">— {h.role}</p>
@@ -264,8 +264,8 @@ export default function ReportPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
-                {signalQuality.invalidityFlags.slice(0, 4).map((flag, i) => (
-                  <p key={i}>
+                {signalQuality.invalidityFlags.slice(0, 4).map((flag) => (
+                  <p key={`${flag.level}: ${flag.description}`}>
                     <span className="text-foreground capitalize">{flag.level}</span>:{' '}
                     {flag.description}
                   </p>
@@ -287,8 +287,8 @@ export default function ReportPage() {
               <CardDescription>Consensus</CardDescription>
             </CardHeader>
             <CardContent className="text-sm space-y-2 text-muted-foreground">
-              {content.agentFindings.consensus.map((c, i) => (
-                <p key={i}>• {c}</p>
+              {content.agentFindings.consensus.map((c) => (
+                <p key={c}>• {c}</p>
               ))}
             </CardContent>
           </Card>
@@ -298,8 +298,8 @@ export default function ReportPage() {
                 <CardDescription>Disagreement</CardDescription>
               </CardHeader>
               <CardContent className="text-sm space-y-2 text-muted-foreground">
-                {content.agentFindings.disagreement.map((d, i) => (
-                  <p key={i}>• {d}</p>
+                {content.agentFindings.disagreement.map((d) => (
+                  <p key={d}>• {d}</p>
                 ))}
               </CardContent>
             </Card>

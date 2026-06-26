@@ -336,7 +336,7 @@ function buildAgentPanelForSignal(
 }
 
 function computeAgentAgreement(
-  agentRuns: Array<{ variantId: string; outputJson: string | null; agentId?: string }>,
+  agentRuns: Array<{ id: string; variantId: string; outputJson: string | null; agentId?: string }>,
   cachedOutputs: Map<string, unknown>
 ): number {
   const winnerCounts = new Map<string, number>();
