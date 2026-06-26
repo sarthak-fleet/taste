@@ -1,6 +1,17 @@
 name: Deploy to Cloudflare Pages
+# CI deploy verified 2026-06-26 (after D1 UUID fix) — auto-deploys on push + dispatch.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'functions/**'
+      - 'public/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'wrangler.toml'
+      - '.github/workflows/deploy.yml'
 
 jobs:
   deploy-pages:
